@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shaping the Mist — QAOA Max-Cut Lab</title>
+<style>
+  :root{
+    --bg0:#15123a; --bg1:#241a52; --card:rgba(255,255,255,.06);
+    --card-solid:#221b46; --stroke:rgba(255,255,255,.14);
+    --ink:#eef0ff; --muted:#a9a7d4; --mist:#9aa3e0; --mist-deep:#6f68d8;
+    --good:#23d3a2; --good-dim:#176f5b; --accent:#ff7a59; --accent2:#ffd166;
+    --rad:16px; --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+    --sans:'Segoe UI',system-ui,-apple-system,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--sans); color:var(--ink); min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #3a2d77 0%, transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, #2a3d7a 0%, transparent 55%),
+      linear-gradient(160deg,var(--bg0),var(--bg1));
+    background-attachment:fixed;
+    padding:22px clamp(12px,3vw,40px) 60px;
+  }
+  header{max-width:1180px;margin:0 auto 18px}
+  h1{font-size:clamp(22px,3.2vw,32px);margin:0 0 4px;letter-spacing:.2px}
+  h1 .sub{color:var(--mist)}
+  .tag{font-size:13px;color:var(--muted);max-width:760px;line-height:1.5}
+  .grid{max-width:1180px;margin:0 auto;display:grid;gap:18px;
+        grid-template-columns:minmax(300px,360px) 1fr}
+  @media(max-width:880px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--stroke);border-radius:var(--rad);
+        padding:16px 16px 18px;backdrop-filter:blur(8px)}
+  .card h2{margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1.4px;
+           color:var(--mist);font-weight:700}
+  /* graph */
+  .graphwrap{display:flex;justify-content:center;background:rgba(0,0,0,.18);
+             border-radius:12px;padding:6px;margin-bottom:12px}
+  svg{display:block;width:100%;height:auto}
+  .node{stroke:#10102a;stroke-width:2.5;cursor:default;transition:fill .25s}
+  .nlabel{fill:#0c0c22;font:700 14px var(--sans);pointer-events:none}
+  .edge{stroke:#6a6aa0;stroke-width:3;stroke-linecap:round;transition:stroke .25s,stroke-width .25s}
+  .edge.cut{stroke:var(--good);stroke-width:5}
+  .edge.uncut{stroke:#4a4a72;stroke-dasharray:2 7}
+  /* metrics */
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .metric{background:rgba(0,0,0,.22);border-radius:10px;padding:9px 11px}
+  .metric .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .metric .v{font-size:19px;font-weight:700;margin-top:2px}
+  .metric .v small{font-size:12px;color:var(--muted);font-weight:500}
+  .best{font-family:var(--mono);color:var(--good);font-weight:700}
+  /* controls */
+  select,button{font-family:inherit}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  select{background:var(--card-solid);color:var(--ink);border:1px solid var(--stroke);
+         border-radius:10px;padding:8px 10px;font-size:13px;flex:1}
+  .layer{background:rgba(0,0,0,.18);border:1px solid var(--stroke);border-radius:12px;
+         padding:10px 12px;margin-bottom:10px}
+  .layer .lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .layer .lh b{font-size:12px;letter-spacing:.5px;color:var(--mist)}
+  .slabel{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);
+          margin:8px 0 2px}
+  .slabel .val{font-family:var(--mono);color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;
+    background:linear-gradient(90deg,var(--mist-deep),var(--accent));outline:none}
+  input[type=range].beta{background:linear-gradient(90deg,#3aa0ff,var(--good))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+    border-radius:50%;background:#fff;border:3px solid var(--mist-deep);cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  input[type=range].beta::-webkit-slider-thumb{border-color:var(--good)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;
+    border:3px solid var(--mist-deep);cursor:pointer}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  button{border:1px solid var(--stroke);border-radius:11px;padding:10px 12px;font-size:13px;
+         font-weight:600;color:var(--ink);background:var(--card-solid);cursor:pointer;
+         transition:transform .08s,background .2s,border-color .2s}
+  button:hover{background:#2c2458;border-color:var(--mist-deep)}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.primary{background:linear-gradient(120deg,var(--mist-deep),var(--accent));
+                 border:none;color:#fff;grid-column:1 / -1}
+  button.ghost{grid-column:auto}
+  /* bar chart */
+  .chartcard{min-height:420px}
+  .chart-head{display:flex;justify-content:space-between;align-items:baseline;
+              flex-wrap:wrap;gap:6px;margin-bottom:6px}
+  .chart-head .hint{font-size:12px;color:var(--muted)}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:4px}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;
+            vertical-align:-1px}
+  .bar{transition:height .18s ease,y .18s ease,fill .18s ease}
+  .blabel{font:600 10px var(--mono);fill:var(--muted)}
+  .blabel.opt{fill:var(--good)}
+  .axis{stroke:rgba(255,255,255,.12)}
+  .axislab{fill:var(--muted);font:11px var(--sans)}
+  .tip{position:fixed;pointer-events:none;background:#0d0b24;border:1px solid var(--mist-deep);
+       border-radius:8px;padding:7px 9px;font-size:12px;opacity:0;transition:opacity .12s;z-index:9;
+       box-shadow:0 6px 20px rgba(0,0,0,.5)}
+  .tip .bs{font-family:var(--mono);color:var(--accent2);font-weight:700}
+  .eqs{font-size:12px;color:var(--muted);line-height:1.9;margin-top:6px}
+  .eqs code{font-family:var(--mono);color:var(--mist);background:rgba(0,0,0,.25);
+            padding:1px 6px;border-radius:6px}
+  .status{font-size:12px;color:var(--accent2);min-height:16px;margin-top:8px;font-family:var(--mono)}
+  footer{max-width:1180px;margin:18px auto 0;color:var(--muted);font-size:12px;line-height:1.6}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">10.2</span></a><script defer src="../assets/planck-companion.js" data-pk-code="10.2"></script><!--/planck-chrome-->
+
+
+
+
+
+<header>
+  <h1>Shaping the Mist <span class="sub">· QAOA on Max-Cut</span></h1>
+  <p class="tag">Every node is a qubit; its colour says which side of the cut it sits on.
+     Tune the cost angle&nbsp;γ and the mixing angle&nbsp;β to sculpt the interference pattern
+     until the mist concentrates on the bitstrings that cut the most edges.</p>
+</header>
+
+<div class="grid">
+  <!-- LEFT: graph + controls -->
+  <section class="card">
+    <h2>The graph</h2>
+    <div class="row">
+      <select id="preset"></select>
+    </div>
+    <div class="graphwrap">
+      <svg id="graph" viewBox="0 0 240 210" aria-label="problem graph"></svg>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="k">⟨cut⟩ now</div><div class="v" id="mExp">—</div></div>
+      <div class="metric"><div class="k">max cut</div><div class="v" id="mMax">—</div></div>
+      <div class="metric"><div class="k">approx ratio</div><div class="v" id="mRatio">—</div></div>
+      <div class="metric"><div class="k">P(optimal)</div><div class="v" id="mPopt">—</div></div>
+    </div>
+    <div class="metric" style="margin-top:8px">
+      <div class="k">most-likely cut</div>
+      <div class="v"><span class="best" id="mBest">—</span>
+        <small id="mBestInfo"></small></div>
+    </div>
+
+    <h2 style="margin-top:18px">Quantum circuit (p = <span id="pVal">1</span>)</h2>
+    <div id="layers"></div>
+    <div class="btns">
+      <button class="ghost" id="addLayer">＋ Add layer</button>
+      <button class="ghost" id="removeLayer">－ Remove layer</button>
+      <button class="primary" id="auto">⚙ Auto-optimise</button>
+      <button class="ghost" id="reset">↺ Reset to mist</button>
+      <button class="ghost" id="zero">∅ Zero angles</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <!-- RIGHT: bar chart + theory -->
+  <section class="card chartcard">
+    <div class="chart-head">
+      <h2 style="margin:0">Probability of each cut configuration</h2>
+      <span class="hint">2<sup id="nq">3</sup> = <span id="nstates">8</span> bitstrings · hover a bar</span>
+    </div>
+    <svg id="bars" viewBox="0 0 920 430" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend">
+      <span><i style="background:var(--good)"></i>optimal cut(s)</span>
+      <span><i style="background:var(--mist)"></i>other bitstrings</span>
+      <span><i style="background:var(--accent)"></i>uniform-mist level (1/2ⁿ)</span>
+    </div>
+    <div class="eqs">
+      <b style="color:var(--ink)">Under the hood.</b>
+      Cost <code>H_C = Σ ½(1 − Z_i Z_j)</code> over edges (it counts cut edges) ·
+      Mixer <code>H_M = Σ X_i</code> ·
+      State <code>|γ,β⟩ = Π_k e^{−iβ_k H_M} e^{−iγ_k H_C} |+⟩^⊗n</code>.
+      The browser holds the full 2ⁿ-amplitude state vector and squares it for these bars.
+    </div>
+  </section>
+</div>
+
+<footer>
+  <b>Try this:</b> start at p = 1 and sweep γ alone — watch whole families of bars rise and fall
+  as phases interfere. Then nudge β. Hit <i>Auto-optimise</i> to let a gradient-free classical
+  optimiser (coordinate descent) find good angles — that back-and-forth between your browser’s
+  “quantum cloud” and the classical optimiser <i>is</i> the hybrid QAOA loop. Add a second layer
+  and optimise again to sharpen the peak further.
+</footer>
+
+<div class="tip" id="tip"></div>
+
+<script>
+"use strict";
+/* ===================================================================== *
+ *  QAOA Max-Cut simulator — exact state vector in the browser           *
+ * ===================================================================== */
+
+// ---- graph presets ---------------------------------------------------
+const PRESETS = {
+  triangle: {
+    name: "Triangle  K₃  (3 qubits · frustrated)",
+    n: 3,
+    pos: [[120,38],[48,168],[192,168]],
+    edges: [[0,1],[1,2],[0,2]],
+  },
+  square: {
+    name: "Square  C₄  (4 qubits · bipartite)",
+    n: 4,
+    pos: [[64,52],[176,52],[176,164],[64,164]],
+    edges: [[0,1],[1,2],[2,3],[3,0]],
+  },
+  k4: {
+    name: "Complete  K₄  (4 qubits)",
+    n: 4,
+    pos: [[64,52],[176,52],[176,164],[64,164]],
+    edges: [[0,1],[1,2],[2,3],[3,0],[0,2],[1,3]],
+  },
+  pentagon: {
+    name: "Pentagon  C₅  (5 qubits · frustrated)",
+    n: 5,
+    pos: penta(),
+    edges: [[0,1],[1,2],[2,3],[3,4],[4,0]],
+  },
+};
+function penta(){
+  const c=[120,108], R=78, out=[];
+  for(let k=0;k<5;k++){const a=-Math.PI/2 + k*2*Math.PI/5;
+    out.push([c[0]+R*Math.cos(a), c[1]+R*Math.sin(a)]);}
+  return out;
+}
+
+// ---- problem state ---------------------------------------------------
+let G, N, cut, maxCut, optima, gammas, betas;
+let re, im;                 // amplitudes
+let busy=false;
+
+function buildProblem(key){
+  G = PRESETS[key];
+  N = 1<<G.n;
+  cut = new Float64Array(N);
+  for(let z=0; z<N; z++){
+    let c=0;
+    for(const [i,j] of G.edges){
+      if(((z>>i)&1) !== ((z>>j)&1)) c++;
+    }
+    cut[z]=c;
+  }
+  maxCut = Math.max(...cut);
+  optima = [];
+  for(let z=0;z<N;z++) if(cut[z]===maxCut) optima.push(z);
+  re = new Float64Array(N);
+  im = new Float64Array(N);
+}
+
+// ---- QAOA evolution --------------------------------------------------
+function plusState(){
+  const a = 1/Math.sqrt(N);
+  for(let i=0;i<N;i++){ re[i]=a; im[i]=0; }
+}
+function applyCost(gamma){
+  for(let z=0; z<N; z++){
+    const th = -gamma*cut[z];
+    const c=Math.cos(th), s=Math.sin(th);
+    const r=re[z], m=im[z];
+    re[z]=r*c - m*s;
+    im[z]=r*s + m*c;
+  }
+}
+function applyMixer(beta){
+  const c=Math.cos(beta), s=Math.sin(beta);
+  for(let q=0; q<G.n; q++){
+    const bit=1<<q;
+    for(let z=0; z<N; z++){
+      if((z&bit)===0){
+        const z2=z|bit;
+        const ar=re[z],  ai=im[z];
+        const br=re[z2], bi=im[z2];
+        // [[c,-is],[-is,c]] applied to (a,b)
+        re[z]  = c*ar + s*bi;
+        im[z]  = c*ai - s*br;
+        re[z2] = c*br + s*ai;
+        im[z2] = c*bi - s*ar;
+      }
+    }
+  }
+}
+function evolve(gs, bs){
+  plusState();
+  for(let k=0;k<gs.length;k++){ applyCost(gs[k]); applyMixer(bs[k]); }
+}
+// probabilities for the current gammas/betas
+function currentProbs(){
+  evolve(gammas, betas);
+  const p=new Float64Array(N);
+  for(let i=0;i<N;i++) p[i]=re[i]*re[i]+im[i]*im[i];
+  return p;
+}
+function expectedCutOf(gs, bs){
+  evolve(gs,bs);
+  let e=0;
+  for(let i=0;i<N;i++) e += (re[i]*re[i]+im[i]*im[i])*cut[i];
+  return e;
+}
+
+// ---- bitstring helpers ----------------------------------------------
+function bits(z){ let s=""; for(let q=0;q<G.n;q++) s += ((z>>q)&1); return s; } // q0 left
+
+// ===================================================================== //
+//  RENDERING                                                            //
+// ===================================================================== //
+const SVGNS="http://www.w3.org/2000/svg";
+const $=(id)=>document.getElementById(id);
+const graphEl=$("graph"), barsEl=$("bars"), tip=$("tip");
+let nodeEls=[], edgeEls=[], barEls=[], labEls=[];
+
+function drawGraph(){
+  graphEl.innerHTML="";
+  edgeEls=[]; nodeEls=[];
+  for(let e=0;e<G.edges.length;e++){
+    const [i,j]=G.edges[e];
+    const ln=document.createElementNS(SVGNS,"line");
+    ln.setAttribute("x1",G.pos[i][0]); ln.setAttribute("y1",G.pos[i][1]);
+    ln.setAttribute("x2",G.pos[j][0]); ln.setAttribute("y2",G.pos[j][1]);
+    ln.setAttribute("class","edge");
+    graphEl.appendChild(ln); edgeEls.push(ln);
+  }
+  for(let v=0; v<G.n; v++){
+    const cir=document.createElementNS(SVGNS,"circle");
+    cir.setAttribute("cx",G.pos[v][0]); cir.setAttribute("cy",G.pos[v][1]);
+    cir.setAttribute("r",18); cir.setAttribute("class","node");
+    graphEl.appendChild(cir); nodeEls.push(cir);
+    const t=document.createElementNS(SVGNS,"text");
+    t.setAttribute("x",G.pos[v][0]); t.setAttribute("y",G.pos[v][1]+5);
+    t.setAttribute("text-anchor","middle"); t.setAttribute("class","nlabel");
+    t.textContent=v;
+    graphEl.appendChild(t);
+  }
+}
+
+// bar chart geometry
+const CW=920, CH=430, PADL=44, PADR=12, PADT=14, PADB=46;
+function drawBarsSkeleton(){
+  barsEl.innerHTML="";
+  barEls=[]; labEls=[];
+  const plotH=CH-PADT-PADB;
+  // y axis grid + labels (0,0.25,0.5,0.75,1)
+  for(let g=0; g<=4; g++){
+    const y=PADT + plotH*(1-g/4);
+    const ln=document.createElementNS(SVGNS,"line");
+    ln.setAttribute("x1",PADL); ln.setAttribute("x2",CW-PADR);
+    ln.setAttribute("y1",y); ln.setAttribute("y2",y);
+    ln.setAttribute("class","axis"); barsEl.appendChild(ln);
+    const tx=document.createElementNS(SVGNS,"text");
+    tx.setAttribute("x",PADL-7); tx.setAttribute("y",y+3);
+    tx.setAttribute("text-anchor","end"); tx.setAttribute("class","axislab");
+    tx.textContent=(g/4).toFixed(2); barsEl.appendChild(tx);
+  }
+  const plotW=CW-PADL-PADR;
+  const bw=plotW/N;
+  for(let z=0; z<N; z++){
+    const x=PADL + z*bw + bw*0.12;
+    const w=bw*0.76;
+    const r=document.createElementNS(SVGNS,"rect");
+    r.setAttribute("x",x); r.setAttribute("width",w);
+    r.setAttribute("y",CH-PADB); r.setAttribute("height",0);
+    r.setAttribute("rx",Math.min(4,w/3));
+    r.setAttribute("class","bar");
+    r.dataset.z=z;
+    r.addEventListener("mousemove",onTip);
+    r.addEventListener("mouseleave",()=>{tip.style.opacity=0;});
+    barsEl.appendChild(r); barEls.push(r);
+    // label (rotate if many)
+    const t=document.createElementNS(SVGNS,"text");
+    const cx=x+w/2, cy=CH-PADB+ (N>16?18:14);
+    t.setAttribute("x",cx); t.setAttribute("y",cy);
+    t.setAttribute("text-anchor", N>8?"end":"middle");
+    if(N>8) t.setAttribute("transform",`rotate(-60 ${cx} ${cy})`);
+    t.setAttribute("class","blabel"+(cut[z]===maxCut?" opt":""));
+    t.textContent=bits(z);
+    barsEl.appendChild(t); labEls.push(t);
+  }
+  // uniform-mist reference line
+  const plotH2=CH-PADT-PADB;
+  const yu=PADT+plotH2*(1-1/N);
+  const ref=document.createElementNS(SVGNS,"line");
+  ref.setAttribute("x1",PADL); ref.setAttribute("x2",CW-PADR);
+  ref.setAttribute("y1",yu); ref.setAttribute("y2",yu);
+  ref.setAttribute("stroke","var(--accent)"); ref.setAttribute("stroke-width","1.5");
+  ref.setAttribute("stroke-dasharray","6 5"); ref.setAttribute("opacity","0.7");
+  barsEl.appendChild(ref);
+  // axis title
+  const yt=document.createElementNS(SVGNS,"text");
+  yt.setAttribute("x",14); yt.setAttribute("y",PADT+plotH2/2);
+  yt.setAttribute("class","axislab");
+  yt.setAttribute("transform",`rotate(-90 14 ${PADT+plotH2/2})`);
+  yt.setAttribute("text-anchor","middle"); yt.textContent="probability";
+  barsEl.appendChild(yt);
+}
+
+function onTip(ev){
+  const z=+ev.target.dataset.z;
+  const p=lastProbs?lastProbs[z]:0;
+  tip.innerHTML=`<span class="bs">${bits(z)}</span> &nbsp; cut = ${cut[z]}`+
+    (cut[z]===maxCut?" ★":"")+`<br>P = ${(p*100).toFixed(2)}%`;
+  tip.style.left=(ev.clientX+14)+"px";
+  tip.style.top=(ev.clientY-10)+"px";
+  tip.style.opacity=1;
+}
+
+let lastProbs=null;
+function render(){
+  const probs=currentProbs();
+  lastProbs=probs;
+  const plotH=CH-PADT-PADB;
+  let best=0;
+  for(let z=0; z<N; z++){
+    if(probs[z]>probs[best]) best=z;
+    const h=plotH*probs[z];
+    const r=barEls[z];
+    r.setAttribute("y", PADT+plotH-h);
+    r.setAttribute("height", h);
+    r.setAttribute("fill", cut[z]===maxCut ? "var(--good)" : "var(--mist)");
+  }
+  // metrics
+  let exp=0, popt=0;
+  for(let z=0; z<N; z++){ exp+=probs[z]*cut[z]; if(cut[z]===maxCut) popt+=probs[z]; }
+  $("mExp").innerHTML = exp.toFixed(3);
+  $("mMax").innerHTML = maxCut+" <small>edges</small>";
+  $("mRatio").innerHTML = (exp/maxCut).toFixed(3);
+  $("mPopt").innerHTML = (popt*100).toFixed(1)+"<small>%</small>";
+  $("mBest").textContent = bits(best);
+  $("mBestInfo").textContent = ` · cut ${cut[best]} · P ${(probs[best]*100).toFixed(1)}%`+
+                               (cut[best]===maxCut?" ★ optimal":"");
+  paintGraph(best);
+}
+
+function paintGraph(z){
+  // colour nodes by side; highlight cut edges
+  for(let v=0; v<G.n; v++){
+    nodeEls[v].setAttribute("fill", ((z>>v)&1) ? "var(--accent2)" : "var(--mist)");
+  }
+  for(let e=0; e<G.edges.length; e++){
+    const [i,j]=G.edges[e];
+    const isCut=((z>>i)&1)!==((z>>j)&1);
+    edgeEls[e].setAttribute("class","edge "+(isCut?"cut":"uncut"));
+  }
+}
+
+// ===================================================================== //
+//  CONTROLS                                                             //
+// ===================================================================== //
+function buildLayers(){
+  const host=$("layers"); host.innerHTML="";
+  for(let k=0;k<gammas.length;k++){
+    const box=document.createElement("div"); box.className="layer";
+    box.innerHTML=`
+      <div class="lh"><b>Layer ${k+1}</b></div>
+      <div class="slabel"><span>γ<sub>${k+1}</sub> (cost phase)</span>
+           <span class="val" id="gv${k}"></span></div>
+      <input type="range" id="g${k}" min="0" max="${(2*Math.PI).toFixed(4)}" step="0.01">
+      <div class="slabel"><span>β<sub>${k+1}</sub> (mixing)</span>
+           <span class="val" id="bv${k}"></span></div>
+      <input type="range" class="beta" id="b${k}" min="0" max="${Math.PI.toFixed(4)}" step="0.01">`;
+    host.appendChild(box);
+    const gs=$("g"+k), bs=$("b"+k);
+    gs.value=gammas[k]; bs.value=betas[k];
+    const upd=()=>{
+      gammas[k]=+gs.value; betas[k]=+bs.value;
+      $("gv"+k).textContent=(+gs.value).toFixed(2);
+      $("bv"+k).textContent=(+bs.value).toFixed(2);
+      render();
+    };
+    gs.addEventListener("input",upd); bs.addEventListener("input",upd);
+    $("gv"+k).textContent=gammas[k].toFixed(2);
+    $("bv"+k).textContent=betas[k].toFixed(2);
+  }
+  $("pVal").textContent=gammas.length;
+  $("removeLayer").disabled = gammas.length<=1;
+  $("addLayer").disabled = gammas.length>=4;
+}
+
+function syncSliders(){
+  for(let k=0;k<gammas.length;k++){
+    $("g"+k).value=gammas[k]; $("b"+k).value=betas[k];
+    $("gv"+k).textContent=gammas[k].toFixed(2);
+    $("bv"+k).textContent=betas[k].toFixed(2);
+  }
+}
+
+// ---- classical optimiser: gradient-free coordinate descent ----------
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+async function autoOptimise(){
+  if(busy) return; busy=true; setBusy(true);
+  const status=$("status");
+  const ranges=[[0,2*Math.PI],[0,Math.PI]]; // gamma, beta
+  let bestE=expectedCutOf(gammas,betas);
+  for(let sweep=0; sweep<6 && busy; sweep++){
+    let improved=false;
+    for(let k=0;k<gammas.length && busy;k++){
+      for(let which=0; which<2; which++){      // 0=gamma 1=beta
+        const arr = which? betas : gammas;
+        const [lo,hi]=ranges[which];
+        // coarse line search
+        let bx=arr[k], bv=-Infinity;
+        const coarse=33;
+        for(let t=0;t<=coarse;t++){
+          const x=lo+(hi-lo)*t/coarse;
+          arr[k]=x; const e=expectedCutOf(gammas,betas);
+          if(e>bv){bv=e; bx=x;}
+        }
+        // refine around bx
+        let span=(hi-lo)/coarse;
+        for(let ref=0; ref<3; ref++){
+          const lo2=Math.max(lo,bx-span), hi2=Math.min(hi,bx+span);
+          for(let t=0;t<=14;t++){
+            const x=lo2+(hi2-lo2)*t/14;
+            arr[k]=x; const e=expectedCutOf(gammas,betas);
+            if(e>bv){bv=e; bx=x;}
+          }
+          span/=4;
+        }
+        arr[k]=bx;
+        if(bv>bestE+1e-9){bestE=bv; improved=true;}
+        syncSliders(); render();
+        status.textContent=`optimising… sweep ${sweep+1}, ⟨cut⟩ = ${bestE.toFixed(4)} / ${maxCut}`;
+        await sleep(55);
+      }
+    }
+    if(!improved) break;
+  }
+  status.textContent=`done · ⟨cut⟩ = ${bestE.toFixed(4)} / ${maxCut}  (ratio ${(bestE/maxCut).toFixed(3)})`;
+  busy=false; setBusy(false);
+}
+function setBusy(b){
+  ["auto","addLayer","removeLayer","reset","zero","preset"].forEach(id=>$(id).disabled=b);
+  $("auto").textContent = b ? "…optimising" : "⚙ Auto-optimise";
+}
+
+// ---- top-level actions ----------------------------------------------
+function loadPreset(key){
+  buildProblem(key);
+  gammas=[0.0]; betas=[0.0];
+  $("nq").textContent=G.n; $("nstates").textContent=N;
+  drawGraph(); drawBarsSkeleton(); buildLayers(); render();
+}
+
+$("preset").addEventListener("change", e=>loadPreset(e.target.value));
+$("addLayer").addEventListener("click", ()=>{
+  if(gammas.length>=4) return;
+  gammas.push(0.0); betas.push(0.0); buildLayers(); render();
+});
+$("removeLayer").addEventListener("click", ()=>{
+  if(gammas.length<=1) return;
+  gammas.pop(); betas.pop(); buildLayers(); render();
+});
+$("reset").addEventListener("click", ()=>{
+  for(let k=0;k<gammas.length;k++){gammas[k]=0;betas[k]=0;}
+  syncSliders(); render(); $("status").textContent="";
+});
+$("zero").addEventListener("click", ()=>{
+  for(let k=0;k<gammas.length;k++){gammas[k]=0;betas[k]=0;}
+  syncSliders(); render();
+});
+$("auto").addEventListener("click", autoOptimise);
+
+// ---- boot ------------------------------------------------------------
+const sel=$("preset");
+for(const k in PRESETS){
+  const o=document.createElement("option"); o.value=k; o.textContent=PRESETS[k].name;
+  sel.appendChild(o);
+}
+sel.value="square";          // C4 shows the value of extra layers nicely
+loadPreset("square");
+</script>
+
+</body>
+</html>

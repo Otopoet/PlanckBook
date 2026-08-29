@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Repetition Code — PLANCK · Chapter 12 · Figure 12.1</title>
+<style>
+:root{ --bg:#0a0e1a; --panel:#121833; --panel-2:#0e142a; --inset:#0a1024;
+  --line:rgba(180,190,220,0.14); --line-2:rgba(180,190,220,0.30);
+  --text:#e8ecf5; --muted:#8a93b0; --faint:#5b6685;
+  --cyan:#28e0d0; --violet:#9a92ee; --gold:#ffd166; --magenta:#ff5db1; --green:#5ad19a; --red:#ff6b6b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif; }
+*{ box-sizing:border-box; }
+body{ margin:0; background:radial-gradient(1200px 800px at 60% -10%, #16204a 0%, var(--bg) 60%); color:var(--text); font-family:var(--sans); min-height:100vh; padding:40px 20px; line-height:1.6; }
+.wrap{ max-width:920px; margin:0 auto; }
+
+.eyebrow{ font-family:var(--mono); font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--cyan); }
+h1{ font-size:clamp(26px,5vw,40px); margin:.25em 0 .15em; line-height:1.1; }
+.lead{ color:var(--muted); max-width:680px; margin:.4em 0 0; }
+
+.panel{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px; margin-top:22px; }
+.panel h2{ font-size:16px; margin:0 0 4px; letter-spacing:.3px; }
+.panel .sub{ color:var(--muted); font-size:13.5px; margin:0 0 16px; }
+
+.eq{ font-family:var(--mono); color:var(--gold); }
+.k{ font-family:var(--mono); }
+
+/* buttons */
+button{ font-family:var(--sans); font-size:14px; color:var(--text); background:transparent; border:1px solid var(--line-2); border-radius:9px; padding:9px 15px; cursor:pointer; transition:background .15s, border-color .15s; }
+button:hover{ background:var(--panel-2); border-color:var(--cyan); }
+button:active{ transform:translateY(1px); }
+button.primary{ border-color:var(--cyan); color:var(--cyan); }
+.row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+
+/* toggle */
+.toggle{ display:inline-flex; border:1px solid var(--line-2); border-radius:9px; overflow:hidden; }
+.toggle button{ border:none; border-radius:0; padding:9px 18px; color:var(--muted); }
+.toggle button.on{ background:var(--panel-2); color:var(--cyan); }
+.toggle button + button{ border-left:1px solid var(--line-2); }
+
+/* qubit cells */
+.qubits{ display:flex; gap:14px; margin:20px 0 6px; flex-wrap:wrap; }
+.qcell{ width:78px; height:78px; flex:0 0 auto; border-radius:12px; border:1px solid var(--line-2); background:var(--inset);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; transition:background .25s, border-color .25s, box-shadow .25s; }
+.qcell .lbl{ position:absolute; top:6px; left:0; right:0; text-align:center; font-family:var(--mono); font-size:10px; letter-spacing:.5px; color:var(--faint); }
+.qcell .val{ font-family:var(--mono); font-size:32px; font-weight:600; }
+.qcell.flipped{ border-color:var(--red); background:rgba(255,107,107,0.12); box-shadow:0 0 0 1px var(--red), 0 0 18px rgba(255,107,107,0.35); }
+.qcell.flipped .val{ color:var(--red); }
+.qcell.synd::after{ content:'⚑ syndrome'; position:absolute; bottom:-20px; left:0; right:0; text-align:center; font-family:var(--mono); font-size:9.5px; color:var(--red); letter-spacing:.3px; }
+@keyframes pop{ 0%{transform:scale(1)} 40%{transform:scale(1.14)} 100%{transform:scale(1)} }
+.qcell.pop{ animation:pop .32s ease; }
+
+.flowarrow{ color:var(--faint); font-family:var(--mono); font-size:13px; margin:14px 0 4px; }
+
+.verdict{ margin-top:30px; font-family:var(--mono); font-size:15px; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--inset); }
+.verdict.ok{ color:var(--green); border-color:rgba(90,209,154,0.4); }
+.verdict.bad{ color:var(--red); border-color:rgba(255,107,107,0.4); }
+.verdict.idle{ color:var(--muted); }
+.verdict b{ font-weight:700; }
+.readout{ display:flex; flex-wrap:wrap; gap:18px 28px; margin-top:14px; font-family:var(--mono); font-size:13px; color:var(--muted); }
+.readout .v{ color:var(--text); }
+
+/* slider */
+.sliderbox{ margin:6px 0 2px; }
+.sliderbox label{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:13px; color:var(--muted); margin-bottom:8px; }
+.sliderbox label .pv{ color:var(--gold); }
+input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:6px;
+  background:linear-gradient(90deg,var(--cyan),var(--violet)); outline:none; }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--cyan); border:2px solid var(--bg); cursor:pointer; box-shadow:0 0 10px rgba(40,224,208,.6); }
+input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:var(--cyan); border:2px solid var(--bg); cursor:pointer; }
+
+/* monte carlo stats */
+.stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+.stat{ background:var(--inset); border:1px solid var(--line); border-radius:10px; padding:14px; }
+.stat .t{ font-family:var(--mono); font-size:11px; letter-spacing:.4px; text-transform:uppercase; color:var(--faint); }
+.stat .n{ font-family:var(--mono); font-size:24px; font-weight:600; margin-top:4px; }
+.stat.enc .n{ color:var(--cyan); }
+.stat.unenc .n{ color:var(--muted); }
+.stat.theo .n{ color:var(--gold); }
+.stat .s{ font-size:11px; color:var(--faint); margin-top:2px; }
+.mcmeta{ font-family:var(--mono); font-size:12px; color:var(--faint); margin-top:12px; }
+
+/* chart */
+.chartwrap{ position:relative; }
+svg{ display:block; width:100%; height:auto; }
+.legend{ display:flex; flex-wrap:wrap; gap:16px; font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:10px; }
+.legend i{ display:inline-block; width:22px; height:0; border-top-width:3px; border-top-style:solid; vertical-align:middle; margin-right:6px; border-radius:2px; }
+.legend .dash{ border-top-style:dashed; }
+
+.caption{ color:var(--muted); font-size:13.5px; border-top:1px solid var(--line); margin-top:18px; padding-top:14px; }
+.caption b{ color:var(--text); }
+.caption + .caption{ border-top:none; padding-top:6px; }
+
+@media (max-width:520px){
+  body{ padding:26px 14px; }
+  .panel{ padding:16px; }
+  .stats{ grid-template-columns:1fr; }
+  .qcell{ width:64px; height:64px; }
+  .qcell .val{ font-size:26px; }
+}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">12.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="12.1"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <div class="eyebrow">PLANCK · CHAPTER 11 · FIGURE 11.6</div>
+  <h1>Fighting back: the repetition code</h1>
+  <p class="lead">The gentlest first step in quantum error correction. We protect one <b>logical</b> bit by smearing it across three <b>physical</b> qubits — <span class="k">0 → 000</span>, <span class="k">1 → 111</span>. Noise flips each physical qubit on its own; a <b>majority vote</b> reads the answer back out. The catch: redundancy only helps <i>below</i> a threshold error rate. Above it, more qubits just means more ways to fail.</p>
+
+  <!-- SLIDER -->
+  <div class="panel">
+    <h2>Physical error rate</h2>
+    <p class="sub">Each of the three physical qubits flips independently with probability <span class="eq">p</span>. This single dial drives every panel below.</p>
+    <div class="sliderbox">
+      <label>physical flip probability <span class="pv eq" id="pLabel">p = 0.10</span></label>
+      <input type="range" id="pSlider" min="0" max="1" step="0.01" value="0.10">
+    </div>
+    <div class="row" style="margin-top:6px; font-family:var(--mono); font-size:13px; color:var(--muted);">
+      <span>encoded logical rate <span class="eq">P<sub>L</sub>(p) = 3p² − 2p³ = <span id="plInline">0.0280</span></span></span>
+    </div>
+  </div>
+
+  <!-- LIVE ENCODER -->
+  <div class="panel">
+    <h2>Live encoder &middot; encode → noise → decode</h2>
+    <p class="sub">Choose a logical value, inject noise at the current <span class="eq">p</span>, then watch the majority vote fix (or fail to fix) the damage.</p>
+    <div class="row" style="margin-bottom:6px;">
+      <span style="font-family:var(--mono);font-size:13px;color:var(--muted);">logical value</span>
+      <div class="toggle" id="logicToggle">
+        <button data-v="0" class="on">0</button>
+        <button data-v="1">1</button>
+      </div>
+      <button class="primary" id="injectBtn">⚡ Inject noise</button>
+      <button id="resetBtn">↺ Reset</button>
+    </div>
+
+    <div class="flowarrow">encoded register (logical → 3 physical qubits)</div>
+    <div class="qubits" id="qubits"></div>
+
+    <div class="verdict idle" id="verdict">Pick a value and inject noise to see the syndrome and majority-vote decode.</div>
+    <div class="readout">
+      <span>flips: <span class="v" id="roFlips">—</span></span>
+      <span>syndrome: <span class="v" id="roSynd">—</span></span>
+      <span>majority decode: <span class="v" id="roDec">—</span></span>
+    </div>
+  </div>
+
+  <!-- MONTE CARLO -->
+  <div class="panel">
+    <h2>Monte-Carlo trial</h2>
+    <p class="sub">Run full encode → noise → decode cycles and compare the empirical logical error rate against theory and against doing nothing.</p>
+    <div class="row">
+      <button id="run1">Run 1</button>
+      <button class="primary" id="run1000">Run 1000</button>
+      <button id="mcReset">Clear</button>
+    </div>
+    <div class="stats">
+      <div class="stat enc"><div class="t">Empirical encoded</div><div class="n" id="mcEmp">—</div><div class="s" id="mcEmpS">no trials yet</div></div>
+      <div class="stat theo"><div class="t">Theoretical P_L</div><div class="n" id="mcTheo">0.0280</div><div class="s">3p² − 2p³</div></div>
+      <div class="stat unenc"><div class="t">Unencoded p</div><div class="n" id="mcUnenc">0.1000</div><div class="s">no code at all</div></div>
+    </div>
+    <div class="mcmeta" id="mcMeta">total trials: 0 · logical errors: 0</div>
+  </div>
+
+  <!-- CHART -->
+  <div class="panel">
+    <h2>Break-even curve</h2>
+    <p class="sub">The encoded curve <span class="eq" style="color:var(--cyan)">P<sub>L</sub>(p)</span> versus the do-nothing line <span class="eq">y = p</span>. They cross exactly at <span class="eq">p = 0.5</span> — the break-even point of the 3-qubit code.</p>
+    <div class="chartwrap">
+      <svg id="chart" viewBox="0 0 700 460" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Logical error rate versus physical error rate"></svg>
+    </div>
+    <div class="legend">
+      <span><i style="border-top-color:var(--cyan)"></i>encoded P<sub>L</sub>(p) = 3p²−2p³</span>
+      <span><i class="dash" style="border-top-color:var(--muted)"></i>unencoded y = p</span>
+      <span><i style="border-top-color:var(--gold)"></i>break-even at p = 0.5</span>
+    </div>
+    <div class="caption"><b>Detect &amp; correct.</b> If a single qubit flips it becomes the odd-one-out — the <i>syndrome</i> — and the majority of two still points the right way, so one error is silently corrected. A <b>logical error</b> only happens when two or three flip and the majority swings the wrong way.</div>
+    <div class="caption"><b>Below break-even the code suppresses errors; above it, it amplifies them.</b> For <span class="eq">p &lt; 0.5</span> the cyan curve sits under the dashed line — encoding wins. For <span class="eq">p &gt; 0.5</span> it rises above — three noisy qubits are worse than one.</div>
+    <div class="caption"><b>Why bother?</b> Bigger codes — more physical qubits, and ultimately the 2-D <i>surface code</i> (Figures 11.7 &amp; 11.8) — push the threshold higher and, once you are below it, drive the logical error rate down <i>exponentially</i> as you add qubits. The 3-qubit repetition code is just the seed of that idea.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+(function(){
+  // ---------- state ----------
+  var p = 0.10;
+  var logical = 0;
+  var register = [0,0,0];   // current physical qubit values
+  var hasInjected = false;
+  var mcTotal = 0, mcErrors = 0;
+
+  // ---------- math ----------
+  function PL(x){ return 3*x*x - 2*x*x*x; }
+  function fmt(x, d){ return x.toFixed(d==null?4:d); }
+
+  // ---------- DOM ----------
+  var $ = function(id){ return document.getElementById(id); };
+  var qubitsEl = $('qubits');
+
+  // build qubit cells
+  var cells = [];
+  for(var i=0;i<3;i++){
+    var c = document.createElement('div');
+    c.className = 'qcell';
+    c.innerHTML = '<span class="lbl">q'+i+'</span><span class="val">0</span>';
+    qubitsEl.appendChild(c);
+    cells.push(c);
+  }
+
+  function encode(){
+    register = [logical, logical, logical];
+    hasInjected = false;
+    renderRegister([], -1, false);
+    $('verdict').className = 'verdict idle';
+    $('verdict').textContent = 'Encoded logical ' + logical + ' → ' + logical+''+logical+''+logical + '. Inject noise to test the code.';
+    $('roFlips').textContent = '—';
+    $('roSynd').textContent = '—';
+    $('roDec').textContent = '—';
+  }
+
+  function majority(reg){
+    var s = reg[0]+reg[1]+reg[2];
+    return s>=2 ? 1 : 0;
+  }
+
+  // flippedIdx: array of indices that differ from logical (the actual flips)
+  function renderRegister(flippedIdx, decoded, animate){
+    for(var i=0;i<3;i++){
+      var v = register[i];
+      cells[i].querySelector('.val').textContent = v;
+      var flip = flippedIdx.indexOf(i) !== -1;
+      cells[i].classList.toggle('flipped', flip);
+      if(animate && flip){
+        cells[i].classList.remove('pop'); void cells[i].offsetWidth; cells[i].classList.add('pop');
+      }
+      // syndrome = qubits disagreeing with the decoded majority
+      var synd = decoded>=0 && v !== decoded;
+      cells[i].classList.toggle('synd', synd);
+    }
+  }
+
+  function inject(){
+    register = [logical, logical, logical];
+    var flips = [];
+    for(var i=0;i<3;i++){
+      if(Math.random() < p){ register[i] ^= 1; flips.push(i); }
+    }
+    hasInjected = true;
+    var dec = majority(register);
+    renderRegister(flips, dec, true);
+
+    var synd = [];
+    for(var j=0;j<3;j++){ if(register[j] !== dec) synd.push('q'+j); }
+
+    var nFlips = flips.length;
+    $('roFlips').textContent = nFlips + (nFlips===1?' qubit':' qubits') + (nFlips? ' ('+flips.map(function(k){return 'q'+k;}).join(', ')+')':'');
+    $('roSynd').textContent = synd.length ? synd.join(', ') + ' disagree' : 'none — all agree';
+    $('roDec').textContent = dec + '  (logical ' + (dec===logical?'preserved':'CORRUPTED') + ')';
+
+    var v = $('verdict');
+    if(dec === logical){
+      v.className = 'verdict ok';
+      v.innerHTML = nFlips===0
+        ? '<b>corrected ✓</b> — no qubit flipped; majority reads ' + dec + '.'
+        : '<b>corrected ✓</b> — ' + nFlips + ' flip detected via syndrome, majority vote restores logical ' + logical + '.';
+    } else {
+      v.className = 'verdict bad';
+      v.innerHTML = '<b>LOGICAL ERROR ✗</b> — ' + nFlips + ' qubits flipped, so the majority swings to ' + dec + '. Too much damage to correct.';
+    }
+  }
+
+  // ---------- Monte Carlo ----------
+  function runMC(n){
+    for(var t=0;t<n;t++){
+      var r0 = logical, r1 = logical, r2 = logical;
+      if(Math.random()<p) r0^=1;
+      if(Math.random()<p) r1^=1;
+      if(Math.random()<p) r2^=1;
+      var dec = (r0+r1+r2)>=2 ? 1 : 0;
+      mcTotal++;
+      if(dec !== logical) mcErrors++;
+    }
+    renderMC();
+  }
+  function renderMC(){
+    $('mcTheo').textContent = fmt(PL(p));
+    $('mcUnenc').textContent = fmt(p);
+    if(mcTotal===0){
+      $('mcEmp').textContent = '—';
+      $('mcEmpS').textContent = 'no trials yet';
+    } else {
+      var emp = mcErrors/mcTotal;
+      $('mcEmp').textContent = fmt(emp);
+      $('mcEmpS').textContent = mcErrors + ' / ' + mcTotal + ' failed';
+    }
+    $('mcMeta').textContent = 'total trials: ' + mcTotal + ' · logical errors: ' + mcErrors;
+  }
+
+  // ---------- chart ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = $('chart');
+  var W=700, H=460, mL=58, mR=24, mT=20, mB=46;
+  var pw = W-mL-mR, ph = H-mT-mB;
+  function X(x){ return mL + x*pw; }
+  function Y(y){ return mT + (1-y)*ph; }
+  var curveMarker, lineMarker, plDot, lnDot, plTxt;
+
+  function buildChart(){
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    function el(tag, at){ var e=document.createElementNS(NS,tag); for(var k in at) e.setAttribute(k, at[k]); return e; }
+
+    // shaded regions: win (p<0.5) and hurt (p>0.5)
+    svg.appendChild(el('rect',{x:X(0),y:mT,width:X(0.5)-X(0),height:ph,fill:'rgba(90,209,154,0.06)'}));
+    svg.appendChild(el('rect',{x:X(0.5),y:mT,width:X(1)-X(0.5),height:ph,fill:'rgba(255,107,107,0.06)'}));
+
+    var winT = el('text',{x:X(0.25),y:mT+22,'text-anchor':'middle',fill:'var(--green)','font-size':12,'font-family':'var(--mono)'});
+    winT.textContent = 'redundancy wins'; svg.appendChild(winT);
+    var hurtT = el('text',{x:X(0.75),y:mT+22,'text-anchor':'middle',fill:'var(--red)','font-size':12,'font-family':'var(--mono)'});
+    hurtT.textContent = 'redundancy hurts'; svg.appendChild(hurtT);
+
+    // grid + axes
+    var i;
+    for(i=0;i<=10;i++){
+      var gx=X(i/10);
+      svg.appendChild(el('line',{x1:gx,y1:mT,x2:gx,y2:mT+ph,stroke:'var(--line)','stroke-width':1}));
+      var gy=Y(i/10);
+      svg.appendChild(el('line',{x1:mL,y1:gy,x2:mL+pw,y2:gy,stroke:'var(--line)','stroke-width':1}));
+    }
+    // tick labels
+    for(i=0;i<=10;i+=2){
+      var tx=el('text',{x:X(i/10),y:mT+ph+18,'text-anchor':'middle',fill:'var(--faint)','font-size':11,'font-family':'var(--mono)'});
+      tx.textContent=(i/10).toFixed(1); svg.appendChild(tx);
+      var ty=el('text',{x:mL-10,y:Y(i/10)+4,'text-anchor':'end',fill:'var(--faint)','font-size':11,'font-family':'var(--mono)'});
+      ty.textContent=(i/10).toFixed(1); svg.appendChild(ty);
+    }
+    // axis frame
+    svg.appendChild(el('rect',{x:mL,y:mT,width:pw,height:ph,fill:'none',stroke:'var(--line-2)','stroke-width':1}));
+    var ax=el('text',{x:mL+pw/2,y:H-8,'text-anchor':'middle',fill:'var(--muted)','font-size':12,'font-family':'var(--mono)'});
+    ax.textContent='physical error rate  p'; svg.appendChild(ax);
+    var ay=el('text',{x:16,y:mT+ph/2,'text-anchor':'middle',fill:'var(--muted)','font-size':12,'font-family':'var(--mono)',transform:'rotate(-90 16 '+(mT+ph/2)+')'});
+    ay.textContent='logical error rate'; svg.appendChild(ay);
+
+    // unencoded line y=p (dashed)
+    svg.appendChild(el('line',{x1:X(0),y1:Y(0),x2:X(1),y2:Y(1),stroke:'var(--muted)','stroke-width':2,'stroke-dasharray':'7 6'}));
+
+    // encoded curve
+    var d='';
+    for(i=0;i<=200;i++){ var xx=i/200; d += (i?'L':'M') + X(xx).toFixed(2) + ' ' + Y(PL(xx)).toFixed(2) + ' '; }
+    svg.appendChild(el('path',{d:d,fill:'none',stroke:'var(--cyan)','stroke-width':3,'stroke-linejoin':'round'}));
+
+    // break-even guide + marker at p=0.5
+    svg.appendChild(el('line',{x1:X(0.5),y1:mT,x2:X(0.5),y2:mT+ph,stroke:'var(--gold)','stroke-width':1.5,'stroke-dasharray':'4 5',opacity:0.7}));
+    svg.appendChild(el('circle',{cx:X(0.5),cy:Y(0.5),r:6,fill:'var(--gold)',stroke:'var(--bg)','stroke-width':2}));
+    var beT=el('text',{x:X(0.5),y:Y(0.5)-14,'text-anchor':'middle',fill:'var(--gold)','font-size':11,'font-family':'var(--mono)'});
+    beT.textContent='break-even p=0.5'; svg.appendChild(beT);
+
+    // current-p markers (updated dynamically)
+    lineMarker = el('line',{x1:X(p),y1:mT,x2:X(p),y2:mT+ph,stroke:'var(--violet)','stroke-width':1.5,opacity:0.55});
+    svg.appendChild(lineMarker);
+    lnDot = el('circle',{cx:X(p),cy:Y(p),r:5,fill:'var(--bg)',stroke:'var(--muted)','stroke-width':2});
+    svg.appendChild(lnDot);
+    plDot = el('circle',{cx:X(p),cy:Y(PL(p)),r:6.5,fill:'var(--cyan)',stroke:'var(--bg)','stroke-width':2});
+    svg.appendChild(plDot);
+    plTxt = el('text',{x:X(p),y:Y(PL(p))-12,'text-anchor':'middle',fill:'var(--cyan)','font-size':11,'font-family':'var(--mono)'});
+    svg.appendChild(plTxt);
+
+    updateChartMarker();
+  }
+
+  function updateChartMarker(){
+    var cx=X(p);
+    lineMarker.setAttribute('x1',cx); lineMarker.setAttribute('x2',cx);
+    lnDot.setAttribute('cx',cx); lnDot.setAttribute('cy',Y(p));
+    plDot.setAttribute('cx',cx); plDot.setAttribute('cy',Y(PL(p)));
+    // keep label inside frame
+    var lx = Math.min(Math.max(cx, mL+34), mL+pw-34);
+    plTxt.setAttribute('x', lx);
+    plTxt.setAttribute('y', Y(PL(p))-12 < mT+34 ? Y(PL(p))+22 : Y(PL(p))-12);
+    plTxt.textContent = 'p='+p.toFixed(2)+' · P_L='+fmt(PL(p),3);
+  }
+
+  // ---------- wiring ----------
+  function setP(val){
+    p = val;
+    $('pLabel').textContent = 'p = ' + p.toFixed(2);
+    $('plInline').textContent = fmt(PL(p));
+    updateChartMarker();
+    renderMC();
+  }
+
+  $('pSlider').addEventListener('input', function(e){ setP(parseFloat(e.target.value)); });
+
+  $('logicToggle').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    logical = parseInt(b.getAttribute('data-v'),10);
+    var btns = this.querySelectorAll('button');
+    btns.forEach(function(x){ x.classList.toggle('on', x===b); });
+    encode();
+  });
+
+  $('injectBtn').addEventListener('click', inject);
+  $('resetBtn').addEventListener('click', encode);
+  $('run1').addEventListener('click', function(){ runMC(1); });
+  $('run1000').addEventListener('click', function(){ runMC(1000); });
+  $('mcReset').addEventListener('click', function(){ mcTotal=0; mcErrors=0; renderMC(); });
+
+  // ---------- init ----------
+  buildChart();
+  setP(0.10);
+  encode();
+  renderMC();
+})();
+</script>
+
+</body>
+</html>

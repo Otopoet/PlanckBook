@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLANCK — companion field guide to quantum computing</title>
+<link rel="stylesheet" href="assets/planck.css">
+</head>
+<body class="planck-hub">
+<div class="wrap">
+  <div class="eyebrow">PLANCK · COMPANION FIELD GUIDE</div>
+  <h1>The living margins of the book</h1>
+  <p class="lead">Every figure in <em>PLANCK</em> has a twin here you can actually fly. These are the
+    <em>field stations</em> — interactive labs and figures that let you nudge the cloud, collapse the
+    wavefunction, run Grover's search, and watch a qubit forget. Scan a QR code in the book, or wander
+    the meadow chapter by chapter below.</p>
+  <p class="note"><b>How to use this.</b> Each station stands on its own and opens in your browser — no
+    install, nothing to download. The chapters follow the book's path from the single qubit to error
+    correction; read top to bottom and every idea arrives before the one that needs it.</p>
+
+  <nav class="toc" id="toc" aria-label="Chapters"></nav>
+
+  <main id="chapters"></main>
+
+  <section class="extras" id="extras" hidden>
+    <div class="chapter-head"><span class="chapter-no">EXTRAS</span><h2 class="chapter-title">Off the main path</h2>
+      <p class="chapter-blurb">Kept for the curious — long-form companions and visual asides that aren't part of the core sequence.</p></div>
+    <div class="cards" id="extras-cards"></div>
+  </section>
+
+  <footer class="sitefoot" id="sitefoot"></footer>
+</div>
+
+<script src="assets/manifest.js"></script>
+<script>
+(function(){
+  var M = window.PLANCK_MANIFEST;
+  var root = document.getElementById('chapters');
+  if(!M){ root.innerHTML = '<p style="color:var(--red)">Manifest failed to load. Run <code>assets/build_site.py</code> to (re)generate <code>assets/manifest.js</code>.</p>'; return; }
+
+  function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function card(c){
+    var a = el('a','card'); a.href = c.path;
+    if(c.type==='figure') a.target='_blank';
+    var top = el('div','toprow');
+    top.appendChild(el('span','code', esc(c.code)));
+    var tagText = c.type==='figure' ? 'Figure' : (c.type==='index' ? 'Overview' : 'Field station');
+    top.appendChild(el('span','tag '+(c.type==='figure'?'figure':'lab'), tagText));
+    a.appendChild(top);
+    a.appendChild(el('h3', null, esc(c.title)));
+    a.appendChild(el('p', null, esc(c.desc)));
+    if(c.teaches) a.appendChild(el('div','teaches', 'teaches · '+esc(c.teaches)));
+    return a;
+  }
+
+  // table of contents
+  var toc = document.getElementById('toc');
+  M.chapters.forEach(function(ch){
+    var a = el('a', null, ch.n+' · '+esc(ch.title)); a.href='#ch'+ch.n; toc.appendChild(a);
+  });
+
+  // chapters
+  M.chapters.forEach(function(ch){
+    var sec = el('section','chapter'); sec.id='ch'+ch.n;
+    var head = el('div','chapter-head');
+    head.appendChild(el('span','chapter-no','CHAPTER '+ch.n));
+    head.appendChild(el('h2','chapter-title', esc(ch.title)));
+    if(ch.blurb) head.appendChild(el('p','chapter-blurb', esc(ch.blurb)));
+    sec.appendChild(head);
+    var cards = el('div','cards');
+    (ch.components||[]).forEach(function(c){ cards.appendChild(card(c)); });
+    sec.appendChild(cards);
+    if(ch.assets && ch.assets.length){
+      var assetRow = el('div', null, '');
+      assetRow.style.cssText='margin-top:12px;font-size:12px;color:var(--faint);font-family:var(--mono)';
+      var links = ch.assets.map(function(p){ return '<a href="'+p+'" target="_blank" style="color:var(--faint);text-decoration:underline;text-underline-offset:2px">'+esc(p.split('/').pop())+'</a>'; });
+      assetRow.innerHTML = '▸ print figures: '+links.join(' · ');
+      sec.appendChild(assetRow);
+    }
+    root.appendChild(sec);
+  });
+
+  // extras
+  if(M.extras && M.extras.length){
+    document.getElementById('extras').hidden=false;
+    var ec = document.getElementById('extras-cards');
+    M.extras.forEach(function(c){
+      var a = el('a','card'); a.href=c.path;
+      var top = el('div','toprow');
+      top.appendChild(el('span','code','—'));
+      top.appendChild(el('span','tag extra','Extra'));
+      a.appendChild(top);
+      a.appendChild(el('h3',null,esc(c.title)));
+      a.appendChild(el('p',null,esc(c.desc)));
+      ec.appendChild(a);
+    });
+  }
+
+  // footer
+  var nLabs=0, nFig=0;
+  M.chapters.forEach(function(ch){ (ch.components||[]).forEach(function(c){ if(c.type==='figure')nFig++; else nLabs++; }); });
+  document.getElementById('sitefoot').innerHTML =
+    '<b style="color:var(--text)">'+esc(M.book)+'</b> — '+esc(M.subtitle)+'. '+
+    M.chapters.length+' chapters · '+nLabs+' field stations · '+nFig+' interactive figures. '+
+    'Self-contained HTML, no build step. Each station is individually addressable for the QR codes in the book.';
+})();
+</script>
+</body>
+</html>

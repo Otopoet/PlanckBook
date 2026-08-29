@@ -1,0 +1,10 @@
+# PLANCK companion — figure-generation + QR tooling (local only, never deployed).
+# One environment for the whole project. Recreate with:
+#   python3 -m venv .venv && ./.venv/bin/python -m pip install -r requirements.txt
+# Call the binary directly (the project path contains a space, which breaks pip's shebang):
+#   ./.venv/bin/python assets/make_qr.py
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+pillow>=9.0
+qrcode[pil]>=7.0

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Measurement Outcomes — PLANCK Ch. 9</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090F;
+  --surface: #0C1220;
+  --border: #182338;
+  --gold: #C9A84C;
+  --gold-dim: #6A5520;
+  --cyan: #4DBBD4;
+  --green: #52C97E;
+  --crimson: #C45C5C;
+  --text: #D8D4C9;
+  --text-dim: #62748E;
+  --ff: 'Space Grotesk', system-ui, sans-serif;
+  --ff-mono: 'Space Mono', 'Courier New', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--ff);
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; padding: 2.5rem 1.5rem 3rem;
+}
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 0.65rem; letter-spacing: 0.18em;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 0.6rem; text-align: center;
+}
+h1 { font-size: 1.55rem; font-weight: 600; letter-spacing: -0.015em; text-align: center; margin-bottom: 0.45rem; }
+.subtitle { font-size: 0.82rem; color: var(--text-dim); text-align: center; max-width: 560px; line-height: 1.55; margin-bottom: 2rem; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1.75rem 1.75rem 1.5rem; width: 100%; max-width: 820px;
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.06), 0 4px 40px rgba(0,0,0,0.5);
+  position: relative; overflow: hidden;
+}
+.card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+}
+canvas { display: block; width: 100%; height: auto; }
+.controls { display: flex; align-items: center; gap: 1rem; margin-top: 1.2rem; flex-wrap: wrap; }
+.btn {
+  font-family: var(--ff); font-size: 0.78rem; font-weight: 500;
+  color: var(--bg); background: var(--gold); border: none; border-radius: 5px;
+  padding: 0.5rem 1.1rem; cursor: pointer; transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn.outline {
+  background: transparent; color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.btn.outline:hover { border-color: var(--gold-dim); color: var(--text); }
+.shot-count { font-family: var(--ff-mono); font-size: 0.72rem; color: var(--text-dim); }
+.eq-block {
+  font-family: var(--ff-mono); font-size: 0.78rem; color: var(--gold);
+  background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.18);
+  border-radius: 5px; padding: 0.55rem 1rem; margin-top: 1.2rem; text-align: center;
+}
+.state-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem;
+  margin-top: 1.1rem;
+}
+.state-card {
+  background: rgba(12,18,32,0.8); border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.65rem 0.8rem; text-align: center;
+}
+.state-card .ket { font-family: var(--ff-mono); font-size: 1.1rem; color: var(--cyan); margin-bottom: 0.15rem; }
+.state-card .prob { font-size: 0.7rem; color: var(--text-dim); }
+.state-card .prob span { color: var(--text); font-weight: 500; }
+.state-card.dominant { border-color: rgba(201,168,76,0.35); background: rgba(201,168,76,0.04); }
+.state-card.dominant .ket { color: var(--gold); }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">9.4</span></a><script defer src="../assets/planck-companion.js" data-pk-code="9.4"></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="eyebrow">Chapter 9 · The Mirror of the Meadow · VQE</div>
+<h1>Measurement Outcome Probabilities</h1>
+<p class="subtitle">After the VQE optimiser converges, the circuit is measured. The true ground state is |00⟩ (probability 1), but every shot passes through an imperfect detector — each qubit is misread ~3% of the time — so a handful of shots scatter into the spin-mismatch bins. Re-sample to watch the statistical jitter; the dominant |00⟩ bar stays put.</p>
+
+<div class="card">
+  <canvas id="cv" width="780" height="380"></canvas>
+  <div class="controls">
+    <button class="btn" id="btnSample">Re-sample (1000 shots)</button>
+    <button class="btn outline" id="btnAnim">Animate build-up</button>
+    <span class="shot-count" id="shotInfo">Showing theoretical probabilities</span>
+  </div>
+  <div class="eq-block">P(|b⟩) = |⟨b|ψ(θ*)⟩|² &nbsp;·&nbsp; Optimal state: |ψ(θ*)⟩ = cos(θ*/2)|00⟩ + sin(θ*/2)|11⟩</div>
+  <div class="state-grid">
+    <div class="state-card dominant">
+      <div class="ket">|00⟩</div>
+      <div class="prob">Closed-shell singlet<br><span id="p00">100.0%</span></div>
+    </div>
+    <div class="state-card">
+      <div class="ket">|01⟩</div>
+      <div class="prob">Spin-mismatch<br><span id="p01">~0%</span></div>
+    </div>
+    <div class="state-card">
+      <div class="ket">|10⟩</div>
+      <div class="prob">Spin-mismatch<br><span id="p10">~0%</span></div>
+    </div>
+    <div class="state-card">
+      <div class="ket">|11⟩</div>
+      <div class="prob">Doubly excited<br><span id="p11">0.0%</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const pad = { t: 44, r: 44, b: 70, l: 76 };
+const pw = W - pad.l - pad.r;
+const ph = H - pad.t - pad.b;
+
+// For the simple ansatz used here, the optimal parameter is θ* = 0, so the converged
+// state is the ground state |00⟩ with probability 1 (matches Ch 9 prose & labs 9.5/9.6).
+// P(|00⟩) = cos²(0/2) = 1,  P(|11⟩) = sin²(0/2) = 0,  P(|01⟩) = P(|10⟩) = 0.
+const EXACT = [1.0, 0.0, 0.0, 0.0];
+const LABELS = ['|00⟩', '|01⟩', '|10⟩', '|11⟩'];
+const COLORS_BAR  = ['#C9A84C', '#4DBBD4', '#4DBBD4', '#9B7BC0'];
+const COLORS_GLOW = ['#C9A84C', '#4DBBD4', '#4DBBD4', '#7B5BA0'];
+
+let displayed = [...EXACT]; // current bar heights (0–1)
+let animating = false;
+
+const rng = (() => {
+  let s = 12345;
+  return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+})();
+
+// Readout noise. The converged state is the pure ground state |00⟩ (EXACT = [1,0,0,0]),
+// but every shot is measured through an imperfect detector: each qubit is misread with
+// probability P_RO. The *ideal* answer is still |00⟩ — only the measurement is noisy —
+// which is exactly why re-sampling jitters instead of returning a frozen single bar.
+const P_RO = 0.03; // per-qubit readout error (0↔1 misread)
+
+function drawShot() {
+  // 1) sample the true outcome from the ideal converged state
+  let r = rng(), cum = 0, t = 3;
+  for (let j = 0; j < 4; j++) { cum += EXACT[j]; if (r < cum) { t = j; break; } }
+  // 2) flip each measured qubit independently with probability P_RO
+  let hi = (t >> 1) & 1, lo = t & 1;
+  if (rng() < P_RO) hi ^= 1;
+  if (rng() < P_RO) lo ^= 1;
+  return (hi << 1) | lo;
+}
+
+// exact measured distribution = ideal state pushed through the readout-error channel
+function analyticMeasured() {
+  const out = [0, 0, 0, 0];
+  for (let t = 0; t < 4; t++) {
+    if (EXACT[t] === 0) continue;
+    const hi = (t >> 1) & 1, lo = t & 1;
+    for (let mh = 0; mh < 2; mh++) for (let ml = 0; ml < 2; ml++) {
+      const ph = (mh === hi) ? (1 - P_RO) : P_RO;
+      const pl = (ml === lo) ? (1 - P_RO) : P_RO;
+      out[(mh << 1) | ml] += EXACT[t] * ph * pl;
+    }
+  }
+  return out;
+}
+
+function sampleShots(n) {
+  const counts = [0, 0, 0, 0];
+  for (let i = 0; i < n; i++) counts[drawShot()]++;
+  return counts.map(c => c / n);
+}
+
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(24,35,56,0.8)';
+  ctx.lineWidth = 1;
+  [0.2, 0.4, 0.6, 0.8, 1.0].forEach(y => {
+    const cy = pad.t + (1 - y) * ph;
+    ctx.beginPath(); ctx.moveTo(pad.l, cy); ctx.lineTo(pad.l + pw, cy); ctx.stroke();
+  });
+}
+
+function drawAxes() {
+  ctx.strokeStyle = '#1E3050'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + ph);
+  ctx.lineTo(pad.l + pw, pad.t + ph); ctx.stroke();
+
+  ctx.fillStyle = '#62748E'; ctx.font = '12px Space Grotesk, sans-serif'; ctx.textAlign = 'right';
+  [0, 0.2, 0.4, 0.6, 0.8, 1.0].forEach(y => {
+    const cy = pad.t + (1 - y) * ph;
+    ctx.fillText((y * 100).toFixed(0) + '%', pad.l - 10, cy + 4);
+  });
+
+  ctx.fillStyle = '#A0B0C8'; ctx.font = '13px Space Grotesk, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Probability', 18, pad.t + ph / 2);
+  ctx.save(); ctx.translate(18, pad.t + ph / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Probability', 0, 0); ctx.restore();
+}
+
+function drawBars(probs) {
+  const nBars = 4;
+  const totalBarW = pw * 0.72;
+  const barW = totalBarW / nBars;
+  const gap = (pw - totalBarW) / (nBars + 1);
+
+  probs.forEach((p, i) => {
+    const bh = p * ph;
+    const bx = pad.l + gap + i * (barW + gap);
+    const by = pad.t + ph - bh;
+
+    // Glow effect for dominant bar
+    if (i === 0) {
+      ctx.shadowColor = COLORS_GLOW[i];
+      ctx.shadowBlur = 18;
+    }
+
+    // Bar gradient
+    const grad = ctx.createLinearGradient(bx, by, bx, by + bh);
+    grad.addColorStop(0, COLORS_BAR[i]);
+    grad.addColorStop(1, COLORS_BAR[i] + '44');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, barW, bh, [4, 4, 0, 0]);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+
+    // Probability label on top
+    ctx.fillStyle = COLORS_BAR[i];
+    ctx.font = '500 13px Space Grotesk, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText((p * 100).toFixed(1) + '%', bx + barW / 2, Math.max(by - 8, pad.t + 14));
+
+    // Ket label below
+    ctx.fillStyle = '#A0B0C8';
+    ctx.font = '500 15px Space Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(LABELS[i], bx + barW / 2, pad.t + ph + 28);
+
+    // Config label
+    ctx.fillStyle = '#62748E';
+    ctx.font = '10px Space Grotesk, sans-serif';
+    const configLabel = ['closed-shell', 'spin-mismatch', 'spin-mismatch', 'double excited'];
+    ctx.fillText(configLabel[i], bx + barW / 2, pad.t + ph + 46);
+  });
+}
+
+function drawTitle(label) {
+  ctx.fillStyle = '#62748E';
+  ctx.font = '11px Space Grotesk, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(label, pad.l + pw, pad.t - 10);
+}
+
+function render(probs, label = '') {
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+  drawAxes();
+  drawBars(probs);
+  drawTitle(label);
+}
+
+// Animate growing bars from 0
+function animateBars(target, label, nshots) {
+  const steps = 40, interval = 22;
+  let step = 0;
+  animating = true;
+  const start = Array(4).fill(0);
+
+  function frame() {
+    if (step > steps) { animating = false; return; }
+    const t = step / steps;
+    const ease = 1 - Math.pow(1 - t, 3);
+    const cur = start.map((s, i) => s + (target[i] - s) * ease);
+    render(cur, label);
+    step++;
+    setTimeout(frame, interval);
+  }
+  frame();
+}
+
+// Shot-by-shot build-up
+function buildUp(nshots) {
+  const total_steps = 60;
+  let step = 0;
+  animating = true;
+  const accumulator = [0, 0, 0, 0];
+  const chunkSize = Math.ceil(nshots / total_steps);
+
+  let totalShots = 0;
+
+  function frame() {
+    if (step >= total_steps) {
+      animating = false;
+      const probs = accumulator.map(c => c / totalShots);
+      render(probs, `${totalShots} shots`);
+      document.getElementById('shotInfo').textContent = `${totalShots.toLocaleString()} shots measured`;
+      updateCards(probs);
+      return;
+    }
+
+    const shots = Math.min(chunkSize, nshots - totalShots);
+    for (let k = 0; k < shots; k++) accumulator[drawShot()]++;
+    totalShots += shots;
+    const probs = accumulator.map(c => c / totalShots);
+    render(probs, `${totalShots} shots`);
+    document.getElementById('shotInfo').textContent = `Sampling… ${totalShots.toLocaleString()} shots`;
+    step++;
+    setTimeout(frame, 30);
+  }
+  frame();
+}
+
+function updateCards(probs) {
+  document.getElementById('p00').textContent = (probs[0]*100).toFixed(1) + '%';
+  document.getElementById('p01').textContent = (probs[1]*100).toFixed(1) + '%';
+  document.getElementById('p10').textContent = (probs[2]*100).toFixed(1) + '%';
+  document.getElementById('p11').textContent = (probs[3]*100).toFixed(1) + '%';
+}
+
+document.getElementById('btnSample').addEventListener('click', () => {
+  if (animating) return;
+  const sampled = sampleShots(1000);
+  animateBars(sampled, '1000 shots', 1000);
+  document.getElementById('shotInfo').textContent = '1000 shots — statistical sampling';
+  updateCards(sampled);
+});
+
+document.getElementById('btnAnim').addEventListener('click', () => {
+  if (animating) return;
+  buildUp(1000);
+});
+
+// Initial render: expected outcomes after readout noise
+updateCards(analyticMeasured());
+animateBars(analyticMeasured(), 'expected · with readout noise');
+</script>
+
+</body>
+</html>

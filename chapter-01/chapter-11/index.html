@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noise, Decoherence & Error Correction — PLANCK Chapter 11</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121833; --panel-2:#0e142a; --inset:#0a1024;
+    --line:rgba(180,190,220,0.14); --line-2:rgba(180,190,220,0.30);
+    --text:#e8ecf5; --muted:#8a93b0; --faint:#5b6685;
+    --cyan:#28e0d0; --violet:#9a92ee; --gold:#ffd166; --magenta:#ff5db1; --green:#5ad19a; --red:#ff6b6b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{ margin:0; background:radial-gradient(1200px 800px at 60% -10%, #16204a 0%, var(--bg) 60%);
+    color:var(--text); font-family:var(--sans); line-height:1.6; min-height:100vh; padding:48px 20px; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:960px; margin:0 auto; }
+  .eyebrow{ font-family:var(--mono); font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--cyan); margin:0 0 8px; }
+  h1{ font-size:30px; font-weight:600; margin:0 0 8px; letter-spacing:-.01em; }
+  .lead{ color:var(--muted); margin:0 0 14px; max-width:720px; }
+  .note{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; color:var(--muted); font-size:14px; margin:0 0 34px; max-width:720px; }
+  .note b{ color:var(--text); font-weight:600; }
+  .cards{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  @media(max-width:720px){ .cards{ grid-template-columns:1fr } }
+  a.card, div.card{ display:block; text-decoration:none; color:inherit; background:var(--panel);
+    border:1px solid var(--line); border-radius:16px; padding:18px 20px; transition:transform .15s,border-color .15s; }
+  a.card:hover{ transform:translateY(-3px); border-color:var(--cyan); }
+  .toprow{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .num{ font-family:var(--mono); font-weight:700; font-size:13px; color:var(--cyan); letter-spacing:.5px; }
+  .tag{ font-family:var(--mono); font-size:10.5px; letter-spacing:.5px; text-transform:uppercase; padding:3px 8px; border-radius:999px; border:1px solid var(--line-2); color:var(--muted); }
+  .tag.lab{ color:var(--cyan); border-color:rgba(40,224,208,.4); }
+  .tag.fig{ color:var(--gold); border-color:rgba(255,209,102,.4); }
+  .tag.view{ color:var(--violet); border-color:rgba(154,146,238,.4); }
+  .card h2{ font-size:18px; margin:2px 0 6px; font-weight:600; }
+  .card p{ color:var(--muted); font-size:14px; margin:0; }
+  .card .teaches{ color:var(--faint); font-size:12.5px; font-family:var(--mono); margin-top:10px; }
+  .foot{ margin-top:38px; color:var(--faint); font-size:13px; line-height:1.7; border-top:1px solid var(--line); padding-top:16px; }
+  .eq{ font-family:var(--mono); color:var(--gold); }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span></a><script defer src="../assets/planck-companion.js" data-pk-code=""></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="wrap">
+  <div class="eyebrow">PLANCK · CHAPTER 11</div>
+  <h1>Noise, Decoherence &amp; Error Correction</h1>
+  <p class="lead">Everything in Chapters 1–10 assumed a perfect qubit: isolated, immortal, and honest.
+    Real qubits leak, forget, and lie. This chapter is the reality check — and the counter-attack.</p>
+  <p class="note"><b>How to read this chapter.</b> Work top to bottom: it builds from the one tool the
+    whole chapter needs — the <b>density matrix</b> (11.1) — through how a single qubit decays (11.2),
+    how entanglement dies (11.3), how we fight back with redundancy (11.6) and the surface code (11.7),
+    ending in the full sandbox that ties it all together (11.8). Each page opens on its own.</p>
+
+  <div class="cards">
+
+    <a class="card" href="11_1_density_matrix.html">
+      <div class="toprow"><span class="num">11.1</span><span class="tag lab">Lab</span></div>
+      <h2>The mixed state</h2>
+      <p>Drag a qubit from the surface of the Bloch sphere into the ball. The new tool the whole chapter rests on: the density matrix <span class="eq">ρ</span>, populations vs coherences, and purity <span class="eq">Tr(ρ²)</span> falling from 1 toward ½.</p>
+      <div class="teaches">teaches · density matrix · mixed states · purity</div>
+    </a>
+
+    <a class="card" href="11_2_t1_t2.html">
+      <div class="toprow"><span class="num">11.2</span><span class="tag lab">Lab</span></div>
+      <h2>T₁ and T₂</h2>
+      <p>The two real decay channels on one qubit: <b>T₁</b> relaxation (energy loss, the vector climbs to the pole) and <b>T₂</b> dephasing (phase loss, the vector collapses onto the axis). Watch the Bloch vector spiral inward.</p>
+      <div class="teaches">teaches · relaxation · dephasing · decay times</div>
+    </a>
+
+    <a class="card" href="singlet_decoherence.html">
+      <div class="toprow"><span class="num">11.3</span><span class="tag lab">Lab</span></div>
+      <h2>Decoherence of entanglement</h2>
+      <p>The same two channels on a Bell pair. The off-diagonal coherences fade, population drains into <span class="eq">|00⟩</span>, and entanglement itself — the <b>concurrence</b> — dies. Entanglement is fragile.</p>
+      <div class="teaches">teaches · concurrence decay · density matrix of a pair</div>
+    </a>
+
+    <a class="card" href="11_6_repetition_code.html">
+      <div class="toprow"><span class="num">11.6</span><span class="tag lab">Lab</span></div>
+      <h2>Fighting back: the repetition code</h2>
+      <p>Spread one logical bit across three physical qubits; a single flip is caught and majority-voted away. Below a threshold error rate redundancy wins — above it, it hurts. <span class="eq">P<sub>L</sub> = 3p² − 2p³</span>.</p>
+      <div class="teaches">teaches · error detection · the threshold idea</div>
+    </a>
+
+    <a class="card" href="11_7_threshold.html">
+      <div class="toprow"><span class="num">11.7</span><span class="tag lab">Lab</span></div>
+      <h2>Surface code &amp; the threshold</h2>
+      <p>Drag the physical error rate and watch the logical error for each code distance <span class="eq">d</span>. Below the ~1% threshold, bigger codes suppress logical error <i>exponentially</i>; above it, encoding makes things worse. (Static print figure is in <span class="eq">figures/</span>.)</p>
+      <div class="teaches">teaches · surface code · threshold theorem · logical vs physical</div>
+    </a>
+
+    <a class="card" href="quantum_measurement.html">
+      <div class="toprow"><span class="num">11.8</span><span class="tag lab">Lab · capstone</span></div>
+      <h2>The full noise-to-correction sandbox</h2>
+      <p>Everything at once — algorithm, depth, gate error, T₁, readout, mitigation, surface code — with a verdict on every run: <i>recoverable</i>, <i>lost in the floor</i>, or <i>needs error correction</i>.</p>
+      <div class="teaches">teaches · synthesis of 11.1–11.7</div>
+    </a>
+
+  </div>
+
+  <p class="foot">
+    Standalone HTML — no build step, no internet required. The capstone sandbox (11.8) also appears in
+    Chapter 4 as a first look at measurement. The 11.7 lab, its print figure, and the labs share one model, so the
+    numbers agree: <span class="eq">ε_eff = ε_th·(ε/ε_th)<sup>(d+1)/2</sup></span> with <span class="eq">ε_th = 1%</span>.
+  </p>
+</div>
+
+</body>
+</html>

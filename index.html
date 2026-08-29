@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cloud of Where — companion field guide to quantum computing</title>
+<link rel="stylesheet" href="assets/planck.css">
+</head>
+<body class="planck-hub">
+<div class="wrap">
+  <div class="eyebrow">THE CLOUD OF WHERE · COMPANION FIELD GUIDE</div>
+  <h1>The living margins of the book</h1>
+  <p class="lead">Every figure in <em>The Cloud of Where</em> has a twin here you can actually fly. These are the
+    <em>field stations</em> — interactive labs and figures that let you nudge the cloud, collapse the
+    wavefunction, run Grover's search, and watch a qubit forget. Scan a QR code in the book, or wander
+    the meadow chapter by chapter below.</p>
+  <p class="note"><b>How to use this.</b> Each station stands on its own and opens in your browser — no
+    install, nothing to download. The chapters follow the book's path from the double slit to the surface code; read top to bottom and every idea arrives before the one that needs it.</p>
+
+  <nav class="toc" id="toc" aria-label="Chapters"><a href="glossary.html">Vocabulary</a></nav>
+
+  <main id="chapters"></main>
+
+
+  <section class="chapter" id="talk">
+    <div class="chapter-head"><span class="chapter-no">FOR STATISTICIANS</span>
+      <h2 class="chapter-title">Three claims from the talk, wired to stations</h2>
+      <p class="chapter-blurb">If you arrived from the Royal Statistical Society talk: each claim made
+        from the podium has a station here where you can test it yourself.</p></div>
+    <div class="cards">
+      <a class="card" href="prologue/the-descent.html">
+        <div class="toprow"><span class="code">RSS·1</span><span class="tag lab">Field station</span></div>
+        <h3>The law of total probability fails</h3>
+        <p>Dark fringes are points where P(A&thinsp;|&thinsp;slit 1) &gt; 0 and P(A&thinsp;|&thinsp;slit 2) &gt; 0,
+           yet with both slits open, P(A) = 0. Start at the descent and watch it happen.</p>
+        <div class="teaches">teaches · interference vs the classical decomposition</div>
+      </a>
+      <a class="card" href="chapter-03/04-chsh.html">
+        <div class="toprow"><span class="code">RSS·2</span><span class="tag lab">Field station</span></div>
+        <h3>Bell's inequality is a hypothesis test</h3>
+        <p>Local realism is the null; S is the test statistic; the classical ceiling is 2.
+           Choose the settings, accumulate trials, and reject it yourself at Tsirelson's bound.</p>
+        <div class="teaches">teaches · CHSH · the 2&#8730;2 quantum ceiling</div>
+      </a>
+      <a class="card" href="chapter-11/11_6_repetition_code.html">
+        <div class="toprow"><span class="code">RSS·3</span><span class="tag lab">Field station</span></div>
+        <h3>Error correction is inference</h3>
+        <p>Hidden errors, observed parity checks, a most-probable-error estimate: MAP inference under
+           latent variables, running forever. The repetition code is the machinery in miniature.</p>
+        <div class="teaches">teaches · syndrome decoding as inference</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="extras" id="extras" hidden>
+    <div class="chapter-head"><span class="chapter-no">EXTRAS</span><h2 class="chapter-title">Off the main path</h2>
+      <p class="chapter-blurb">Kept for the curious — long-form companions and visual asides that aren't part of the core sequence.</p></div>
+    <div class="cards" id="extras-cards"></div>
+  </section>
+
+
+  <section class="chapter" id="next-steps">
+    <div class="chapter-head"><span class="chapter-no">NEXT STEPS</span>
+      <h2 class="chapter-title">Nudge a real cloud</h2>
+      <p class="chapter-blurb">The stations show you what a quantum computer feels like from the inside.
+        When you are ready to touch the real thing, here is the route the book walks.</p></div>
+    <div class="cards">
+      <a class="card" href="https://quantum.ibm.com" target="_blank" rel="noopener">
+        <div class="toprow"><span class="code">IBM Quantum</span><span class="tag lab">Real hardware</span></div>
+        <h3>Run a circuit on a real machine</h3>
+        <p>Free access to actual hardware: build a Bell-state circuit in the Composer and watch a genuine
+           sampling distribution arrive from a dilution refrigerator.</p>
+        <div class="teaches">the book&rsquo;s closing chapter walks this route step by step</div>
+      </a>
+      <a class="card" href="glossary.html">
+        <div class="toprow"><span class="code">Vocabulary</span><span class="tag index">Reference</span></div>
+        <h3>A Field Guide Vocabulary</h3>
+        <p>Every term from the book and the talk: meadow language first, laboratory language second,
+           each linked to the station where you can watch the idea happen.</p>
+        <div class="teaches">the digital twin of the printed handout</div>
+      </a>
+    </div>
+  </section>
+
+  <footer class="sitefoot" id="sitefoot"></footer>
+</div>
+
+<script src="assets/manifest.js"></script>
+<script>
+(function(){
+  var M = window.PLANCK_MANIFEST;
+  var root = document.getElementById('chapters');
+  if(!M){ root.innerHTML = '<p style="color:var(--red)">Manifest failed to load. Run <code>assets/build_site.py</code> to (re)generate <code>assets/manifest.js</code>.</p>'; return; }
+
+  function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function card(c){
+    var a = el('a','card'); a.href = c.path;
+    if(c.type==='figure') a.target='_blank';
+    var top = el('div','toprow');
+    top.appendChild(el('span','code', esc(c.code)));
+    var tagText = c.type==='figure' ? 'Figure' : (c.type==='index' ? 'Overview' : 'Field station');
+    top.appendChild(el('span','tag '+(c.type==='figure'?'figure':'lab'), tagText));
+    a.appendChild(top);
+    a.appendChild(el('h3', null, esc(c.title)));
+    a.appendChild(el('p', null, esc(c.desc)));
+    if(c.teaches) a.appendChild(el('div','teaches', 'teaches · '+esc(c.teaches)));
+    return a;
+  }
+
+  // table of contents
+  var toc = document.getElementById('toc');
+  M.chapters.forEach(function(ch){
+    var label = ch.label ? esc(ch.title) : (ch.n+' · '+esc(ch.title));
+    var a = el('a', null, label); a.href='#ch'+ch.n; toc.appendChild(a);
+  });
+
+  // chapters
+  M.chapters.forEach(function(ch){
+    var sec = el('section','chapter'); sec.id='ch'+ch.n;
+    var head = el('div','chapter-head');
+    head.appendChild(el('span','chapter-no', ch.label ? esc(ch.label) : 'CHAPTER '+ch.n));
+    head.appendChild(el('h2','chapter-title', esc(ch.title)));
+    if(ch.blurb) head.appendChild(el('p','chapter-blurb', esc(ch.blurb)));
+    sec.appendChild(head);
+    var cards = el('div','cards');
+    (ch.components||[]).forEach(function(c){ cards.appendChild(card(c)); });
+    sec.appendChild(cards);
+    if(ch.assets && ch.assets.length){
+      var assetRow = el('div', null, '');
+      assetRow.style.cssText='margin-top:12px;font-size:12px;color:var(--faint);font-family:var(--mono)';
+      var links = ch.assets.map(function(p){ return '<a href="'+p+'" target="_blank" style="color:var(--faint);text-decoration:underline;text-underline-offset:2px">'+esc(p.split('/').pop())+'</a>'; });
+      assetRow.innerHTML = '▸ print figures: '+links.join(' · ');
+      sec.appendChild(assetRow);
+    }
+    root.appendChild(sec);
+  });
+
+  // extras
+  if(M.extras && M.extras.length){
+    document.getElementById('extras').hidden=false;
+    var ec = document.getElementById('extras-cards');
+    M.extras.forEach(function(c){
+      var a = el('a','card'); a.href=c.path;
+      var top = el('div','toprow');
+      top.appendChild(el('span','code','—'));
+      top.appendChild(el('span','tag extra','Extra'));
+      a.appendChild(top);
+      a.appendChild(el('h3',null,esc(c.title)));
+      a.appendChild(el('p',null,esc(c.desc)));
+      ec.appendChild(a);
+    });
+  }
+
+  // footer
+  var nLabs=0, nFig=0;
+  M.chapters.forEach(function(ch){ (ch.components||[]).forEach(function(c){ if(c.type==='figure')nFig++; else nLabs++; }); });
+  document.getElementById('sitefoot').innerHTML =
+    '<b style="color:var(--text)">'+esc(M.book)+'</b> — '+esc(M.subtitle)+'. '+
+    M.chapters.length+' chapters · '+nLabs+' field stations · '+nFig+' interactive figures. '+
+    'Self-contained HTML, no build step. Each station is individually addressable for the QR codes in the book.';
+})();
+</script>
+</body>
+</html>

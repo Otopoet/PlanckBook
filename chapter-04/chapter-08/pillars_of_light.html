@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8.3 · The Pillars of Light — Measurement Outcome — PLANCK · Chapter 8 · Figure 8.3</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121833; --panel2:#0e142a; --line:#26305a;
+    --text:#e8ecf5; --muted:#8a93b0; --cyan:#28e0d0; --magenta:#ff5db1;
+    --gold:#ffd166; --good:#5ad19a; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:radial-gradient(1200px 700px at 70% -10%, #16204a 0%, var(--bg) 60%);
+    color:var(--text); font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    min-height:100vh; padding:28px 18px 60px}
+  .wrap{max-width:1080px; margin:0 auto}
+  h1{font-size:24px; margin:0 0 4px} h1 .tag{color:var(--cyan)}
+  .sub{color:var(--muted); margin:0 0 18px; max-width:780px}
+  .eq{display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:8px;
+    padding:8px 14px; font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--gold); margin-top:6px}
+  .controls{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-end;
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:18px 0 20px}
+  .ctl{display:flex; flex-direction:column; gap:6px}
+  .ctl label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
+  .ctl input[type=number]{width:90px; background:var(--panel2); color:var(--text); border:1px solid var(--line);
+    border-radius:8px; padding:8px 10px; font-size:15px}
+  select{background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:15px}
+  button{cursor:pointer; border:none; border-radius:9px; padding:10px 18px; font-size:14px; font-weight:700;
+    background:linear-gradient(135deg,#ffd166,#ff9d4d); color:#1a1205}
+  button.ghost{background:var(--panel2); color:var(--cyan); border:1px solid var(--line)}
+  button:active{transform:translateY(1px)}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px 10px; margin-bottom:18px}
+  .card h2{font-size:14px; margin:0 0 4px; letter-spacing:.4px; text-transform:uppercase; color:var(--gold)}
+  .card p.note{color:var(--muted); font-size:13px; margin:0 0 6px}
+  canvas{width:100%; height:100%; display:block}
+  .chart{height:300px; overflow:hidden}
+  .panel-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  @media(max-width:840px){.panel-grid{grid-template-columns:1fr}}
+  .meas{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px}
+  .meas h3{margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--cyan)}
+  .kv{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--line); font-size:14px}
+  .kv:last-child{border-bottom:none}
+  .kv b{font-family:ui-monospace,Menlo,monospace}
+  .verdict{margin-top:10px; padding:10px 12px; border-radius:9px; font-weight:700; font-size:14px}
+  .verdict.win{background:rgba(90,209,154,.15); color:var(--good); border:1px solid rgba(90,209,154,.4)}
+  .verdict.fail{background:rgba(255,107,107,.13); color:var(--bad); border:1px solid rgba(255,107,107,.4)}
+  .cf{font-family:ui-monospace,Menlo,monospace; font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.7}
+  .cf b{color:var(--gold)}
+  .foot{color:var(--muted); font-size:12.5px; margin-top:6px; line-height:1.6}
+  .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:4px}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">8.3</span></a><script defer src="../assets/planck-companion.js" data-pk-code="8.3"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h1><span class="tag">8.3</span> · The Pillars of Light</h1>
+  <p class="sub">The QFT spectrum, read out as a probability distribution. Measuring the register almost
+    always lands on a <b>pillar</b> at <b>k ≈ j·M/r</b>. From that single integer, continued fractions
+    recover the hidden period <b>r</b> — and from <b>r</b>, the factors of <b>N</b>.</p>
+  <div class="eq">P(k) = |⟨k | F<sub>M</sub>ψ⟩|²　·　k/M ≈ j/r</div>
+
+  <div class="controls">
+    <div class="ctl"><label for="a">base a</label><input type="number" id="a" value="7" min="2"></div>
+    <div class="ctl"><label for="N">modulus N</label><input type="number" id="N" value="15" min="3"></div>
+    <div class="ctl"><label for="M">register size M</label>
+      <select id="M"><option>16</option><option>32</option><option selected>64</option>
+        <option>128</option><option>256</option></select></div>
+    <button id="measure">⚡ Measure!</button>
+    <button id="reset" class="ghost">reset</button>
+    <div style="flex:1"></div>
+    <div class="row" style="color:var(--muted);font-size:13px">true r = <b id="trueR" style="color:var(--text);margin-left:4px">4</b></div>
+  </div>
+
+  <div class="card">
+    <h2>Probability of each measurement outcome k</h2>
+    <p class="note">Bar height = P(k). Hover/click a pillar to "measure" it. Dashed lines mark j·M/r.</p>
+    <div class="chart"><canvas id="hist"></canvas></div>
+  </div>
+
+  <div class="panel-grid">
+    <div class="meas">
+      <h3>Measurement → Period recovery</h3>
+      <div class="kv"><span>outcome k</span><b id="mK">—</b></div>
+      <div class="kv"><span>phase k / M</span><b id="mPhase">—</b></div>
+      <div class="kv"><span>continued-fraction r</span><b id="mR">—</b></div>
+      <div class="kv"><span>P(this outcome)</span><b id="mP">—</b></div>
+      <div id="verdict" class="verdict fail" style="display:none"></div>
+      <div class="cf" id="cf"></div>
+    </div>
+    <div class="meas">
+      <h3>Factoring N from r</h3>
+      <div class="kv"><span>recovered r</span><b id="fR">—</b></div>
+      <div class="kv"><span>a^(r/2) mod N</span><b id="fHalf">—</b></div>
+      <div class="kv"><span>gcd(a^(r/2)−1, N)</span><b id="fG1">—</b></div>
+      <div class="kv"><span>gcd(a^(r/2)+1, N)</span><b id="fG2">—</b></div>
+      <div id="factors" class="verdict fail" style="display:none"></div>
+      <p class="foot" id="factNote">Run a measurement that yields an even r whose halves don't hit ±1.</p>
+    </div>
+  </div>
+
+  <p class="foot">
+    <b>The trick.</b> A noisy measurement gives only a single <i>k</i>, but <i>k/M</i> is a near-perfect rational
+    approximation to <i>j/r</i>. The continued-fraction expansion of <i>k/M</i> has a convergent whose denominator
+    (less than N) <i>is</i> r. Even peaks need a couple of shots — if k lands at a multiple sharing a factor with j,
+    you get a divisor of r and simply repeat. Defaults <b>a=7, N=15</b> give r=4 → factors 3 and 5.
+  </p>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const TAU=Math.PI*2;
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+function modpow(b,e,m){b%=m;let r=1;while(e>0){if(e&1)r=(r*b)%m;b=(b*b)%m;e=Math.floor(e/2);}return r;}
+function order(a,N){ if(gcd(a,N)!==1) return null; let r=1,v=((a%N)+N)%N; while(v!==1){v=(v*a)%N;r++;if(r>N+2)return null;} return r;}
+function combState(M,r,x0){const re=new Float64Array(M);let c=0;for(let x=x0;x<M;x+=r)c++;const amp=1/Math.sqrt(c);for(let x=x0;x<M;x+=r)re[x]=amp;return re;}
+function qftProb(re,M){const p=new Float64Array(M);const norm=1/M;for(let k=0;k<M;k++){let sr=0,si=0;for(let x=0;x<M;x++){const v=re[x];if(v===0)continue;const ph=TAU*x*k/M;sr+=v*Math.cos(ph);si+=v*Math.sin(ph);}p[k]=(sr*sr+si*si)*norm;}return p;}
+
+// continued-fraction convergents of num/den
+function convergents(num,den){
+  const out=[]; let a=num,b=den,p0=0,p1=1,q0=1,q1=0,guard=0;
+  while(b!==0 && guard++<64){
+    const ai=Math.floor(a/b);
+    const p2=ai*p1+p0, q2=ai*q1+q0;
+    out.push([p2,q2]);
+    const t=a-ai*b; a=b; b=t; p0=p1;p1=p2;q0=q1;q1=q2;
+  }
+  return out;
+}
+// recover r from k/M: first convergent denom q<N with a^q ≡ 1 (mod N)
+function recoverR(k,M,a,N){
+  if(k===0) return {r:null, convs:convergents(0,M)};
+  const convs=convergents(k,M);
+  for(const [p,q] of convs){
+    if(q>0 && q<N && modpow(a,q,N)===1) return {r:q, convs, used:[p,q]};
+  }
+  // fall back: largest valid denom
+  for(let i=convs.length-1;i>=0;i--){ const [p,q]=convs[i]; if(q>0&&q<=N) return {r:q, convs, used:[p,q]}; }
+  return {r:null, convs};
+}
+
+function fit(c){const dpr=window.devicePixelRatio||1;const r=c.getBoundingClientRect();c.width=Math.max(1,r.width*dpr);c.height=Math.max(1,r.height*dpr);const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w:r.width,h:r.height};}
+
+let STATE={a:7,N:15,M:64,r:4,prob:null,guides:[],picked:null};
+
+function drawHist(){
+  const {ctx,w,h}=fit($('hist'));
+  const {M,prob,guides,picked}=STATE;
+  ctx.clearRect(0,0,w,h);
+  const padL=46, padT=14, padB=30, PADR=12;
+  const plotW=w-padL-PADR, plotH=h-padT-padB;
+  const maxV=Math.max(1e-9,...prob);
+  ctx.strokeStyle='rgba(120,140,200,.25)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(padL,padT);ctx.lineTo(padL,padT+plotH);ctx.lineTo(padL+plotW,padT+plotH);ctx.stroke();
+  ctx.fillStyle='#8a93b0';ctx.font='11px ui-monospace,Menlo,monospace';
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  ctx.fillText(maxV.toFixed(2),padL-6,padT+2);ctx.fillText('0',padL-6,padT+plotH);
+  ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(255,255,255,.30)';ctx.lineWidth=1.1;
+  guides.forEach(g=>{const gx=padL+(g/(M-1||1))*plotW;ctx.beginPath();ctx.moveTo(gx,padT);ctx.lineTo(gx,padT+plotH);ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,.45)';ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.font='10px ui-monospace,Menlo,monospace';ctx.fillText(g,gx,padT-1);ctx.setLineDash([4,4]);});
+  ctx.restore();
+  const bw=Math.max(2,plotW/M - (M<=64?1.5:0.4));
+  STATE._bars=[];
+  for(let k=0;k<M;k++){
+    const v=prob[k]; const bx=padL+(k/(M-1||1))*plotW - bw/2; const bh=(v/maxV)*plotH;
+    const x=Math.max(padL,bx), y=padT+plotH-bh;
+    STATE._bars.push({k,x:x,y,bw,bh,cx:padL+(k/(M-1||1))*plotW});
+    if(v<=1e-9) continue;
+    if(picked===k){ ctx.fillStyle='#ffd166'; ctx.shadowColor='#ffd166'; ctx.shadowBlur=14; }
+    else { ctx.fillStyle = v>maxV*0.15 ? '#ff5db1':'#5a6aa0'; ctx.shadowBlur=0; }
+    ctx.fillRect(x,y,bw,bh); ctx.shadowBlur=0;
+  }
+  ctx.fillStyle='#8a93b0';ctx.textAlign='center';ctx.textBaseline='top';
+  [0,Math.floor(M/4),Math.floor(M/2),Math.floor(3*M/4),M-1].forEach(t=>{ctx.fillText(t,padL+(t/(M-1||1))*plotW,padT+plotH+6);});
+  ctx.textAlign='right';ctx.fillText('k',padL+plotW,padT+plotH+6);
+}
+
+function compute(){
+  const a=parseInt($('a').value,10),N=parseInt($('N').value,10),M=parseInt($('M').value,10);
+  const r=order(a,N);
+  $('trueR').textContent = r?r:'— (gcd≠1)';
+  STATE.a=a;STATE.N=N;STATE.M=M;STATE.r=r;STATE.picked=null;
+  if(!r){ STATE.prob=new Float64Array(M); STATE.guides=[]; drawHist(); clearMeas(); return; }
+  const re=combState(M,r,0);
+  STATE.prob=qftProb(re,M);
+  const g=[]; for(let j=0;j*M/r<M;j++) g.push(Math.round(j*M/r)); STATE.guides=g;
+  drawHist(); clearMeas();
+}
+
+function clearMeas(){
+  ['mK','mPhase','mR','mP','fR','fHalf','fG1','fG2'].forEach(id=>$(id).textContent='—');
+  $('verdict').style.display='none'; $('factors').style.display='none';
+  $('cf').textContent=''; $('factNote').style.display='';
+}
+
+function sampleK(){
+  const {prob,M}=STATE; let s=0; for(let k=0;k<M;k++)s+=prob[k];
+  let t=Math.random()*s, acc=0;          // deterministic-enough for a demo
+  for(let k=0;k<M;k++){acc+=prob[k]; if(acc>=t) return k;}
+  return M-1;
+}
+
+function doMeasure(forcedK){
+  const {a,N,M,r,prob}=STATE; if(!r) return;
+  const k = (forcedK!=null)?forcedK:sampleK();
+  STATE.picked=k; drawHist();
+  $('mK').textContent=k;
+  $('mPhase').textContent=`${k}/${M} = ${(k/M).toFixed(4)}`;
+  $('mP').textContent=(prob[k]*100).toFixed(1)+'%';
+  const rec=recoverR(k,M,a,N);
+  $('mR').textContent=rec.r?rec.r:'— (k=0, retry)';
+  // continued-fraction trace
+  if(k>0){
+    const trace=rec.convs.map(([p,q])=>`${p}/${q}`).join('  →  ');
+    $('cf').innerHTML=`convergents of ${k}/${M}:<br>${trace}<br>first valid denom &lt; N: <b>${rec.r??'none'}</b>`;
+  } else { $('cf').textContent='k = 0 carries no period information — measure again.'; }
+
+  const v=$('verdict');
+  if(rec.r===r){ v.style.display=''; v.className='verdict win'; v.textContent=`✓ recovered the true period r = ${r}`; }
+  else if(rec.r && r%rec.r===0){ v.style.display=''; v.className='verdict fail'; v.textContent=`partial: got divisor ${rec.r} of r=${r} — measure again`; }
+  else { v.style.display=''; v.className='verdict fail'; v.textContent=`unlucky outcome — measure again`; }
+
+  factor(rec.r);
+}
+
+function factor(rr){
+  const {a,N}=STATE;
+  $('factNote').style.display='none';
+  const box=$('factors');
+  const rEff = rr;
+  $('fR').textContent = rEff?rEff:'—';
+  if(!rEff || rEff%2!==0){
+    box.style.display='none'; $('fHalf').textContent='—';$('fG1').textContent='—';$('fG2').textContent='—';
+    $('factNote').style.display=''; $('factNote').textContent = rEff?`r=${rEff} is odd — pick another base a.`:'Measure to get r first.';
+    return;
+  }
+  const half=modpow(a,rEff/2,N);
+  $('fHalf').textContent=half;
+  if(half===N-1){ box.style.display='none'; $('fG1').textContent='—';$('fG2').textContent='—';
+    $('factNote').style.display=''; $('factNote').textContent=`a^(r/2) ≡ −1 — trivial, pick another base a.`; return; }
+  const g1=gcd(half-1,N), g2=gcd(half+1,N);
+  $('fG1').textContent=g1; $('fG2').textContent=g2;
+  const facs=[g1,g2].filter(x=>x>1&&x<N);
+  if(facs.length){ box.style.display=''; box.className='verdict win';
+    box.textContent=`✓ N = ${N} = ${g1} × ${g2}`; }
+  else { box.style.display='none'; $('factNote').style.display=''; $('factNote').textContent='No nontrivial factor this round — retry.'; }
+}
+
+// click a bar to measure it
+$('hist').addEventListener('click', e=>{
+  const rect=$('hist').getBoundingClientRect(); const mx=e.clientX-rect.left;
+  if(!STATE._bars) return;
+  let best=null,bd=1e9;
+  for(const b of STATE._bars){ const d=Math.abs(b.cx-mx); if(d<bd){bd=d;best=b;} }
+  if(best && bd<14) doMeasure(best.k);
+});
+
+$('measure').addEventListener('click',()=>doMeasure());
+$('reset').addEventListener('click',()=>{STATE.picked=null;drawHist();clearMeas();});
+['a','N','M'].forEach(id=>$(id).addEventListener('input',compute));
+window.addEventListener('resize',drawHist);
+window.addEventListener('DOMContentLoaded',compute);
+compute();
+</script>
+
+</body>
+</html>

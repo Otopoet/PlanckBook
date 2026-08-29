@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Decoherence of the two-qubit singlet state</title>
+<style>
+  :root{
+    --bg-page:#faf9f5; --bg-primary:#ffffff; --bg-secondary:#f1efe8;
+    --text-primary:#1f1f1d; --text-secondary:#5f5e5a; --text-tertiary:#888780;
+    --border:rgba(0,0,0,0.12); --border-strong:rgba(0,0,0,0.22);
+    --radius-md:8px; --radius-lg:12px;
+    --teal:#1D9E75; --coral:#D85A30; --gray:#888780; --amber:#BA7517; --blue:#2876c9;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg-page:#161614; --bg-primary:#201f1d; --bg-secondary:#292926;
+      --text-primary:#ededea; --text-secondary:#a8a79f; --text-tertiary:#86857e;
+      --border:rgba(255,255,255,0.14); --border-strong:rgba(255,255,255,0.28);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg-page); color:var(--text-primary);
+    font-family:var(--font-sans); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:780px; margin:0 auto; padding:2.5rem 1.25rem 3rem; }
+  h1{ font-size:24px; font-weight:500; margin:0 0 0.4rem; }
+  .sub{ color:var(--text-secondary); font-size:15px; margin:0 0 1.75rem; max-width:62ch; }
+  .sub code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; background:var(--bg-secondary); padding:1px 5px; border-radius:4px; }
+
+  .btnrow{ display:flex; gap:10px; margin:0 0 1rem; }
+  button{ font-family:inherit; font-size:14px; color:var(--text-primary); background:var(--bg-primary);
+    border:1px solid var(--border); border-radius:var(--radius-md); padding:0 14px; height:38px;
+    cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:background .12s,transform .05s; }
+  button:hover{ background:var(--bg-secondary); border-color:var(--border-strong); }
+  button:active{ transform:scale(0.97); }
+  button svg{ display:block; }
+
+  .sliders{ display:grid; grid-template-columns:auto 1fr auto; gap:14px 14px; align-items:center; margin:0 0 1.5rem;
+    background:var(--bg-primary); border:1px solid var(--border); border-radius:var(--radius-lg); padding:1.1rem 1.25rem; }
+  .slabel{ font-size:13px; color:var(--text-secondary); white-space:nowrap; display:flex; align-items:center; gap:7px; }
+  .sval{ font-size:14px; font-weight:500; font-variant-numeric:tabular-nums; min-width:50px; text-align:right; }
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:2px;
+    background:var(--border-strong); outline:none; cursor:pointer; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:var(--text-primary); cursor:pointer; border:2px solid var(--bg-page); }
+  input[type=range]::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background:var(--text-primary);
+    border:2px solid var(--bg-page); cursor:pointer; }
+
+  .badge{ display:inline-flex; align-items:center; gap:8px; font-size:13px; padding:5px 13px; border-radius:var(--radius-md);
+    background:var(--bg-secondary); color:var(--text-primary); margin:0 0 1.25rem; }
+  .dot{ width:9px; height:9px; border-radius:50%; background:var(--teal); }
+
+  .stage{ display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
+  .mwrap{ display:grid; gap:6px; }
+  .cell{ border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center;
+    font-variant-numeric:tabular-nums; font-size:15px; transition:background-color .2s ease,color .2s ease; }
+  .axlabel{ font-size:13px; color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
+    font-variant-numeric:tabular-nums; }
+  .legend{ display:flex; flex-direction:column; gap:6px; align-items:center; }
+  .swatches{ display:flex; flex-direction:column; border-radius:var(--radius-md); overflow:hidden; }
+  .sw{ width:26px; height:22px; }
+  .tick{ font-size:12px; color:var(--text-secondary); font-variant-numeric:tabular-nums; }
+
+  .metrics{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:1.75rem 0 0.5rem; }
+  .mcard{ background:var(--bg-secondary); border-radius:var(--radius-md); padding:0.85rem 1rem; }
+  .mlabel{ font-size:12px; color:var(--text-secondary); margin:0 0 5px; }
+  .mval{ font-size:23px; font-weight:500; font-variant-numeric:tabular-nums; }
+
+  .chartlegend{ display:flex; gap:18px; font-size:12px; color:var(--text-secondary); margin:1.75rem 0 8px; flex-wrap:wrap; }
+  .chartlegend span{ display:flex; align-items:center; gap:6px; }
+  .csw{ width:11px; height:11px; border-radius:2px; }
+  .bars{ display:flex; align-items:flex-end; gap:18px; height:170px; padding:0 4px; border-bottom:1px solid var(--border); }
+  .bar{ flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; }
+  .track{ position:relative; width:100%; max-width:90px; flex:1; }
+  .fill{ position:absolute; bottom:0; left:0; width:100%; border-radius:5px 5px 0 0; height:0; transition:height .2s ease; }
+  .barval{ font-size:12px; font-variant-numeric:tabular-nums; color:var(--text-secondary); margin-bottom:4px; height:16px; }
+  .blab{ font-size:14px; margin-top:8px; color:var(--text-secondary); }
+  footer{ margin-top:2.5rem; font-size:13px; color:var(--text-tertiary); border-top:1px solid var(--border); padding-top:1rem; }
+  footer code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Decoherence of the two-qubit singlet state</h1>
+  <p class="sub">The density matrix <code>&rho;</code> in the <code>{|00&rang;, |01&rang;, |10&rang;, |11&rang;}</code> basis.
+  <strong>Dephasing</strong> fades the off-diagonal coherences <code>&rho;<sub>01,10</sub> = &minus;&frac12;</code> toward zero;
+  <strong>relaxation</strong> drains the excited populations into the ground state <code>|00&rang;</code>.
+  Drag a slider, or press play to sweep both together.</p>
+
+  <div class="btnrow">
+    <button id="play" aria-label="Play"><span id="play-ic"></span></button>
+    <button id="reset" aria-label="Reset to pure singlet"><span id="reset-ic"></span>reset</button>
+  </div>
+
+  <div class="sliders">
+    <span class="slabel" id="lab-deph">dephasing&nbsp; t/&tau;<sub>&phi;</sub></span>
+    <input type="range" id="tp" min="0" max="5" step="0.05" value="0" aria-labelledby="lab-deph" />
+    <span class="sval" id="tpout">0.00</span>
+    <span class="slabel" id="lab-relax">relaxation&nbsp; t/&tau;<sub>1</sub></span>
+    <input type="range" id="tr" min="0" max="5" step="0.05" value="0" aria-labelledby="lab-relax" />
+    <span class="sval" id="trout">0.00</span>
+  </div>
+
+  <div class="badge"><span class="dot" id="state-dot"></span><span id="state-txt">pure entangled singlet</span></div>
+
+  <div class="stage">
+    <div class="mwrap" id="mwrap"></div>
+    <div class="legend">
+      <span class="tick">+&frac12;</span>
+      <div class="swatches" id="swatches"></div>
+      <span class="tick">&minus;&frac12;</span>
+      <span class="tick" style="margin-top:2px;">value</span>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="mcard"><p class="mlabel">purity Tr(&rho;&sup2;)</p><div class="mval" id="pur">1.00</div></div>
+    <div class="mcard"><p class="mlabel">concurrence (entanglement)</p><div class="mval" id="con">1.00</div></div>
+    <div class="mcard"><p class="mlabel">ground pop. P(|00&rang;)</p><div class="mval" id="g00">0.00</div></div>
+    <div class="mcard"><p class="mlabel">coherence &rho;<sub>01,10</sub></p><div class="mval" id="off">&minus;0.50</div></div>
+  </div>
+
+  <div class="chartlegend">
+    <span><span class="csw" style="background:var(--teal);"></span>ground sink |00&rang;</span>
+    <span><span class="csw" style="background:var(--coral);"></span>excited pair |01&rang;,|10&rang;</span>
+    <span><span class="csw" style="background:var(--gray);"></span>|11&rang; (unpopulated)</span>
+  </div>
+  <div class="bars" id="bars"></div>
+
+  <footer>
+    Model: independent amplitude damping per qubit (relaxation, <code>p = 1 &minus; e<sup>&minus;t/&tau;&#8321;</sup></code>)
+    plus pure dephasing (<code>&gamma; = e<sup>&minus;t/&tau;&phi;</sup></code>). Exact for this X-state &mdash; &rho; stays positive and trace-1 throughout.
+  </footer>
+</div>
+
+<script>
+(function(){
+  var basis = ['|00⟩','|01⟩','|10⟩','|11⟩'];
+  var isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+  var neutral = isDark ? [40,40,38] : [244,242,235];
+  var posC = [205,80,44];
+  var negC = [40,118,201];
+
+  function lerp(a,b,t){ return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)]; }
+  function colorFor(v){ var m=Math.min(1,Math.abs(v)/0.5); var c=v>=0?lerp(neutral,posC,m):lerp(neutral,negC,m); return c; }
+  function lum(c){ return (0.2126*c[0]+0.7152*c[1]+0.0722*c[2])/255; }
+  function rgb(c){ return 'rgb('+c[0]+','+c[1]+','+c[2]+')'; }
+  function txt(c){ return lum(c)>0.62 ? '#1a1a1a' : '#ffffff'; }
+  function fmt(v){ if(Math.abs(v)<0.005) return '0'; return v.toFixed(2).replace('-','−'); }
+
+  function rhoMatrix(gphi,p){
+    var c=-0.5*gphi*(1-p), e=0.5*(1-p);
+    return [[p,0,0,0],[0,e,c,0],[0,c,e,0],[0,0,0,0]];
+  }
+
+  var wrap = document.getElementById('mwrap');
+  var CELL = 70, LBL = 32;
+  wrap.style.gridTemplateColumns = LBL+'px repeat(4,'+CELL+'px)';
+  wrap.style.gridAutoRows = CELL+'px';
+  wrap.appendChild(document.createElement('div'));
+  for(var j=0;j<4;j++){ var cl=document.createElement('div'); cl.className='axlabel'; cl.textContent=basis[j]; wrap.appendChild(cl); }
+  var cellEls=[];
+  for(var i=0;i<4;i++){
+    var rl=document.createElement('div'); rl.className='axlabel'; rl.textContent=basis[i]; wrap.appendChild(rl);
+    cellEls[i]=[];
+    for(var k=0;k<4;k++){
+      var d=document.createElement('div'); d.className='cell';
+      wrap.appendChild(d); cellEls[i][k]=d;
+    }
+  }
+
+  var sw=document.getElementById('swatches');
+  [0.5,0.375,0.25,0.125,0,-0.125,-0.25,-0.375,-0.5].forEach(function(v){ var s=document.createElement('div'); s.className='sw'; s.style.background=rgb(colorFor(v)); sw.appendChild(s); });
+
+  var barColors=['var(--teal)','var(--coral)','var(--coral)','var(--gray)'];
+  var bars=document.getElementById('bars'); var fillEls=[], barVals=[];
+  for(var b=0;b<4;b++){
+    var col=document.createElement('div'); col.className='bar';
+    var val=document.createElement('div'); val.className='barval'; val.textContent='0.50';
+    var track=document.createElement('div'); track.className='track';
+    var fill=document.createElement('div'); fill.className='fill'; fill.style.background=barColors[b];
+    track.appendChild(fill); col.appendChild(val); col.appendChild(track);
+    var lab=document.createElement('div'); lab.className='blab'; lab.textContent=basis[b]; col.appendChild(lab);
+    bars.appendChild(col); fillEls[b]=fill; barVals[b]=val;
+  }
+
+  function stateInfo(gphi,p){
+    var C=gphi*(1-p);
+    if(C>0.9) return {t:'pure entangled singlet', c:'var(--teal)'};
+    if(p>0.9) return {t:'relaxed to ground |00⟩', c:'var(--gray)'};
+    if(C<0.1 && p<0.5) return {t:'classical mixture (dephased)', c:'var(--blue)'};
+    return {t:'partially decohered', c:'var(--amber)'};
+  }
+
+  function render(gphi,p){
+    var M=rhoMatrix(gphi,p), c=-0.5*gphi*(1-p);
+    for(var i=0;i<4;i++){ for(var k=0;k<4;k++){
+      var v=M[i][k], col=colorFor(v), el=cellEls[i][k];
+      el.style.background=rgb(col); el.style.color=txt(col); el.textContent=fmt(v);
+      var what = (i===k) ? (v>0.005?'population P('+basis[i]+') = '+fmt(v):'zero population')
+                         : (Math.abs(v)>0.005?'coherence '+basis[i]+' ↔ '+basis[k]+' = '+fmt(v):'no coherence');
+      el.title=what;
+    }}
+    var purity = p*p + 0.5*(1-p)*(1-p) + 0.5*gphi*gphi*(1-p)*(1-p);
+    var conc = gphi*(1-p);
+    document.getElementById('pur').textContent=purity.toFixed(2);
+    document.getElementById('con').textContent=conc.toFixed(2);
+    document.getElementById('g00').textContent=p.toFixed(2);
+    document.getElementById('off').textContent=fmt(c);
+    var si=stateInfo(gphi,p);
+    document.getElementById('state-txt').textContent=si.t;
+    document.getElementById('state-dot').style.background=si.c;
+    var pops=[M[0][0],M[1][1],M[2][2],M[3][3]];
+    for(var q=0;q<4;q++){ fillEls[q].style.height=(pops[q]*100)+'%'; barVals[q].textContent=pops[q].toFixed(2); }
+  }
+
+  var sP=document.getElementById('tp'), sR=document.getElementById('tr');
+  var outP=document.getElementById('tpout'), outR=document.getElementById('trout');
+  function update(){
+    var tp=parseFloat(sP.value), tr=parseFloat(sR.value);
+    outP.textContent=tp.toFixed(2); outR.textContent=tr.toFixed(2);
+    render(Math.exp(-tp), 1-Math.exp(-tr));
+  }
+  sP.addEventListener('input',function(){ stop(); update(); });
+  sR.addEventListener('input',function(){ stop(); update(); });
+  document.getElementById('reset').addEventListener('click',function(){ stop(); sP.value=0; sR.value=0; update(); });
+
+  var ICON_PLAY='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  var ICON_PAUSE='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+  document.getElementById('reset-ic').innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v5h-5"/></svg>';
+
+  var timer=null, playBtn=document.getElementById('play'), playIc=document.getElementById('play-ic');
+  function setIcon(p){ playIc.innerHTML=p?ICON_PAUSE:ICON_PLAY; }
+  function stop(){ if(timer){ clearInterval(timer); timer=null; setIcon(false);} }
+  function play(){
+    setIcon(true);
+    timer=setInterval(function(){
+      var t=parseFloat(sP.value)+0.04;
+      if(t>5){ t=0; }
+      t=t.toFixed(2); sP.value=t; sR.value=t;
+      update();
+    },55);
+  }
+  playBtn.addEventListener('click',function(){ if(timer) stop(); else play(); });
+
+  setIcon(false);
+  update();
+})();
+</script>
+</body>
+</html>

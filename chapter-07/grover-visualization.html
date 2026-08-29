@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grover's Algorithm — Oracle · Diffuser · Amplification — PLANCK · Chapter 7 · Figure 7.2</title>
+<style>
+  :root{
+    --bg:#070b16;
+    --bg2:#0c1326;
+    --panel:#0e1730;
+    --panel2:#0a1126;
+    --stroke:#1d2b4d;
+    --grid:#16223f;
+    --text:#e8eefc;
+    --muted:#8b9bc4;
+    --faint:#5a6a93;
+    --pos:#34e6ff;      /* positive amplitude (cyan) */
+    --pos2:#1aa7c4;
+    --neg:#ff5d86;      /* negative amplitude (magenta) */
+    --neg2:#c43a63;
+    --target:#ffcf4d;   /* the marked / beacon state (gold) */
+    --target2:#ff9d2e;
+    --mean:#9db0ff;     /* mean / average line */
+    --accent:#7c5cff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1200px 700px at 80% -10%, #14224a55, transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, #2a1b4a44, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font:15px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 20px 64px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+
+  header{margin-bottom:22px}
+  .kicker{
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;margin:0 0 6px
+  }
+  h1{margin:0 0 6px;font-size:28px;letter-spacing:-.02em;font-weight:800}
+  h1 .grad{
+    background:linear-gradient(90deg,var(--pos),var(--target));
+    -webkit-background-clip:text;background-clip:text;color:transparent
+  }
+  .lede{margin:0;color:var(--muted);max-width:760px}
+
+  /* Controls */
+  .controls{
+    display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;
+    margin:22px 0 26px;padding:16px 18px;
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--stroke);border-radius:14px
+  }
+  .ctl{display:flex;flex-direction:column;gap:7px;min-width:150px}
+  .ctl label{font-size:12px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+  select,input[type=range]{accent-color:var(--accent)}
+  select{
+    background:#0a1228;color:var(--text);
+    border:1px solid var(--stroke);border-radius:9px;padding:9px 11px;font-size:14px;cursor:pointer
+  }
+  .seg{display:flex;gap:6px}
+  .seg button{
+    background:#0a1228;color:var(--muted);border:1px solid var(--stroke);
+    border-radius:9px;padding:9px 13px;font-size:14px;cursor:pointer;font-weight:600;transition:.15s
+  }
+  .seg button:hover{border-color:var(--accent);color:var(--text)}
+  .seg button.on{background:linear-gradient(180deg,var(--accent),#5a3fd6);color:#fff;border-color:transparent}
+  .btn{
+    background:linear-gradient(180deg,#15224a,#0e1838);color:var(--text);
+    border:1px solid var(--stroke);border-radius:9px;padding:10px 16px;font-size:14px;
+    cursor:pointer;font-weight:700;transition:.15s
+  }
+  .btn:hover{border-color:var(--accent)}
+  .btn.play{background:linear-gradient(180deg,var(--target),var(--target2));color:#1a1300;border-color:transparent}
+
+  /* Panels */
+  .panel{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--stroke);border-radius:16px;
+    padding:20px 20px 16px;margin-bottom:22px;position:relative;overflow:hidden
+  }
+  .panel::before{
+    content:"";position:absolute;inset:0 0 auto 0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--pos),var(--target),transparent);opacity:.7
+  }
+  .ptitle{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .ptag{
+    font-size:11px;font-weight:800;letter-spacing:.06em;color:#05111f;
+    background:var(--pos);padding:3px 9px;border-radius:999px
+  }
+  .ptag.t2{background:var(--mean)}
+  .ptag.t3{background:var(--target)}
+  .ptitle h2{margin:0;font-size:19px;font-weight:750;letter-spacing:-.01em}
+  .pdesc{color:var(--muted);margin:2px 0 14px;max-width:880px}
+  .eq{
+    display:inline-block;margin:0 0 14px;padding:10px 14px;
+    background:#070d1e;border:1px solid var(--stroke);border-radius:10px;
+    font-family:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    font-size:14px;color:#cdd9ff;letter-spacing:.01em
+  }
+  .eq b.tg{color:var(--target)}
+  .eq b.cy{color:var(--pos)}
+  .eq b.mn{color:var(--mean)}
+
+  .charts{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end}
+  .chartbox{flex:1 1 320px;min-width:300px}
+  .chartbox h3{
+    margin:0 0 8px;font-size:13px;font-weight:700;color:var(--muted);
+    letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:8px
+  }
+  .chartbox h3 .dot{width:9px;height:9px;border-radius:3px;display:inline-block}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+
+  /* Sequence */
+  .seqrow{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x proximity}
+  .seqcell{
+    flex:0 0 auto;width:180px;scroll-snap-align:start;
+    background:#080f22;border:1px solid var(--stroke);border-radius:12px;padding:10px 10px 8px;transition:.18s
+  }
+  .seqcell.opt{border-color:var(--target);box-shadow:0 0 0 1px var(--target),0 8px 26px -12px var(--target2)}
+  .seqcell.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .seqcell .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .seqcell .it{font-weight:800;font-size:14px}
+  .seqcell .pt{font-size:12px;font-weight:700;color:var(--target)}
+  .seqcell .note{font-size:11px;color:var(--faint);margin-top:4px;min-height:14px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:6px;color:var(--muted);font-size:12.5px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .sw{width:13px;height:13px;border-radius:4px;display:inline-block}
+  .sw.line{height:0;border-top:2px dashed var(--mean);width:18px;border-radius:0}
+
+  footer{color:var(--faint);font-size:12.5px;margin-top:8px;text-align:center}
+  .mono{font-family:ui-monospace,Menlo,monospace}
+  @media (max-width:620px){ h1{font-size:23px} .charts{gap:16px} }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">7.2</span></a><script defer src="../assets/planck-companion.js" data-pk-code="7.2"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <header>
+    <p class="kicker">Quantum Search · Grover's Algorithm</p>
+    <h1>The Oracle, the Diffuser &amp; the <span class="grad">Amplification Sequence</span></h1>
+    <p class="lede">Every bar is a basis state's probability amplitude. Watch the marked "beacon" state get
+      phase‑flipped, then inverted about the mean, then amplified — driven directly from the operator equations.</p>
+  </header>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="ctl">
+      <label for="qubits">States&nbsp;·&nbsp;N = 2ⁿ</label>
+      <div class="seg" id="qubits"></div>
+    </div>
+    <div class="ctl">
+      <label for="target">Marked state |ω⟩</label>
+      <select id="target"></select>
+    </div>
+    <div class="ctl" style="min-width:120px">
+      <label>&nbsp;</label>
+      <button class="btn play" id="play">▶ Play sequence</button>
+    </div>
+    <div class="ctl" style="min-width:120px">
+      <label>&nbsp;</label>
+      <button class="btn" id="reset">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- 7.1 Oracle -->
+  <section class="panel" id="p1">
+    <div class="ptitle"><span class="ptag">Image 7.1</span><h2>The Oracle Marking Beacon</h2></div>
+    <p class="pdesc">All four states begin at the same positive height <span class="mono">1/√N</span>. The oracle
+      <b>U<sub>ω</sub></b> recognises the target and flips its phase — the marked bar is driven negative while every
+      other bar is left untouched. Nothing else changes; only a <em>sign</em> is planted.</p>
+    <div class="eq">U<b class="tg">ω</b>|x⟩ = −|x⟩ &nbsp;if x = <b class="tg">ω</b>&nbsp;;&nbsp; |x⟩ &nbsp;otherwise</div>
+    <div class="charts">
+      <div class="chartbox">
+        <h3><span class="dot" style="background:var(--pos)"></span>Before oracle — uniform superposition |ψ⟩</h3>
+        <div id="c1a"></div>
+      </div>
+      <div class="chartbox">
+        <h3><span class="dot" style="background:var(--target)"></span>After oracle — beacon marked</h3>
+        <div id="c1b"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.2 Diffuser -->
+  <section class="panel" id="p2">
+    <div class="ptitle"><span class="ptag t2">Image 7.2</span><h2>The Diffuser Formation Inversion</h2></div>
+    <p class="pdesc">The diffuser <b>D</b> reflects every amplitude about the <b style="color:var(--mean)">mean</b> ⟨α⟩.
+      Because the marked bar is the lone negative value, it sits far below the average — so its reflection vaults it
+      <em>high above</em> the others, while the unmarked bars shrink toward the line.</p>
+    <div class="eq">D = 2|ψ⟩⟨ψ| − I &nbsp;&nbsp;⟹&nbsp;&nbsp; α<sub>x</sub> → 2<b class="mn">⟨α⟩</b> − α<sub>x</sub></div>
+    <div class="charts">
+      <div class="chartbox">
+        <h3><span class="dot" style="background:var(--neg)"></span>Input — after oracle (with mean ⟨α⟩)</h3>
+        <div id="c2a"></div>
+      </div>
+      <div class="chartbox">
+        <h3><span class="dot" style="background:var(--target)"></span>Output — reflected about ⟨α⟩</h3>
+        <div id="c2b"></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--target)"></i>Marked state |ω⟩</span>
+      <span><i class="sw" style="background:var(--pos)"></i>Positive amplitude</span>
+      <span><i class="sw" style="background:var(--neg)"></i>Negative amplitude</span>
+      <span><i class="sw line"></i>Mean ⟨α⟩ (reflection axis)</span>
+    </div>
+  </section>
+
+  <!-- 7.3 Sequence -->
+  <section class="panel" id="p3">
+    <div class="ptitle"><span class="ptag t3">Image 7.3</span><h2>The Grover Amplification Sequence</h2></div>
+    <p class="pdesc">Each Grover iteration <b>G = D·U<sub>ω</sub></b> is one "mark‑then‑reflect" cycle. Repeat it and the
+      target's probability climbs toward 1, peaking near the optimal count <span class="mono">⌊π√N⁄4⌋</span> — push past
+      that and it <em>over‑rotates</em> back down.</p>
+    <div class="eq">G = D · U<b class="tg">ω</b> &nbsp;&nbsp;·&nbsp;&nbsp; |ψ<sub>k</sub>⟩ = G<sup>k</sup>|ψ⟩ &nbsp;&nbsp;·&nbsp;&nbsp; P(<b class="tg">ω</b>) = sin²((2k+1)θ),&nbsp; sinθ = 1/√N</div>
+
+    <h3 style="font-size:13px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:6px 0 10px">
+      Probability distribution per iteration</h3>
+    <div class="seqrow" id="seqrow"></div>
+
+    <h3 style="font-size:13px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:18px 0 8px">
+      P(measure |ω⟩) vs. iteration</h3>
+    <div id="curve"></div>
+  </section>
+
+  <footer>
+    Simulated exactly from the operators — uniform start <span class="mono">1/√N</span>, oracle sign‑flip, diffuser
+    inversion‑about‑the‑mean, iterated <span class="mono">G = D·U<sub>ω</sub></span>. No libraries, fully offline.
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- Quantum simulation (straight from the equations) ---------- */
+const uniform = n => Array.from({length:n}, () => 1/Math.sqrt(n));
+const oracle  = (a,t) => a.map((v,i)=> i===t ? -v : v);                          // U_ω
+const diffuser= a => { const m=a.reduce((s,v)=>s+v,0)/a.length; return a.map(v=>2*m-v); }; // D
+const grover  = (a,t) => diffuser(oracle(a,t));                                  // G = D·U_ω
+const probs   = a => a.map(v=>v*v);
+const mean    = a => a.reduce((s,v)=>s+v,0)/a.length;
+const optIters= n => Math.max(1, Math.round(Math.PI/4*Math.sqrt(n) - 0.5));      // ⌊π√N/4⌋ (optimal)
+const bits    = i => i.toString(2).padStart(state.qubits,'0');
+
+/* ---------- Colours from CSS ---------- */
+const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+const COL = {};
+['--pos','--pos2','--neg','--neg2','--target','--target2','--mean','--grid','--muted','--faint','--text']
+  .forEach(k=>COL[k.slice(2)]=css(k));
+
+/* ---------- State ---------- */
+const state = { qubits:2, target:2, active:-1 };
+
+/* ---------- SVG helpers ---------- */
+const NS='http://www.w3.org/2000/svg';
+const esc = s => String(s);
+
+/* Generic amplitude / probability bar chart.
+   mode: 'amp' (zero line in middle, signed) | 'prob' (baseline at bottom)
+   opts: {target, mean, reflect, height, valFmt, compact} */
+function barSVG(amps, opts={}){
+  const n = amps.length;
+  const mode = opts.mode || 'amp';
+  const compact = !!opts.compact;
+  const barW = compact ? (n<=4?20:n<=8?12:8) : (n<=4?56:n<=8?34:n<=16?20:12);
+  const gap  = Math.max(compact?5:8, barW*0.4);
+  const padL = compact?14:38, padR = compact?14:14;
+  const padT = opts.padT ?? (compact?12:24);
+  const padB = compact?22:36;
+  const innerW = n*(barW+gap)-gap;
+  const W = padL+padR+innerW;
+  const H = opts.height || (mode==='amp'? (compact?150:210) : (compact?150:200));
+  const ym = opts.yMax ?? 1.06;                         // shared domain so panels are comparable
+  const baseY = mode==='amp' ? padT+(H-padT-padB)/2 : H-padB;
+  const usable = mode==='amp' ? (H-padT-padB)/2 : (H-padT-padB);
+  const y = v => baseY - (v/ym)*usable;
+  const x = i => padL + i*(barW+gap);
+  const fmt = opts.valFmt || (v=> (Math.abs(v)<1e-9?'0':v.toFixed(2)));
+  const lblColor = COL.faint;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img">`;
+
+  // soft glow filter for the beacon
+  s += `<defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="gCy" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${COL.pos}"/><stop offset="1" stop-color="${COL.pos2}"/></linearGradient>
+    <linearGradient id="gNg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${COL.neg2}"/><stop offset="1" stop-color="${COL.neg}"/></linearGradient>
+    <linearGradient id="gTg" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${COL.target}"/><stop offset="1" stop-color="${COL.target2}"/></linearGradient>
+  </defs>`;
+
+  // gridlines (light)
+  if(mode==='amp'){
+    [-1,-0.5,0.5,1].forEach(g=>{ const yy=y(g);
+      s+=`<line x1="${padL-4}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="${COL.grid}" stroke-width="1"/>`;
+      s+=`<text x="${padL-7}" y="${yy+3.5}" text-anchor="end" font-size="9" fill="${lblColor}">${g>0?'+':''}${g}</text>`;
+    });
+  } else {
+    [0,0.25,0.5,0.75,1].forEach(g=>{ const yy=y(g);
+      s+=`<line x1="${padL-4}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="${COL.grid}" stroke-width="1"/>`;
+      if(!compact) s+=`<text x="${padL-7}" y="${yy+3.5}" text-anchor="end" font-size="9" fill="${lblColor}">${g}</text>`;
+    });
+  }
+
+  // mean line (diffuser input)
+  if(opts.mean!=null){
+    const my=y(opts.mean);
+    s+=`<line x1="${padL-2}" x2="${W-padR}" y1="${my}" y2="${my}" stroke="${COL.mean}" stroke-width="1.6" stroke-dasharray="6 4"/>`;
+    s+=`<text x="${W-padR}" y="${my-5}" text-anchor="end" font-size="10" font-weight="700" fill="${COL.mean}">⟨α⟩ = ${opts.mean.toFixed(2)}</text>`;
+  }
+
+  // zero / baseline axis
+  s+=`<line x1="${padL-4}" x2="${W-padR}" y1="${baseY}" y2="${baseY}" stroke="${COL.muted}" stroke-width="1.4"/>`;
+
+  // reflection ghosts + arrows (diffuser output panel)
+  if(opts.reflect){
+    const inp = opts.reflect;                 // input amplitudes (after oracle)
+    const m = mean(inp);
+    for(let i=0;i<n;i++){
+      const xi=x(i), cx=xi+barW/2;
+      const vi=inp[i], vo=amps[i];
+      // faint ghost of the input bar
+      const gy1=Math.min(baseY,y(vi)), gh=Math.abs(y(vi)-baseY);
+      s+=`<rect x="${xi}" y="${gy1}" width="${barW}" height="${gh}" rx="3" fill="${COL.muted}" opacity="0.13"/>`;
+      // reflection connector arrow from input tip to output tip
+      const y1=y(vi), y2=y(vo);
+      s+=`<line x1="${cx}" x2="${cx}" y1="${y1}" y2="${y2}" stroke="${COL.mean}" stroke-width="1.3" stroke-dasharray="3 3" opacity="0.65"/>`;
+      const dir = y2<y1?-1:1, ah=4.5;
+      s+=`<path d="M ${cx} ${y2} l ${-ah} ${dir*ah} l ${2*ah} 0 z" fill="${COL.mean}" opacity="0.8"/>`;
+      s+=`<circle cx="${cx}" cy="${y1}" r="2.4" fill="${COL.muted}" opacity="0.5"/>`;
+    }
+  }
+
+  // bars
+  for(let i=0;i<n;i++){
+    const v=amps[i], xi=x(i), isT=(i===opts.target);
+    const yv=y(v), y1=Math.min(baseY,yv), h=Math.max(0.5,Math.abs(yv-baseY));
+    let fill = isT ? 'url(#gTg)' : (v>=0 ? 'url(#gCy)' : 'url(#gNg)');
+    const filt = isT ? ' filter="url(#glow)"' : '';
+    s+=`<rect x="${xi}" y="${y1}" width="${barW}" height="${h}" rx="3" fill="${fill}"${filt}>`;
+    s+=`</rect>`;
+    // beacon ring marker
+    if(isT){
+      const ty = v>=0? yv-6 : yv+6;
+      s+=`<circle cx="${xi+barW/2}" cy="${yv}" r="3.4" fill="none" stroke="${COL.target}" stroke-width="1.6" opacity="0.9"/>`;
+    }
+    // value label
+    if(!compact || n<=8){
+      const above = v>=0;
+      const ly = above ? yv-7 : yv+13;
+      const c = isT?COL.target:(v>=0?COL.pos:COL.neg);
+      s+=`<text x="${xi+barW/2}" y="${ly}" text-anchor="middle" font-size="${compact?9:11}" font-weight="700" fill="${c}">${fmt(v)}</text>`;
+    }
+    // state label
+    const slY = H-(compact?7:11);
+    const sc = isT?COL.target:COL.muted;
+    s+=`<text x="${xi+barW/2}" y="${slY}" text-anchor="middle" font-size="${compact?9:11}" font-weight="${isT?700:500}" fill="${sc}" font-family="ui-monospace,Menlo,monospace">|${bits(i)}⟩</text>`;
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+/* Probability-vs-iteration line chart */
+function curveSVG(series, opt, active){
+  const W=900, H=210, padL=44, padR=20, padT=18, padB=34;
+  const n=series.length;
+  const x = k => padL + (n<=1?0:k/(n-1))*(W-padL-padR);
+  const y = p => (H-padB) - p*(H-padT-padB);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">`;
+  // grid + y labels
+  [0,0.25,0.5,0.75,1].forEach(g=>{const yy=y(g);
+    s+=`<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="${COL.grid}"/>`;
+    s+=`<text x="${padL-8}" y="${yy+3.5}" text-anchor="end" font-size="10" fill="${COL.faint}">${g}</text>`;});
+  // optimal marker band
+  const ox=x(opt);
+  s+=`<line x1="${ox}" x2="${ox}" y1="${padT}" y2="${H-padB}" stroke="${COL.target}" stroke-width="1.4" stroke-dasharray="5 4" opacity="0.8"/>`;
+  s+=`<text x="${ox}" y="${padT-4}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${COL.target}">optimal · k=${opt}</text>`;
+  // area + line
+  let dLine='', dArea=`M ${x(0)} ${y(0)}`;
+  series.forEach((p,k)=>{ const X=x(k),Y=y(p); dLine+=(k? ' L':'M')+` ${X} ${Y}`; dArea+=` L ${X} ${Y}`; });
+  dArea+=` L ${x(n-1)} ${H-padB} Z`;
+  s+=`<defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+    <stop offset="0" stop-color="${COL.target}" stop-opacity="0.35"/>
+    <stop offset="1" stop-color="${COL.target}" stop-opacity="0"/></linearGradient></defs>`;
+  s+=`<path d="${dArea}" fill="url(#area)"/>`;
+  s+=`<path d="${dLine}" fill="none" stroke="${COL.target}" stroke-width="2.6" stroke-linejoin="round"/>`;
+  // points
+  series.forEach((p,k)=>{ const X=x(k),Y=y(p); const on=(k===active);
+    s+=`<circle cx="${X}" cy="${Y}" r="${on?5.5:4}" fill="${on?COL.target:COL.text}" stroke="${COL.target}" stroke-width="${on?2.5:1.5}"/>`;
+    s+=`<text x="${X}" y="${Y-11}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${COL.target}">${(p*100).toFixed(0)}%</text>`;
+    s+=`<text x="${X}" y="${H-padB+16}" text-anchor="middle" font-size="10.5" fill="${COL.muted}">k=${k}</text>`;
+  });
+  s+=`</svg>`;
+  return s;
+}
+
+/* ---------- Render ---------- */
+function render(){
+  const n = 1<<state.qubits;
+  if(state.target>=n) state.target=n-1;
+  const t = state.target;
+
+  // 7.1 oracle
+  const psi = uniform(n);
+  const marked = oracle(psi, t);
+  document.getElementById('c1a').innerHTML = barSVG(psi,    {mode:'amp', target:t});
+  document.getElementById('c1b').innerHTML = barSVG(marked, {mode:'amp', target:t});
+
+  // 7.2 diffuser
+  const afterD = diffuser(marked);
+  document.getElementById('c2a').innerHTML = barSVG(marked, {mode:'amp', target:t, mean:mean(marked)});
+  document.getElementById('c2b').innerHTML = barSVG(afterD, {mode:'amp', target:t, reflect:marked});
+
+  // 7.3 sequence
+  const opt = optIters(n);
+  const maxIter = Math.min(opt+3, opt+3);
+  const states=[]; let a=psi.slice();
+  states.push(a.slice());
+  for(let k=1;k<=maxIter;k++){ a=grover(a,t); states.push(a.slice()); }
+  const pSeries = states.map(s=>s[t]*s[t]);
+
+  const row=document.getElementById('seqrow'); row.innerHTML='';
+  states.forEach((s,k)=>{
+    const cell=document.createElement('div');
+    cell.className='seqcell'+(k===opt?' opt':'')+(k===state.active?' active':'');
+    const pt=(pSeries[k]*100);
+    let note = k===0?'uniform start' : k===opt?'⟵ optimal peak' :
+               (k>opt && pSeries[k]<pSeries[k-1]?'over‑rotating':'amplifying');
+    cell.innerHTML=`<div class="hd"><span class="it">k = ${k}</span><span class="pt">${pt.toFixed(0)}%</span></div>`+
+      barSVG(probs(s),{mode:'prob',target:t,compact:true,height:140})+
+      `<div class="note">${note}</div>`;
+    cell.onclick=()=>{ state.active=k; render(); };
+    row.appendChild(cell);
+  });
+
+  document.getElementById('curve').innerHTML = curveSVG(pSeries, opt, state.active);
+}
+
+/* ---------- Controls ---------- */
+function buildControls(){
+  const seg=document.getElementById('qubits'); seg.innerHTML='';
+  [[1,'2'],[2,'4'],[3,'8'],[4,'16']].forEach(([q,lbl])=>{
+    const b=document.createElement('button'); b.textContent=lbl;
+    if(q===state.qubits) b.classList.add('on');
+    b.onclick=()=>{ state.qubits=q; if(state.target>=(1<<q)) state.target=(1<<q)-1; state.active=-1; buildControls(); render(); };
+    seg.appendChild(b);
+  });
+  const sel=document.getElementById('target'); sel.innerHTML='';
+  const n=1<<state.qubits;
+  for(let i=0;i<n;i++){ const o=document.createElement('option'); o.value=i; o.textContent=`|${i.toString(2).padStart(state.qubits,'0')}⟩  (state ${i})`; if(i===state.target)o.selected=true; sel.appendChild(o); }
+  sel.onchange=e=>{ state.target=+e.target.value; state.active=-1; render(); };
+}
+
+let playTimer=null;
+document.getElementById('play').onclick=function(){
+  if(playTimer){ clearInterval(playTimer); playTimer=null; this.textContent='▶ Play sequence'; return; }
+  const opt=optIters(1<<state.qubits); const last=opt+3;
+  state.active=0; render(); this.textContent='⏸ Pause';
+  const self=this;
+  playTimer=setInterval(()=>{
+    state.active++;
+    if(state.active>last){ clearInterval(playTimer); playTimer=null; self.textContent='▶ Play sequence'; state.active=opt; }
+    render();
+  },750);
+};
+document.getElementById('reset').onclick=()=>{
+  if(playTimer){clearInterval(playTimer);playTimer=null;document.getElementById('play').textContent='▶ Play sequence';}
+  state.active=-1; render();
+};
+
+buildControls();
+render();
+</script>
+
+</body>
+</html>

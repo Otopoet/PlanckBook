@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>T₁ and T₂ — PLANCK · Chapter 11 · Figure 11.2</title>
+<style>
+  :root{ --bg:#0a0e1a; --panel:#121833; --panel-2:#0e142a; --inset:#0a1024;
+    --line:rgba(180,190,220,0.14); --line-2:rgba(180,190,220,0.30);
+    --text:#e8ecf5; --muted:#8a93b0; --faint:#5b6685;
+    --cyan:#28e0d0; --violet:#9a92ee; --gold:#ffd166; --magenta:#ff5db1; --green:#5ad19a; --red:#ff6b6b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:radial-gradient(1200px 800px at 60% -10%, #16204a 0%, var(--bg) 60%);
+    color:var(--text); font-family:var(--sans); min-height:100vh; padding:40px 20px; line-height:1.6; }
+  .wrap{ max-width:920px; margin:0 auto; }
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+    clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  .eyebrow{ font-family:var(--mono); font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--cyan); margin:0 0 10px; }
+  h1{ font-size:30px; font-weight:600; margin:0 0 12px; letter-spacing:-0.01em; }
+  .lead{ color:var(--muted); max-width:680px; margin:0 0 26px; font-size:15.5px; }
+  .lead code{ font-family:var(--mono); font-size:13px; color:var(--gold); }
+
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .panel + .panel{ margin-top:20px; }
+
+  .stage{ display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start; }
+  @media (max-width:680px){ .stage{ grid-template-columns:1fr; } }
+
+  .bloch-wrap{ position:relative; }
+  svg{ display:block; width:100%; height:auto; }
+  .panel-title{ font-family:var(--mono); font-size:11px; letter-spacing:0.8px; text-transform:uppercase;
+    color:var(--faint); margin:0 0 14px; }
+
+  .readouts{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:4px; }
+  .stat{ background:var(--inset); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .stat .k{ font-size:11px; color:var(--muted); margin:0 0 6px; font-family:var(--mono);
+    letter-spacing:0.5px; text-transform:uppercase; }
+  .stat .v{ font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .v.cyan{ color:var(--cyan); } .v.violet{ color:var(--violet); }
+
+  .ctl{ display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:14px; margin:0 0 16px; }
+  .ctl:last-of-type{ margin-bottom:0; }
+  .ctl .lab{ font-size:13px; color:var(--text); display:flex; align-items:center; gap:8px; white-space:nowrap; }
+  .ctl .lab .tag{ font-family:var(--mono); font-weight:600; }
+  .ctl .out{ font-family:var(--mono); font-size:14px; font-weight:600; font-variant-numeric:tabular-nums;
+    min-width:62px; text-align:right; }
+  .tag.t1{ color:var(--cyan); } .tag.t2{ color:var(--violet); } .tag.tt{ color:var(--gold); }
+
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:3px;
+    background:var(--line-2); outline:none; cursor:pointer; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:var(--cyan); cursor:pointer; border:2px solid var(--panel); box-shadow:0 0 0 1px var(--line-2); }
+  input[type=range]::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background:var(--cyan);
+    border:2px solid var(--panel); cursor:pointer; }
+
+  .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+  button{ font-family:var(--sans); font-size:14px; color:var(--text); background:transparent;
+    border:1px solid var(--line-2); border-radius:10px; padding:9px 16px; cursor:pointer;
+    transition:background .12s, border-color .12s, transform .05s; }
+  button:hover{ background:var(--panel-2); border-color:var(--line-2); }
+  button:active{ transform:scale(0.97); }
+  button.primary{ border-color:var(--cyan); color:var(--cyan); }
+  button.on{ background:var(--panel-2); border-color:var(--cyan); color:var(--cyan); }
+
+  .presets{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
+  .presets .ttl{ font-size:13px; color:var(--muted); margin-right:2px; }
+
+  .limit{ display:flex; align-items:center; gap:10px; margin-top:16px; font-size:13px; color:var(--muted);
+    background:var(--inset); border:1px solid var(--line); border-radius:10px; padding:10px 14px; }
+  .limit code{ font-family:var(--mono); color:var(--gold); font-size:12.5px; }
+  .limit .ok{ color:var(--green); font-weight:600; }
+  .limit.warn{ border-color:var(--gold); }
+  .limit.warn .msg{ color:var(--gold); font-weight:600; }
+  .dot{ width:9px; height:9px; border-radius:50%; flex:none; background:var(--green); }
+  .limit.warn .dot{ background:var(--gold); }
+
+  .charts{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:680px){ .charts{ grid-template-columns:1fr; } }
+  .chart h3{ font-size:14px; font-weight:600; margin:0 0 2px; }
+  .chart h3 .eq{ font-family:var(--mono); font-size:12px; color:var(--gold); font-weight:500; }
+  .chart .cap{ font-size:12px; color:var(--muted); margin:0 0 10px; }
+  .chart.cyan h3{ color:var(--cyan); } .chart.violet h3{ color:var(--violet); }
+
+  .teach{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:680px){ .teach{ grid-template-columns:1fr; } }
+  .card{ background:var(--inset); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .card .h{ font-size:14px; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:9px; }
+  .card .h .sw{ width:11px; height:11px; border-radius:3px; flex:none; }
+  .card.t1 .h{ color:var(--cyan); } .card.t2 .h{ color:var(--violet); }
+  .card p{ margin:0; font-size:13.5px; color:var(--muted); }
+  .card p code{ font-family:var(--mono); color:var(--gold); font-size:12.5px; }
+  .closing{ margin-top:16px; font-size:14px; color:var(--text); }
+  .closing b{ color:var(--gold); font-weight:600; }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">11.2</span></a><script defer src="../assets/planck-companion.js" data-pk-code="11.2"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h2 class="sr-only">Interactive Bloch-sphere visualization of T₁ amplitude damping and T₂ dephasing on a single qubit, with live population and coherence decay curves.</h2>
+
+  <div class="eyebrow">PLANCK · CHAPTER 11 · FIGURE 11.2</div>
+  <h1>T₁ and T₂</h1>
+  <p class="lead">A real qubit forgets in two ways at once. <b style="color:var(--cyan)">T₁</b> is energy loss — the excited state <code>|1⟩</code> leaks down to the ground state <code>|0⟩</code>, and the Bloch vector climbs toward the north pole. <b style="color:var(--violet)">T₂</b> is phase loss — the transverse <code>x,y</code> components shrink as the superposition's phase randomizes, collapsing the vector onto the z-axis. Press play and watch the state spiral inward and up as its quantumness drains away.</p>
+
+  <div class="panel">
+    <div class="presets">
+      <span class="ttl">Start state:</span>
+      <button id="pPlus" class="primary on">|+⟩ &nbsp;(both channels)</button>
+      <button id="pOne">|1⟩ &nbsp;(pure T₁)</button>
+    </div>
+
+    <div class="stage">
+      <div class="bloch-wrap">
+        <div class="panel-title">Bloch sphere</div>
+        <svg id="bloch" viewBox="0 0 280 300" role="img" aria-label="Bloch sphere with decaying state vector">
+          <defs>
+            <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+              <path d="M0,0 L7,3 L0,6 Z" fill="var(--gold)"/>
+            </marker>
+          </defs>
+          <ellipse cx="140" cy="150" rx="110" ry="110" fill="none" stroke="var(--line-2)" stroke-width="1"/>
+          <ellipse cx="140" cy="150" rx="110" ry="34" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 4"/>
+          <line x1="140" y1="40" x2="140" y2="260" stroke="var(--line)" stroke-width="1"/>
+          <line x1="30" y1="150" x2="250" y2="150" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>
+          <ellipse cx="140" cy="150" rx="58" ry="110" fill="none" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="2 5"/>
+          <circle cx="140" cy="40" r="3" fill="var(--green)"/>
+          <text x="140" y="30" fill="var(--green)" font-size="12" font-family="var(--mono)" text-anchor="middle">|0⟩</text>
+          <circle cx="140" cy="260" r="3" fill="var(--magenta)"/>
+          <text x="140" y="280" fill="var(--magenta)" font-size="12" font-family="var(--mono)" text-anchor="middle">|1⟩</text>
+          <text x="246" y="143" fill="var(--faint)" font-size="11" font-family="var(--mono)" text-anchor="end">x</text>
+          <polyline id="trail" fill="none" stroke="var(--gold)" stroke-width="1.4" opacity="0.32" stroke-linejoin="round" points=""/>
+          <line id="vec" x1="140" y1="150" x2="140" y2="150" stroke="var(--gold)" stroke-width="2.4" marker-end="url(#arrow)"/>
+          <circle id="tip" cx="140" cy="150" r="4" fill="var(--gold)"/>
+        </svg>
+        <div class="readouts">
+          <div class="stat"><div class="k">⟨z⟩ population</div><div class="v cyan" id="zOut">0.00</div></div>
+          <div class="stat"><div class="k">r (coherence)</div><div class="v violet" id="rOut">1.00</div></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="panel-title">Controls</div>
+        <div class="ctl">
+          <span class="lab"><span class="tag t1">T₁</span> relaxation</span>
+          <input type="range" id="sT1" min="0.2" max="5" step="0.1" value="2.5">
+          <span class="out" id="oT1">2.5</span>
+        </div>
+        <div class="ctl">
+          <span class="lab"><span class="tag t2">T₂</span> dephasing</span>
+          <input type="range" id="sT2" min="0.2" max="5" step="0.1" value="1.2">
+          <span class="out" id="oT2">1.2</span>
+        </div>
+        <div class="ctl">
+          <span class="lab"><span class="tag tt">t</span> time</span>
+          <input type="range" id="sT" min="0" max="12" step="0.02" value="0">
+          <span class="out" id="oT">0.00</span>
+        </div>
+
+        <div class="btnrow">
+          <button id="play" class="primary">▶ Play</button>
+          <button id="reset">↺ Reset</button>
+        </div>
+
+        <div class="limit" id="limit">
+          <span class="dot"></span>
+          <span>Physical limit <code>T₂ ≤ 2·T₁</code> — <span class="msg ok" id="limitMsg">satisfied</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="charts">
+      <div class="chart cyan">
+        <h3>Population &nbsp;<span class="eq">P(1) = P₀·e^(−t/T₁)</span></h3>
+        <p class="cap">Excited-state probability decaying to zero. Dashed guide marks t = T₁ (the 1/e point).</p>
+        <svg id="popChart" viewBox="0 0 380 200" role="img" aria-label="Population decay curve"></svg>
+      </div>
+      <div class="chart violet">
+        <h3>Coherence &nbsp;<span class="eq">C = ½·r₀·e^(−t/T₂)</span></h3>
+        <p class="cap">Transverse magnitude decaying to zero. Dashed guide marks t = T₂ (the 1/e point).</p>
+        <svg id="cohChart" viewBox="0 0 380 200" role="img" aria-label="Coherence decay curve"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="teach">
+      <div class="card t1">
+        <div class="h"><span class="sw" style="background:var(--cyan)"></span>T₁ — energy loss</div>
+        <p>Amplitude damping pumps the excited state <code>|1⟩</code> down to the ground state <code>|0⟩</code>. The Bloch vector <b>climbs toward the north pole</b> and the excited population <code>P(1)→0</code> with time constant T₁.</p>
+      </div>
+      <div class="card t2">
+        <div class="h"><span class="sw" style="background:var(--violet)"></span>T₂ — phase loss</div>
+        <p>Dephasing randomizes the relative phase, so the <code>x,y</code> components shrink. The vector <b>collapses onto the z-axis</b> and coherence <code>C→0</code> with time constant T₂. T₂ is usually the faster, limiting timescale.</p>
+      </div>
+    </div>
+    <p class="closing">Decoherence destroys the off-axis <b>"quantumness" first.</b> The transverse coherence (T₂) typically dies before the energy fully relaxes (T₁) — which is why the vector flattens onto the axis before it finishes climbing to the pole.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var sT1=document.getElementById('sT1'), sT2=document.getElementById('sT2'), sT=document.getElementById('sT');
+  var oT1=document.getElementById('oT1'), oT2=document.getElementById('oT2'), oT=document.getElementById('oT');
+  var play=document.getElementById('play'), reset=document.getElementById('reset');
+  var pPlus=document.getElementById('pPlus'), pOne=document.getElementById('pOne');
+  var limit=document.getElementById('limit'), limitMsg=document.getElementById('limitMsg');
+  var vec=document.getElementById('vec'), tip=document.getElementById('tip'), trail=document.getElementById('trail');
+  var zOut=document.getElementById('zOut'), rOut=document.getElementById('rOut');
+
+  var TMAX=12;
+  var state={ x0:1, y0:0, z0:0 };   // default |+>
+  var playing=false, lastTs=0, rafId=null;
+
+  // ---- Bloch projection: north pole = |0> at z=+1, drawn UP ----
+  var CX=140, CY=150, R=110, KY=0.31;   // KY = equator y-radius / R (foreshortening)
+  function project(x,y,z){
+    // x to the right, y into the screen (use small tilt), z up
+    var px = CX + x*R - y*R*0.34;
+    var py = CY - z*R + y*R*KY;
+    return [px,py];
+  }
+
+  function physics(t){
+    var T1=parseFloat(sT1.value), T2=parseFloat(sT2.value);
+    var e1=Math.exp(-t/T1), e2=Math.exp(-t/T2);
+    var z = 1 - (1 - state.z0)*e1;
+    var x = state.x0*e2;
+    var y = state.y0*e2;
+    return {x:x,y:y,z:z,T1:T1,T2:T2,e1:e1,e2:e2};
+  }
+
+  function fmt(v,d){ return v.toFixed(d===undefined?2:d); }
+
+  function drawBloch(t){
+    var trailPts=[];
+    var steps=70;
+    for(var i=0;i<=steps;i++){
+      var tt=t*i/steps;
+      var p=physics(tt);
+      trailPts.push(project(p.x,p.y,p.z).join(','));
+    }
+    trail.setAttribute('points', trailPts.join(' '));
+    var p=physics(t);
+    var tipXY=project(p.x,p.y,p.z);
+    vec.setAttribute('x2', tipXY[0]); vec.setAttribute('y2', tipXY[1]);
+    tip.setAttribute('cx', tipXY[0]); tip.setAttribute('cy', tipXY[1]);
+    zOut.textContent=fmt(p.z);
+    rOut.textContent=fmt(Math.sqrt(p.x*p.x+p.y*p.y));
+  }
+
+  // ---- charts ----
+  var CW=380, CH=200, PADL=42, PADR=14, PADT=14, PADB=30;
+  var pw=CW-PADL-PADR, ph=CH-PADT-PADB;
+  function sx(t){ return PADL + (t/TMAX)*pw; }
+  function syv(v){ return PADT + (1-v)*ph; }   // v in [0,1]
+
+  function makeChart(svgId, color, fn, tau, tauLabel, ymax){
+    var svg=document.getElementById(svgId);
+    var ns='http://www.w3.org/2000/svg';
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    function el(n,a){ var e=document.createElementNS(ns,n); for(var k in a) e.setAttribute(k,a[k]); return e; }
+    // axes
+    svg.appendChild(el('line',{x1:PADL,y1:PADT,x2:PADL,y2:PADT+ph,stroke:'var(--line-2)','stroke-width':1}));
+    svg.appendChild(el('line',{x1:PADL,y1:PADT+ph,x2:PADL+pw,y2:PADT+ph,stroke:'var(--line-2)','stroke-width':1}));
+    // y gridlines (axis scale 0..ymax)
+    [0, ymax/2, ymax].forEach(function(v){
+      var y=PADT+(1-v/ymax)*ph;
+      svg.appendChild(el('line',{x1:PADL,y1:y,x2:PADL+pw,y2:y,stroke:'var(--line)','stroke-width':1,'stroke-dasharray':'2 4'}));
+      var tx=el('text',{x:PADL-6,y:y+3.5,fill:'var(--faint)','font-size':10,'font-family':'var(--mono)','text-anchor':'end'});
+      tx.textContent=v.toFixed(2); svg.appendChild(tx);
+    });
+    // x ticks
+    [0,3,6,9,12].forEach(function(tv){
+      var x=sx(tv);
+      var tx=el('text',{x:x,y:PADT+ph+16,fill:'var(--faint)','font-size':10,'font-family':'var(--mono)','text-anchor':'middle'});
+      tx.textContent=tv; svg.appendChild(tx);
+    });
+    svg.appendChild((function(){var e=el('text',{x:PADL+pw,y:PADT+ph+27,fill:'var(--faint)','font-size':10,'font-family':'var(--mono)','text-anchor':'end'});e.textContent='time t';return e;})());
+
+    // curve
+    var pts=[], N=120;
+    for(var i=0;i<=N;i++){ var t=TMAX*i/N; var v=fn(t); pts.push(sx(t)+','+(PADT+(1-v/ymax)*ph)); }
+    svg.appendChild(el('polyline',{points:pts.join(' '),fill:'none',stroke:color,'stroke-width':2.2,'stroke-linejoin':'round'}));
+
+    // 1/e guide at t = tau (where curve hits 1/e of initial)
+    if(tau>0 && tau<=TMAX){
+      var gx=sx(tau);
+      svg.appendChild(el('line',{x1:gx,y1:PADT,x2:gx,y2:PADT+ph,stroke:color,'stroke-width':1.2,'stroke-dasharray':'4 4',opacity:0.7}));
+      var gv=fn(tau);
+      svg.appendChild(el('circle',{cx:gx,cy:PADT+(1-gv/ymax)*ph,r:3,fill:color}));
+      var lt=el('text',{x:gx+ (tau>TMAX*0.8? -6:5),y:PADT+12,fill:color,'font-size':10.5,'font-family':'var(--mono)','text-anchor':(tau>TMAX*0.8?'end':'start')});
+      lt.textContent=tauLabel+'='+tau.toFixed(1); svg.appendChild(lt);
+    }
+    return svg;
+  }
+
+  function curMarker(svgId,color,fn,t,ymax){
+    var svg=document.getElementById(svgId);
+    var ns='http://www.w3.org/2000/svg';
+    var old=svg.querySelector('.cur'); if(old) svg.removeChild(old);
+    var g=document.createElementNS(ns,'g'); g.setAttribute('class','cur');
+    var v=fn(t);
+    var x=sx(t), y=PADT+(1-v/ymax)*ph;
+    function el(n,a){ var e=document.createElementNS(ns,n); for(var k in a) e.setAttribute(k,a[k]); return e; }
+    g.appendChild(el('line',{x1:x,y1:PADT,x2:x,y2:PADT+ph,stroke:'var(--gold)','stroke-width':1,opacity:0.55}));
+    g.appendChild(el('circle',{cx:x,cy:y,r:4,fill:'var(--gold)',stroke:'var(--panel)','stroke-width':1.5}));
+    svg.appendChild(g);
+  }
+
+  function popFn(t){ var p=physics(t); return (1-p.z)/2; }   // P(1)
+  function cohFn(t){ var p=physics(t); return 0.5*Math.sqrt(p.x*p.x+p.y*p.y); }   // C
+  function popMax(){ return popFn(0) > 0.5+1e-6 ? 1 : 0.5; }   // scale axis to initial population
+
+  function rebuildCharts(){
+    var T1=parseFloat(sT1.value), T2=parseFloat(sT2.value);
+    // T1 guide only meaningful if there is excited population (P0>0)
+    var P0=(1-state.z0)/2;
+    var tau1 = P0>1e-6 ? T1 : 0;
+    var r0=Math.sqrt(state.x0*state.x0+state.y0*state.y0);
+    var tau2 = r0>1e-6 ? T2 : 0;
+    makeChart('popChart','var(--cyan)',popFn,tau1,'T₁',popMax());
+    makeChart('cohChart','var(--violet)',cohFn,tau2,'T₂',0.5);
+  }
+
+  function checkLimit(){
+    var T1=parseFloat(sT1.value), T2=parseFloat(sT2.value);
+    if(T2 > 2*T1 + 1e-9){
+      limit.classList.add('warn');
+      limitMsg.textContent='violated (T₂='+T2.toFixed(1)+' > 2·T₁='+(2*T1).toFixed(1)+')';
+      limitMsg.className='msg';
+    } else {
+      limit.classList.remove('warn');
+      limitMsg.textContent='satisfied';
+      limitMsg.className='msg ok';
+    }
+  }
+
+  function render(){
+    var t=parseFloat(sT.value);
+    oT1.textContent=parseFloat(sT1.value).toFixed(1);
+    oT2.textContent=parseFloat(sT2.value).toFixed(1);
+    oT.textContent=t.toFixed(2);
+    drawBloch(t);
+    curMarker('popChart','var(--cyan)',popFn,t,popMax());
+    curMarker('cohChart','var(--violet)',cohFn,t,0.5);
+  }
+
+  function fullRedraw(){ checkLimit(); rebuildCharts(); render(); }
+
+  // ---- play loop ----
+  function tick(ts){
+    if(!playing) return;
+    if(!lastTs) lastTs=ts;
+    var dt=(ts-lastTs)/1000; lastTs=ts;
+    var t=parseFloat(sT.value) + dt*1.4;   // 1.4 time-units / second
+    if(t>=TMAX){ t=TMAX; setPlaying(false); }
+    sT.value=t.toFixed(2);
+    render();
+    if(playing) rafId=requestAnimationFrame(tick);
+  }
+  function setPlaying(on){
+    playing=on; lastTs=0;
+    play.textContent = on ? '❚❚ Pause' : '▶ Play';
+    play.classList.toggle('on', on);
+    if(on){
+      if(parseFloat(sT.value)>=TMAX){ sT.value='0'; render(); }
+      rafId=requestAnimationFrame(tick);
+    } else if(rafId){ cancelAnimationFrame(rafId); }
+  }
+
+  // ---- presets ----
+  function setPreset(which){
+    setPlaying(false);
+    if(which==='plus'){ state={x0:1,y0:0,z0:0}; pPlus.classList.add('on'); pOne.classList.remove('on'); }
+    else { state={x0:0,y0:0,z0:-1}; pOne.classList.add('on'); pPlus.classList.remove('on'); }  // |1> at south pole z=-1
+    sT.value='0';
+    fullRedraw();
+  }
+
+  // ---- events ----
+  sT1.addEventListener('input', function(){ checkLimit(); rebuildCharts(); render(); });
+  sT2.addEventListener('input', function(){ checkLimit(); rebuildCharts(); render(); });
+  sT.addEventListener('input', function(){ if(playing) setPlaying(false); render(); });
+  play.addEventListener('click', function(){ setPlaying(!playing); });
+  reset.addEventListener('click', function(){ setPlaying(false); sT.value='0'; render(); });
+  pPlus.addEventListener('click', function(){ setPreset('plus'); });
+  pOne.addEventListener('click', function(){ setPreset('one'); });
+
+  fullRedraw();
+})();
+</script>
+
+</body>
+</html>

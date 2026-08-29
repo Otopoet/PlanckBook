@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>The Choreography of Interference · Grover's Journey</title>
+<style>
+  :root{
+    --bg:#1a1915; --panel:#23221d; --panel2:#2b2a24; --line:rgba(255,255,255,.12);
+    --line2:rgba(255,255,255,.22); --text:#ece9e0; --text2:#b3b0a6; --text3:#85837b;
+    --blue:#5aa0ec; --coral:#e88b62; --purple:#9a92ee; --teal:#4fc4a8; --amber:#efa52a;
+    --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --r:8px; --rl:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;padding:32px 18px 64px;}
+  .wrap{max-width:740px;margin:0 auto}
+  h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+  .sub{color:var(--text2);font-size:15px;margin:0 0 24px;max-width:64ch}
+  .sub em{color:var(--text);font-style:italic}
+
+  /* ----- step progress indicator ----- */
+  .steps{display:flex;gap:7px;margin:0 0 22px}
+  .stepseg{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;
+    cursor:pointer;background:none;border:none;padding:0;font-family:var(--sans)}
+  .stepseg .track{width:100%;height:4px;border-radius:2px;background:var(--panel2);transition:background .3s}
+  .stepseg .n{font-size:11px;font-family:var(--mono);color:var(--text3);transition:color .3s}
+  .stepseg.done .track{background:var(--text3)}
+  .stepseg.done .n{color:var(--text2)}
+  .stepseg.active .track{background:var(--teal)}
+  .stepseg.active .n{color:var(--teal);font-weight:600}
+
+  /* ----- buttons ----- */
+  button.btn{font-family:var(--sans);font-size:14px;color:var(--text);background:transparent;
+    border:.5px solid var(--line2);border-radius:var(--r);padding:8px 16px;cursor:pointer;
+    transition:background .12s,transform .05s}
+  button.btn:hover:not(:disabled){background:var(--panel2)}
+  button.btn:active:not(:disabled){transform:scale(.97)}
+  button.btn:disabled{opacity:.4;cursor:not-allowed}
+  .primary{background:rgba(79,196,168,.16);border-color:rgba(79,196,168,.5);color:#bfeade;font-weight:600}
+  .primary:hover:not(:disabled){background:rgba(79,196,168,.26)}
+  .mono{font-family:var(--mono)}
+  .badge{font-family:var(--mono);font-size:13px;background:var(--panel2);
+    border:.5px solid var(--line);border-radius:var(--r);padding:5px 11px}
+
+  /* ----- card / visualisation ----- */
+  .card{background:var(--panel);border:.5px solid var(--line);border-radius:var(--rl);padding:20px 22px}
+  #vizfade{transition:opacity .2s ease}
+  .steptitle{font-size:19px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  .steplabel{font-size:13px;color:var(--text3);margin:0 0 16px}
+
+  .chart{display:flex;gap:10px;padding-top:16px}
+  .yaxis{height:200px;display:flex;align-items:center;justify-content:center;flex:0 0 16px}
+  .yaxis span{writing-mode:vertical-rl;transform:rotate(180deg);
+    font-size:11px;color:var(--text3);letter-spacing:.06em}
+  .plotwrap{flex:1}
+  .plot{position:relative;height:200px}
+  .baseline{position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--line2)}
+  .cols{position:absolute;inset:0;display:flex}
+  .col{flex:1;position:relative}
+  .bar{position:absolute;left:18%;right:18%;bottom:0;height:0;border-radius:3px 3px 0 0;
+    background:var(--blue);border:0 solid transparent;
+    transition:height .4s ease,background .3s,opacity .3s,border-color .3s}
+  .val{position:absolute;left:0;right:0;bottom:0;text-align:center;
+    font-family:var(--mono);font-size:10px;color:var(--text3);opacity:0;
+    transition:bottom .4s ease,opacity .2s}
+  .meanline{position:absolute;left:0;right:0;top:0;height:0;
+    border-top:1.5px dashed var(--amber);opacity:0;transition:top .5s ease,opacity .3s}
+  .meantag{position:absolute;right:2px;top:0;font-family:var(--mono);font-size:10px;
+    color:var(--amber);opacity:0;transition:top .5s ease,opacity .3s}
+  .xaxis{display:flex;margin-top:8px}
+  .xcell{flex:1;text-align:center}
+  .xcell .xn{font-family:var(--mono);font-size:11px;color:var(--text3)}
+  .xcell .phase{font-family:var(--mono);font-size:10px;color:var(--coral);
+    height:14px;line-height:14px;opacity:0;transition:opacity .3s}
+
+  .caption{font-size:14px;color:var(--text2);margin-top:18px;min-height:46px;line-height:1.55}
+
+  /* step 4 controls */
+  .controls4{display:none;align-items:center;gap:12px;margin-top:16px}
+
+  /* step 5 result */
+  .result{display:none;margin-top:18px;background:var(--panel2);border:.5px solid var(--teal);
+    border-radius:var(--rl);padding:16px 18px;opacity:0;transition:opacity .3s}
+  .result .ans{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--teal);line-height:1.1}
+  .result .sub2{font-size:13px;color:var(--text2);margin-top:6px}
+
+  /* navigation */
+  .nav{margin-top:20px;text-align:center}
+  .stepcounter{font-size:12px;color:var(--text3);margin-bottom:10px}
+  .navbtns{display:flex;gap:10px;justify-content:center}
+  .footnote{font-size:12px;color:var(--text3);margin-top:20px;text-align:center}
+
+  /* measurement flash */
+  @keyframes flash{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+  .bar.flash{animation:flash .3s ease 2}
+
+  @media (max-width:560px){ h1{font-size:23px} .card{padding:16px 16px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The Choreography of Interference</h1>
+  <p class="sub">Five moves. No peeking. <em>One answer amplified from silence.</em></p>
+
+  <div class="steps" id="steps"></div>
+
+  <div class="card">
+    <div id="vizfade">
+      <div class="steptitle" id="steptitle"></div>
+      <div class="steplabel" id="steplabel"></div>
+
+      <div class="chart">
+        <div class="yaxis"><span>Amplitude</span></div>
+        <div class="plotwrap">
+          <div class="plot" id="plot">
+            <div class="baseline"></div>
+            <div class="cols" id="cols"></div>
+            <div class="meanline" id="meanline"></div>
+            <div class="meantag" id="meantag">mean</div>
+          </div>
+          <div class="xaxis" id="xaxis"></div>
+        </div>
+      </div>
+
+      <div class="controls4" id="controls4">
+        <button class="btn" id="play">Play</button>
+        <span class="badge">round <span id="roundN">1</span> / <span id="optN" style="color:var(--teal)">2</span></span>
+      </div>
+
+      <div class="result" id="result">
+        <div class="ans" id="ans">Answer: 5</div>
+        <div class="sub2" id="ressub"></div>
+      </div>
+
+      <div class="caption" id="caption"></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="stepcounter" id="stepcounter">Step 1 of 5</div>
+    <div class="navbtns">
+      <button class="btn" id="prev">Prev</button>
+      <button class="btn primary" id="next">Next</button>
+    </div>
+    <div class="footnote">N = 8 shown for clarity. Quantum advantage grows as N scales.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var N=8, TARGET=5, H=200;
+  var OPT=Math.max(1,Math.floor(Math.PI/4*Math.sqrt(N)));   // floor(pi/4 * sqrt(8)) = 2
+  var STEP=1, step4Round=1, playTimer=null;
+  var bars=[], vals=[], phaseEl=null;
+  function $(id){return document.getElementById(id);}
+
+  var DATA=[
+    null,
+    {title:"The Flat Cloud",
+     label:"Superposition: every answer equally likely",
+     caption:"No answer stands out. If you measured now, you'd pick at random."},
+    {title:"The Oracle: Marking Without Looking",
+     label:"Phase flip — the sieve catches one without being told which",
+     caption:"Nothing sounds different yet. But one musician is now out of step."},
+    {title:"The Diffuser: Reflect About the Mean",
+     label:"Amplify the outlier — reflect every bar across the average",
+     caption:"The one who was below the mean vaults above it. Everyone else sinks."},
+    {title:"The Dance: Optimal Repetition",
+     label:"Repeat oracle + diffuser — √N times for N items",
+     caption:"Too few rounds — the answer isn't loud enough. Too many — it fades again. The art is in the count."},
+    {title:"The Measurement: One Answer Rings Out",
+     label:"Measure — the loudest voice wins",
+     caption:"Not by anyone looking — by the shape of the question itself."}
+  ];
+
+  // ----- bar configuration per step (heights are % of plot) -----
+  function configFor(step, round){
+    var arr=[];
+    for(var i=0;i<N;i++){
+      var t=(i===TARGET), c;
+      if(step===1)      c={h:60, fill:'var(--blue)', op:.5, dashed:false};
+      else if(step===2) c = t ? {h:45, fill:'rgba(232,139,98,.22)', op:1, dashed:true}
+                              : {h:60, fill:'var(--blue)', op:.5, dashed:false};
+      else if(step===3) c = t ? {h:90, fill:'var(--teal)', op:1, dashed:false}
+                              : {h:50, fill:'var(--blue)', op:.35, dashed:false};
+      else if(step===4){
+        if(round===1) c = t ? {h:90, fill:'var(--teal)', op:1, dashed:false}
+                            : {h:30, fill:'var(--blue)', op:.5, dashed:false};
+        else          c = t ? {h:99, fill:'var(--teal)', op:1, dashed:false}
+                            : {h:5,  fill:'var(--blue)', op:.45, dashed:false};
+      }
+      else              c = t ? {h:99, fill:'var(--teal)', op:1, dashed:false}
+                              : {h:2,  fill:'var(--blue)', op:.45, dashed:false};
+      arr.push(c);
+    }
+    return arr;
+  }
+
+  function applyBars(cfg, dur, ease, showVals){
+    for(var i=0;i<N;i++){
+      var bar=bars[i], val=vals[i], c=cfg[i], hPx=c.h/100*H, t=(i===TARGET);
+      bar.style.transition='height '+dur+'ms '+ease+',background .3s,opacity .3s,border-color .3s';
+      bar.style.height=hPx+'px';
+      bar.style.background=c.fill;
+      bar.style.opacity=c.op;
+      bar.style.border = c.dashed ? '1.5px dashed var(--coral)' : '0 solid transparent';
+      val.style.transition='bottom '+dur+'ms '+ease+',opacity .2s';
+      val.style.bottom=(hPx+5)+'px';
+      if(showVals){
+        val.textContent=(c.h/100).toFixed(2);
+        val.style.color = t ? 'var(--teal)' : 'var(--text3)';
+        val.style.opacity = t ? '1' : '.75';
+      } else {
+        val.style.opacity='0';
+      }
+    }
+  }
+
+  function setMean(cfg, show, dur){
+    var ml=$('meanline'), mt=$('meantag');
+    if(!show){ ml.style.opacity='0'; mt.style.opacity='0'; return; }
+    var s=0; for(var i=0;i<N;i++) s+=cfg[i].h;
+    var top = H - (s/N)/100*H;
+    ml.style.transition='top '+dur+'ms ease,opacity .3s';
+    mt.style.transition='top '+dur+'ms ease,opacity .3s';
+    ml.style.top=top+'px';
+    mt.style.top=(top-15)+'px';
+    ml.style.opacity='1'; mt.style.opacity='1';
+  }
+
+  function growFromZero(cfg){
+    for(var i=0;i<N;i++){
+      var bar=bars[i], c=cfg[i];
+      bar.style.transition='none';
+      bar.style.height='0px';
+      bar.style.background=c.fill;
+      bar.style.opacity=c.op;
+      bar.style.border='0 solid transparent';
+      vals[i].style.opacity='0';
+    }
+    void $('plot').offsetWidth;               // flush the zero state so the transition runs
+    for(var j=0;j<N;j++){
+      bars[j].style.transition='height 300ms ease,background .3s,opacity .3s,border-color .3s';
+      bars[j].style.height=(cfg[j].h/100*H)+'px';
+    }
+  }
+
+  function flashTarget(){
+    var b=bars[TARGET];
+    b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash');
+    setTimeout(function(){ b.classList.remove('flash'); }, 700);
+  }
+
+  // ----- render the current step -----
+  function render(){
+    var d=DATA[STEP];
+
+    // progress indicator
+    var segs=$('steps').children;
+    for(var s=0;s<segs.length;s++){
+      segs[s].className='stepseg'+((s+1)===STEP?' active':((s+1)<STEP?' done':''));
+    }
+
+    // text
+    $('steptitle').textContent=d.title;
+    $('steplabel').textContent=d.label;
+    $('caption').textContent=d.caption;
+
+    // step-specific blocks
+    $('controls4').style.display = (STEP===4)?'flex':'none';
+    var res=$('result');
+    if(STEP!==5){ res.style.display='none'; res.style.opacity='0'; }
+
+    // counter + nav state
+    $('stepcounter').textContent='Step '+STEP+' of 5';
+    $('prev').disabled = (STEP===1);
+    $('next').disabled = (STEP===5);
+
+    // cross-fade the visualisation area in (opacity 0 -> 1, 200ms)
+    var vf=$('vizfade');
+    vf.style.transition='none'; vf.style.opacity='0';
+    void vf.offsetWidth;                       // flush so the fade-in transition runs
+    vf.style.transition='opacity .2s ease'; vf.style.opacity='1';
+
+    // bars
+    var dur = STEP===1?300 : STEP===2?400 : STEP===3?500 : STEP===4?600 : 300;
+    var ease = (STEP===3)?'ease-out':'ease';
+    var cfg = (STEP===4) ? configFor(4, step4Round) : configFor(STEP);
+
+    if(STEP===1){ growFromZero(cfg); }
+    else { applyBars(cfg, dur, ease, STEP===4); }
+
+    setMean(cfg, STEP===3, dur);
+    phaseEl.style.opacity = (STEP===2)?'1':'0';
+
+    if(STEP===4){ $('roundN').textContent=step4Round; }
+
+    if(STEP===5){
+      flashTarget();
+      // reveal the answer card once the flash has rung out
+      res.style.display='block'; res.style.opacity='0';
+      setTimeout(function(){ if(STEP===5) res.style.opacity='1'; }, 620);
+    }
+  }
+
+  // ----- navigation -----
+  function goTo(s){
+    if(s<1 || s>5) return;
+    if(playTimer){ clearTimeout(playTimer); playTimer=null; }
+    STEP=s;
+    if(STEP===4){ step4Round=1; var p=$('play'); p.textContent='Play'; p.disabled=false; }
+    render();
+  }
+
+  function play4(){
+    if(playTimer) return;
+    step4Round=1;
+    applyBars(configFor(4,1),600,'ease',true);
+    $('roundN').textContent='1';
+    $('play').disabled=true;
+    playTimer=setTimeout(function(){
+      step4Round=2;
+      applyBars(configFor(4,2),600,'ease',true);
+      $('roundN').textContent='2';
+      playTimer=null;
+      var p=$('play'); p.disabled=false; p.textContent='Replay';
+    },600);
+  }
+
+  // ----- build static skeleton -----
+  function build(){
+    // progress segments
+    var steps=$('steps');
+    for(var s=1;s<=5;s++){
+      var b=document.createElement('button');
+      b.className='stepseg';
+      b.innerHTML='<span class="track"></span><span class="n">'+s+'</span>';
+      (function(n){ b.onclick=function(){ goTo(n); }; })(s);
+      steps.appendChild(b);
+    }
+    // chart columns + x-axis
+    var cols=$('cols'), xaxis=$('xaxis');
+    for(var i=0;i<N;i++){
+      var col=document.createElement('div'); col.className='col';
+      var val=document.createElement('div'); val.className='val';
+      var bar=document.createElement('div'); bar.className='bar';
+      col.appendChild(val); col.appendChild(bar); cols.appendChild(col);
+      bars.push(bar); vals.push(val);
+
+      var xc=document.createElement('div'); xc.className='xcell';
+      var xn=document.createElement('div'); xn.className='xn'; xn.textContent=i;
+      var ph=document.createElement('div'); ph.className='phase';
+      if(i===TARGET){ ph.textContent='↑ phase flipped'; phaseEl=ph; }
+      xc.appendChild(xn); xc.appendChild(ph); xaxis.appendChild(xc);
+    }
+    // dynamic labels
+    $('optN').textContent=OPT;
+    $('ans').textContent='Answer: '+TARGET;
+    $('ressub').textContent='Found in '+OPT+' rounds across '+N+' possibilities. '+
+                            'Classical search: up to '+N+' checks.';
+
+    $('prev').onclick=function(){ goTo(STEP-1); };
+    $('next').onclick=function(){ goTo(STEP+1); };
+    $('play').onclick=play4;
+  }
+
+  build();
+  render();
+})();
+</script>
+</body>
+</html>

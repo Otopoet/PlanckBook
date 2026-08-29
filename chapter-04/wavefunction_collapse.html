@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wavefunction collapse — |ψ⟩ → |r₀⟩ — PLANCK · Chapter 4 · Figure 4.1</title>
+<style>
+  :root{
+    --bg:#0a0b14; --panel:#080a16; --ink:#e9ebff; --muted:#9aa0c8;
+    --line:#2a2d4a; --accent:#8fe8ff; --gold:#ffd27f;
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--font); }
+  .wrap{ max-width:760px; margin:0 auto; padding:32px 24px 48px; }
+  header h1{ font-size:22px; font-weight:500; margin:0 0 4px; letter-spacing:.2px; }
+  header p{ margin:0 0 22px; color:var(--muted); font-size:14px; line-height:1.6; max-width:62ch; }
+  canvas{ width:100%; aspect-ratio:680/300; display:block; border-radius:12px;
+          border:0.5px solid rgba(140,150,210,.25); background:var(--panel); }
+  .controls{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:18px; }
+  button{ font:inherit; font-weight:500; color:var(--ink); background:rgba(143,232,255,.06);
+          border:0.5px solid rgba(143,232,255,.35); border-radius:8px; padding:9px 16px;
+          cursor:pointer; transition:background .15s, transform .05s; }
+  button:hover{ background:rgba(143,232,255,.14); }
+  button:active{ transform:scale(.98); }
+  button.ghost{ border-color:rgba(154,160,200,.3); background:transparent; color:var(--muted); }
+  button.ghost:hover{ background:rgba(154,160,200,.08); }
+  .slider{ display:flex; align-items:center; gap:10px; flex:1; min-width:200px; }
+  .slider label{ font-size:13px; color:var(--muted); white-space:nowrap; }
+  input[type=range]{ flex:1; accent-color:var(--accent); }
+  .readout{ display:flex; align-items:baseline; gap:22px; flex-wrap:wrap; margin-top:18px;
+            font-family:var(--mono); font-size:14px; }
+  .readout .eq{ color:var(--ink); }
+  .readout span.k{ color:var(--muted); font-size:13px; }
+  .readout b{ color:var(--ink); font-weight:500; }
+  footer{ margin-top:26px; color:var(--muted); font-size:13px; line-height:1.6; max-width:64ch; }
+  footer code{ font-family:var(--mono); color:var(--accent); }
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">4.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="4.1"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <header>
+    <h1>Wavefunction collapse — <span style="font-family:var(--mono)">|ψ⟩ → |r₀⟩</span></h1>
+    <p>Left: the Gaussian probability cloud <span style="font-family:var(--mono)">|ψ(r)|²</span>, drawn from the wavefunction.
+       Right: a single eigenstate <span style="font-family:var(--mono)">|r₀⟩</span> after measurement, sampled with
+       probability <span style="font-family:var(--mono)">|⟨r₀|ψ⟩|²</span> (the Born rule). The flash across the divider is the collapse.</p>
+  </header>
+
+  <h2 class="sr-only">Two-panel quantum measurement visualization: a Gaussian probability cloud on the left, an instantaneous collapse line in the middle, and a single bright eigenstate point on the right after measurement.</h2>
+
+  <canvas id="qc"></canvas>
+
+  <div class="controls">
+    <button id="measure">⚡ Measure</button>
+    <button id="reset" class="ghost">↻ Reset</button>
+    <div class="slider">
+      <label for="sig">Cloud width&nbsp;σ</label>
+      <input id="sig" type="range" min="22" max="78" value="48" step="1">
+    </div>
+  </div>
+
+  <div class="readout">
+    <span class="eq">P(r₀) = |⟨r₀|ψ⟩|²</span>
+    <span class="k">r₀ = <b id="coord">—</b> σ</span>
+    <span class="k">relative likelihood = <b id="prob">—</b></span>
+    <span class="k">trials = <b id="trials">0</b></span>
+  </div>
+
+  <footer>
+    Press <b>Measure</b> repeatedly: outcomes cluster near the centre exactly as <code>|ψ|²</code> dictates, and the
+    dim gold dots accumulate to rebuild the Born distribution on the right. The cloud and the point both come from one
+    wavefunction — the split is layout; only the collapse is non-continuous, which is why it reads as a blink.
+  </footer>
+</div>
+
+<script>
+(function(){
+  const cv = document.getElementById('qc');
+  const ctx = cv.getContext('2d');
+  const W = 680, H = 300;
+  const PW = 300, PH = 300;
+  const LX = 0, RX = 380, DIV = 340;
+  const cxL = LX + PW/2, cyL = PH/2;
+
+  function fit(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = W*dpr; cv.height = H*dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    render();
+  }
+
+  const cloud = document.createElement('canvas');
+  cloud.width = PW; cloud.height = PH;
+  const cctx = cloud.getContext('2d');
+  let sigma = 48;
+
+  function buildCloud(s){
+    const img = cctx.createImageData(PW, PH);
+    const s2 = 2*s*s;
+    for (let y=0; y<PH; y++){
+      for (let x=0; x<PW; x++){
+        const dx = x - PW/2, dy = y - PH/2;
+        const t = Math.exp(-(dx*dx + dy*dy)/s2);
+        const i = (y*PW + x)*4;
+        img.data[i]   = Math.min(255,  70 + 185*Math.pow(t,0.95));
+        img.data[i+1] = Math.min(255,  85 + 170*Math.pow(t,0.75));
+        img.data[i+2] = Math.min(255, 155 + 100*Math.pow(t,0.55));
+        img.data[i+3] = Math.min(255, 255*Math.pow(t,0.82));
+      }
+    }
+    cctx.putImageData(img, 0, 0);
+  }
+  buildCloud(sigma);
+
+  let cloudAlpha = 1;
+  let pt = null;
+  let history = [];
+  let anim = null;
+  let raf = null;
+
+  function gauss(){
+    let u = Math.random() || 1e-9, v = Math.random();
+    return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  }
+
+  function panelBg(x){
+    ctx.fillStyle = '#080a16';
+    ctx.fillRect(x, 0, PW, PH);
+    ctx.strokeStyle = 'rgba(150,160,220,0.18)';
+    ctx.lineWidth = 1;
+    const cx = x + PW/2;
+    ctx.beginPath();
+    ctx.moveTo(cx-8, PH/2); ctx.lineTo(cx+8, PH/2);
+    ctx.moveTo(cx, PH/2-8); ctx.lineTo(cx, PH/2+8);
+    ctx.stroke();
+  }
+
+  function label(txt, x, y, color, size, weight){
+    ctx.fillStyle = color;
+    ctx.font = (weight||400)+' '+size+'px ui-sans-serif, system-ui, sans-serif';
+    ctx.fillText(txt, x, y);
+  }
+
+  function glowDot(x, y, r, core, halo, a){
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, core);
+    g.addColorStop(0.35, halo);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.globalAlpha = a;
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    panelBg(LX);
+    panelBg(RX);
+
+    ctx.globalAlpha = cloudAlpha;
+    ctx.drawImage(cloud, LX, 0);
+    ctx.globalAlpha = 1;
+
+    for (const h of history){
+      glowDot(h.x, h.y, 5, 'rgba(255,225,150,0.9)', 'rgba(255,190,90,0.5)', 0.32);
+    }
+
+    let prog = 1;
+    if (anim){
+      prog = Math.min(1, (performance.now() - anim.t0)/anim.dur);
+      cloudAlpha = 1 - 0.82*prog;
+      if (pt){
+        const x0 = pt.x, y0 = pt.y;
+        const x1 = RX + (pt.x - LX), y1 = pt.y;
+        const flash = Math.sin(Math.min(prog,1)*Math.PI);
+        ctx.strokeStyle = 'rgba(150,232,255,'+(0.85*flash)+')';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        const sx = x0 + (x1-x0)*prog, sy = y0 + (y1-y0)*prog;
+        glowDot(sx, sy, 14, 'rgba(230,250,255,0.95)', 'rgba(150,232,255,0.55)', 1);
+      }
+      if (prog >= 1){ anim = null; cloudAlpha = 0.18; }
+    }
+
+    ctx.strokeStyle = 'rgba(120,130,190,0.45)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(DIV, 18); ctx.lineTo(DIV, PH-18); ctx.stroke();
+
+    if (pt){
+      const x1 = RX + (pt.x - LX), y1 = pt.y;
+      const settle = anim ? 0.4+0.6*prog : 1;
+      glowDot(x1, y1, 30*settle, 'rgba(255,255,255,'+settle+')', 'rgba(255,210,120,'+(0.6*settle)+')', 1);
+      ctx.fillStyle = 'rgba(255,255,255,'+settle+')';
+      ctx.beginPath(); ctx.arc(x1, y1, 2.4, 0, 7); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,210,120,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 6, 0, 7); ctx.stroke();
+    }
+
+    label('before — |ψ⟩', LX+14, 26, 'rgba(200,206,245,0.92)', 13, 500);
+    label('the cloud', LX+14, PH-16, 'rgba(150,160,210,0.7)', 12, 400);
+    label('after — |r₀⟩', RX+14, 26, 'rgba(255,224,170,0.95)', 13, 500);
+    label('one outcome', RX+14, PH-16, 'rgba(150,160,210,0.7)', 12, 400);
+
+    if (anim) raf = requestAnimationFrame(render);
+  }
+
+  function measure(){
+    if (raf) cancelAnimationFrame(raf);
+    let x, y, dx, dy;
+    do {
+      dx = sigma*gauss(); dy = sigma*gauss();
+      x = cxL + dx; y = cyL + dy;
+    } while (x < 8 || x > PW-8 || y < 8 || y > PH-8);
+    const rsig = Math.sqrt(dx*dx + dy*dy)/sigma;
+    const prel = Math.exp(-rsig*rsig/2);
+    pt = { x, y, rsig, prel };
+    history.push({ x: RX + (x - LX), y });
+    if (history.length > 60) history.shift();
+    anim = { t0: performance.now(), dur: 750 };
+
+    document.getElementById('coord').textContent =
+      '('+((x-cxL)/sigma).toFixed(2)+', '+((cyL-y)/sigma).toFixed(2)+')';
+    document.getElementById('prob').textContent = (prel*100).toFixed(1)+'% of peak';
+    document.getElementById('trials').textContent = history.length;
+    render();
+  }
+
+  function reset(){
+    if (raf) cancelAnimationFrame(raf);
+    anim = null; pt = null; history = []; cloudAlpha = 1;
+    document.getElementById('coord').textContent = '—';
+    document.getElementById('prob').textContent = '—';
+    document.getElementById('trials').textContent = '0';
+    render();
+  }
+
+  document.getElementById('measure').addEventListener('click', measure);
+  document.getElementById('reset').addEventListener('click', reset);
+  document.getElementById('sig').addEventListener('input', function(e){
+    sigma = +e.target.value; buildCloud(sigma); reset();
+  });
+  window.addEventListener('resize', fit);
+
+  fit();
+})();
+</script>
+
+</body>
+</html>

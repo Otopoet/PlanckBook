@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shor's Algorithm — Chapter 8 Visualizations — PLANCK · Chapter 8 · Overview</title>
+<style>
+  :root{--bg:#0a0e1a;--panel:#121833;--line:#26305a;--text:#e8ecf5;--muted:#8a93b0;--cyan:#28e0d0;--magenta:#ff5db1;--gold:#ffd166}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 800px at 60% -10%,#16204a 0%,var(--bg) 60%);
+    color:var(--text);font:16px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    min-height:100vh;padding:48px 20px}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:30px;margin:0 0 6px}
+  .lead{color:var(--muted);margin:0 0 36px;max-width:680px}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:760px){.cards{grid-template-columns:1fr}}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:22px;transition:transform .15s,border-color .15s}
+  a.card:hover{transform:translateY(-4px);border-color:var(--cyan)}
+  .num{font:700 13px ui-monospace,Menlo,monospace;color:var(--cyan);letter-spacing:1px}
+  a.card h2{font-size:19px;margin:8px 0 8px}
+  a.card p{color:var(--muted);font-size:14px;margin:0}
+  .thumb{height:96px;border-radius:10px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:34px}
+  .t1{background:conic-gradient(from 0deg,#ff5db1,#ffd166,#5ad19a,#28e0d0,#5b8cff,#ff5db1)}
+  .t2{background:linear-gradient(90deg,#0e142a 0 8%,#28e0d0 8% 10%,#0e142a 10% 30%,#ff5db1 30% 33%,#0e142a 33% 55%,#ff5db1 55% 58%,#0e142a 58%)}
+  .t3{background:linear-gradient(180deg,#0e142a,#161d3a);position:relative;overflow:hidden}
+  .t3::before{content:"";position:absolute;bottom:0;left:8%;width:8%;height:80%;background:#ffd166;box-shadow:30px 0 0 #ffd166,60px 0 0 #ffd166,90px 14px 0 #ff5db1,120px 0 0 #ffd166,150px 20px 0 #ff5db1;border-radius:3px 3px 0 0}
+  .foot{margin-top:40px;color:var(--muted);font-size:13.5px;line-height:1.7}
+  .eq{font-family:ui-monospace,Menlo,monospace;color:var(--gold)}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span></a><script defer src="../assets/planck-companion.js" data-pk-code=""></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h1>The Hidden Period</h1>
+  <p class="lead">Three interactive figures for Chapter 8 — how Shor's algorithm finds the period <span class="eq">r</span>
+    of <span class="eq">a<sup>x</sup> mod N</span> and turns it into the factors of <span class="eq">N</span>.
+    Each page is fully self-contained (no internet, no build step) — just open it.</p>
+
+  <div class="cards">
+    <a class="card" href="clockwork_maze.html">
+      <div class="thumb t1">🕰️</div>
+      <div class="num">IMAGE 8.1</div>
+      <h2>The Clockwork Maze</h2>
+      <p>Modular exponentiation around a ring — the colour pattern repeats every <span class="eq">r</span> steps.</p>
+    </a>
+    <a class="card" href="qft_resonance_sweep.html">
+      <div class="thumb t2">📊</div>
+      <div class="num">IMAGE 8.2</div>
+      <h2>The QFT Resonance Sweep</h2>
+      <p>A periodic comb in time → sharp peaks at <span class="eq">jM/r</span> in frequency. Before &amp; after.</p>
+    </a>
+    <a class="card" href="pillars_of_light.html">
+      <div class="thumb t3"></div>
+      <div class="num">IMAGE 8.3</div>
+      <h2>The Pillars of Light</h2>
+      <p>Measurement probabilities, then continued fractions recover <span class="eq">r</span> and factor <span class="eq">N</span>.</p>
+    </a>
+  </div>
+
+  <p class="foot">
+    <b>Suggested walkthrough.</b> Start with <b>a = 7, N = 15</b> (period r = 4). 8.1 shows the period as colour
+    bands; 8.2 shows the QFT converting the comb into resonances at k = 0, 16, 32, 48 (with M = 64); 8.3 lets you
+    "measure" a pillar and watch continued fractions return r = 4, giving 15 = 3 × 5.
+    Other clean cases: <span class="eq">a=2,N=21 (r=6)</span>, <span class="eq">a=5,N=21 (r=6)</span>,
+    <span class="eq">a=2,N=33 (r=10)</span>.
+  </p>
+</div>
+
+</body>
+</html>

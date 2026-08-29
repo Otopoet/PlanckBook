@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quantum entanglement — visualizations — PLANCK · Chapter 3 · Overview</title>
+<style>
+  :root{
+    --c-pri:#e8eaf2; --c-sec:#a3a8bd; --c-ter:#7c8197;
+    --bg2:#161922; --bd:rgba(180,190,220,0.14); --bd2:rgba(180,190,220,0.26);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#0b0d14;color:var(--c-pri);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:2.5rem 1.25rem 5rem;}
+  h1{font-size:26px;font-weight:500;margin:0 0 .5rem;}
+  .lead{color:var(--c-sec);font-size:16px;margin:0 0 2rem;}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--bg2);border:0.5px solid var(--bd);border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px;transition:border-color .15s,background .15s;}
+  a.card:hover{border-color:var(--bd2);background:#1a1e29;}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--c-ter);}
+  .ttl{font-size:17px;font-weight:500;margin:2px 0 3px;}
+  .desc{color:var(--c-sec);font-size:14px;margin:0;}
+  .foot{color:var(--c-ter);font-size:13px;margin-top:1.5rem;}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span></a><script defer src="../assets/planck-companion.js" data-pk-code=""></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h1>Quantum entanglement of two wavepackets</h1>
+  <p class="lead">Six standalone visualizations of the spin singlet |Ψ⁻⟩ = (|↑↓⟩ − |↓↑⟩)/√2 and its spatial cousin — from an artistic composite, through the rigorous two-particle density and Bell statistics, to an exact free-particle Schrödinger evolution. Each opens on its own.</p>
+
+  <a class="card" href="01-scene.html">
+    <span class="tag">1 · Illustrative</span>
+    <div class="ttl">The artistic scene</div>
+    <p class="desc">Two clouds touch, interact, and drift apart, connected by a metaphorical thread; measure a spin to collapse the pair into anti-correlation.</p>
+  </a>
+  <a class="card" href="02-density.html">
+    <span class="tag">2 · Exact</span>
+    <div class="ttl">The two-particle joint density |Ψ(x₁,x₂)|²</div>
+    <p class="desc">The rigorous thread: probability mass collapsing onto the anti-diagonal as the spatial correlation r → −1, with fixed marginals.</p>
+  </a>
+  <a class="card" href="03-bell.html">
+    <span class="tag">3 · Exact (Monte Carlo)</span>
+    <div class="ttl">Bell correlation on the singlet</div>
+    <p class="desc">Empirical P(anti) converging onto cos²(Δθ/2), bowing above the best local-realist line.</p>
+  </a>
+  <a class="card" href="04-chsh.html">
+    <span class="tag">4 · Exact (Monte Carlo)</span>
+    <div class="ttl">CHSH inequality &amp; Tsirelson's bound</div>
+    <p class="desc">|S| climbing past the classical limit of 2 toward 2√2 ≈ 2.83 with optimal detector angles.</p>
+  </a>
+  <a class="card" href="05-coupled.html">
+    <span class="tag">5 · Schematic clock</span>
+    <div class="ttl">Coupled real &amp; configuration space</div>
+    <p class="desc">One clock drives both pictures: clouds separate while the joint density splits into two anti-diagonal lobes.</p>
+  </a>
+  <a class="card" href="06-exact.html">
+    <span class="tag">6 · Exact (Schrödinger)</span>
+    <div class="ttl">Exact free-particle evolution</div>
+    <p class="desc">A genuine Schrödinger trajectory: ballistic separation plus σ(t) spreading, with real momentum interference fringes.</p>
+  </a>
+
+  <p class="foot">Standalone HTML files · no build step · icon font loads from a CDN when online. Spin-singlet correlations and the free-particle evolution are exact; the "thread" in #1 is an artistic rendering of non-separability.</p>
+</div>
+
+</body>
+</html>

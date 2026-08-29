@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bit vs qubit — PLANCK · Chapter 1 · Figure 1.1</title>
+<style>
+:root{ --bg:#0a0e1a; --panel:#121833; --panel-2:#0e142a; --line:rgba(180,190,220,0.14); --line-2:rgba(180,190,220,0.30);
+  --text:#e8ecf5; --muted:#8a93b0; --faint:#5b6685; --cyan:#28e0d0; --violet:#9a92ee; --gold:#ffd166; --magenta:#ff5db1; --green:#5ad19a; --red:#ff6b6b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif; }
+
+*{box-sizing:border-box}
+body{ margin:0; background:radial-gradient(1200px 800px at 60% -10%, #16204a 0%, var(--bg) 60%); color:var(--text); font-family:var(--sans); min-height:100vh; padding:40px 20px; line-height:1.6; }
+.wrap{max-width:880px;margin:0 auto}
+
+.eyebrow{ font-family:var(--mono); font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--cyan); }
+h1{ font-size:2.1em; margin:.25em 0 .35em; font-weight:650; }
+.lead{ color:var(--muted); max-width:680px; margin:0 0 28px; }
+
+.panel{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px; }
+
+/* segmented control */
+.seg{ display:inline-flex; border:1px solid var(--line-2); border-radius:11px; padding:4px; gap:4px; background:var(--panel-2); }
+.seg button{ font-family:var(--sans); font-size:15px; color:var(--muted); background:transparent; border:none; padding:9px 20px; border-radius:8px; cursor:pointer; transition:all .15s; font-weight:550; }
+.seg button:hover{ color:var(--text); }
+.seg button.active{ background:var(--cyan); color:#06121a; }
+
+.segwrap{ display:flex; justify-content:center; margin-bottom:24px; }
+
+/* boxes */
+.boxes{ display:flex; gap:18px; margin:8px 0 6px; }
+.box{ position:relative; flex:1; aspect-ratio:1/1; border:1.5px solid var(--line-2); border-radius:16px; background:var(--panel-2); overflow:hidden; cursor:default; transition:border-color .15s, box-shadow .15s; display:flex; align-items:center; justify-content:center; }
+.box.clickable{ cursor:pointer; }
+.box.clickable:hover{ border-color:var(--line-2); box-shadow:0 0 0 1px var(--line-2) inset; }
+.box .label{ position:absolute; top:10px; left:14px; font-family:var(--mono); font-size:34px; font-weight:600; color:var(--faint); z-index:4; pointer-events:none; transition:color .2s; }
+.box.b0 .label{ }
+.box.b0.hot .label{ color:var(--cyan); }
+.box.b1.hot .label{ color:var(--magenta); }
+
+/* classical pebble */
+.pebble{ position:absolute; width:42%; height:42%; border-radius:50%;
+  background:radial-gradient(circle at 38% 32%, #fff 0%, var(--gold) 45%, #d9a23a 100%);
+  box-shadow:0 6px 20px rgba(0,0,0,.45), 0 0 26px rgba(255,209,102,.35);
+  z-index:3; opacity:0; transform:scale(.4); transition:opacity .28s, transform .28s cubic-bezier(.2,1.4,.4,1); }
+.pebble.show{ opacity:1; transform:scale(1); }
+
+/* quantum cloud */
+.cloud{ position:absolute; inset:0; z-index:2; opacity:0; transition:opacity .35s; pointer-events:none; }
+.cloud.show{ opacity:1; }
+.cloud.b0{ background:radial-gradient(circle at 50% 55%, rgba(40,224,208,.55) 0%, rgba(40,224,208,.22) 38%, rgba(40,224,208,0) 72%); }
+.cloud.b1{ background:radial-gradient(circle at 50% 55%, rgba(255,93,177,.55) 0%, rgba(255,93,177,.22) 38%, rgba(255,93,177,0) 72%); }
+.cloud .mist{ position:absolute; inset:0; filter:blur(8px); }
+.cloud.b0 .mist{ background:radial-gradient(circle at 50% 50%, rgba(154,146,238,.35) 0%, rgba(154,146,238,0) 60%); }
+.cloud.b1 .mist{ background:radial-gradient(circle at 50% 50%, rgba(154,146,238,.35) 0%, rgba(154,146,238,0) 60%); }
+@keyframes breathe{ 0%,100%{ transform:scale(1); opacity:.92 } 50%{ transform:scale(1.06); opacity:1 } }
+.cloud.live{ animation:breathe 3.4s ease-in-out infinite; }
+
+.pct{ position:absolute; bottom:10px; right:14px; font-family:var(--mono); font-size:13px; color:var(--muted); z-index:4; opacity:0; transition:opacity .3s; }
+.pct.show{ opacity:.9; }
+
+/* controls */
+.controls{ margin-top:20px; }
+.slider-row{ margin:6px 0 4px; }
+.slider-labels{ display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:8px; }
+.slider-labels .l0{ color:var(--cyan); }
+.slider-labels .l1{ color:var(--magenta); }
+input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:6px;
+  background:linear-gradient(90deg, var(--cyan) 0%, var(--violet) 50%, var(--magenta) 100%); outline:none; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:22px; height:22px; border-radius:50%; background:var(--cyan); border:3px solid #06121a; box-shadow:0 0 0 1px var(--line-2), 0 4px 12px rgba(0,0,0,.5); cursor:pointer; }
+input[type=range]::-moz-range-thumb{ width:22px; height:22px; border-radius:50%; background:var(--cyan); border:3px solid #06121a; box-shadow:0 0 0 1px var(--line-2); cursor:pointer; }
+
+.btn{ font-family:var(--sans); font-size:15px; font-weight:550; color:var(--text); background:transparent; border:1px solid var(--line-2); border-radius:10px; padding:11px 22px; cursor:pointer; transition:background .15s, border-color .15s; }
+.btn:hover{ background:var(--panel-2); border-color:var(--cyan); }
+.btn:active{ transform:translateY(1px); }
+.btn.primary{ border-color:var(--cyan); color:var(--cyan); }
+.btn.primary:hover{ background:rgba(40,224,208,.10); }
+
+.action-row{ display:flex; gap:12px; align-items:center; margin-top:18px; flex-wrap:wrap; }
+.btn.ghost{ font-size:13.5px; color:var(--muted); padding:9px 16px; }
+
+/* tally */
+.tally{ margin-top:22px; padding-top:18px; border-top:1px solid var(--line); }
+.tally h3{ font-size:13px; font-family:var(--mono); letter-spacing:.5px; text-transform:uppercase; color:var(--faint); margin:0 0 14px; font-weight:600; }
+.bar-row{ display:flex; align-items:center; gap:12px; margin-bottom:11px; }
+.bar-key{ font-family:var(--mono); font-size:15px; width:18px; text-align:center; flex:0 0 auto; }
+.bar-key.k0{ color:var(--cyan); }
+.bar-key.k1{ color:var(--magenta); }
+.bar-track{ flex:1; height:20px; background:var(--panel-2); border-radius:6px; overflow:hidden; border:1px solid var(--line); }
+.bar-fill{ height:100%; width:0%; border-radius:6px 0 0 6px; transition:width .4s cubic-bezier(.2,.8,.2,1); }
+.bar-fill.f0{ background:linear-gradient(90deg, rgba(40,224,208,.5), var(--cyan)); }
+.bar-fill.f1{ background:linear-gradient(90deg, rgba(255,93,177,.5), var(--magenta)); }
+.bar-count{ font-family:var(--mono); font-size:13px; color:var(--muted); width:74px; text-align:right; flex:0 0 auto; }
+
+.caption{ margin-top:18px; color:var(--muted); font-size:14.5px; min-height:1.5em; }
+.caption strong{ color:var(--text); font-weight:600; }
+
+.takeaway{ margin-top:26px; padding:16px 18px; background:var(--panel-2); border:1px solid var(--line); border-left:3px solid var(--gold); border-radius:10px; font-size:14.5px; color:var(--text); }
+.takeaway .em0{ color:var(--cyan); font-weight:600; }
+.takeaway .em1{ color:var(--magenta); font-weight:600; }
+
+.hide{ display:none !important; }
+
+@media (max-width:480px){
+  body{ padding:26px 14px; }
+  h1{ font-size:1.65em; }
+  .panel{ padding:16px; }
+  .boxes{ gap:12px; }
+  .box .label{ font-size:26px; top:7px; left:10px; }
+  .seg button{ padding:9px 14px; font-size:14px; }
+}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">1.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="1.1"></script><!--/planck-chrome-->
+
+
+
+
+
+
+<div class="wrap">
+
+  <div class="eyebrow">PLANCK · CHAPTER 1 · FIGURE 1.1</div>
+  <h1>Bit vs qubit</h1>
+  <p class="lead">A classical bit is like a pebble sitting in one of two boxes — it is definitely 0 or definitely 1. A qubit is stranger: it can be a soft cloud spread across <em>both</em> boxes at once, with no single value, until you look. Flip between the two below and play.</p>
+
+  <div class="segwrap">
+    <div class="seg" role="tablist">
+      <button id="segBit" class="active" role="tab">Classical bit</button>
+      <button id="segQubit" role="tab">Qubit</button>
+    </div>
+  </div>
+
+  <div class="panel">
+
+    <div class="boxes">
+      <div class="box b0" id="box0" data-bit="0">
+        <span class="label">0</span>
+        <div class="cloud b0" id="cloud0"><div class="mist"></div></div>
+        <div class="pct" id="pct0"></div>
+        <div class="pebble" id="pebble0"></div>
+      </div>
+      <div class="box b1" id="box1" data-bit="1">
+        <span class="label">1</span>
+        <div class="cloud b1" id="cloud1"><div class="mist"></div></div>
+        <div class="pct" id="pct1"></div>
+        <div class="pebble" id="pebble1"></div>
+      </div>
+    </div>
+
+    <!-- QUBIT controls -->
+    <div class="controls hide" id="qubitControls">
+      <div class="slider-row">
+        <div class="slider-labels">
+          <span class="l0">lean toward 0</span>
+          <span class="l1">lean toward 1</span>
+        </div>
+        <input type="range" id="lean" min="0" max="100" value="50">
+      </div>
+      <div class="action-row">
+        <button class="btn primary" id="measureBtn">Look / Measure</button>
+        <button class="btn ghost" id="resetCloud">Back to cloud</button>
+        <button class="btn ghost" id="resetTally">Reset tally</button>
+      </div>
+
+      <div class="tally">
+        <h3>Where it landed</h3>
+        <div class="bar-row">
+          <span class="bar-key k0">0</span>
+          <div class="bar-track"><div class="bar-fill f0" id="fill0"></div></div>
+          <span class="bar-count" id="count0">0 (0%)</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-key k1">1</span>
+          <div class="bar-track"><div class="bar-fill f1" id="fill1"></div></div>
+          <span class="bar-count" id="count1">0 (0%)</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="caption" id="caption"></p>
+
+  </div>
+
+  <div class="takeaway">
+    <span class="em0">Classical = one box.</span> <span class="em1">Quantum = a cloud over both.</span> Looking turns the cloud into a single answer.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- elements ----
+  var segBit = document.getElementById('segBit');
+  var segQubit = document.getElementById('segQubit');
+  var box0 = document.getElementById('box0');
+  var box1 = document.getElementById('box1');
+  var cloud0 = document.getElementById('cloud0');
+  var cloud1 = document.getElementById('cloud1');
+  var pebble0 = document.getElementById('pebble0');
+  var pebble1 = document.getElementById('pebble1');
+  var pct0 = document.getElementById('pct0');
+  var pct1 = document.getElementById('pct1');
+  var qubitControls = document.getElementById('qubitControls');
+  var lean = document.getElementById('lean');
+  var measureBtn = document.getElementById('measureBtn');
+  var resetCloud = document.getElementById('resetCloud');
+  var resetTally = document.getElementById('resetTally');
+  var fill0 = document.getElementById('fill0');
+  var fill1 = document.getElementById('fill1');
+  var count0 = document.getElementById('count0');
+  var count1 = document.getElementById('count1');
+  var caption = document.getElementById('caption');
+
+  // ---- state ----
+  var mode = 'bit';            // 'bit' | 'qubit'
+  var classicalBit = 0;        // which box the pebble sits in
+  var measured = false;        // qubit has collapsed?
+  var tally = [0, 0];
+
+  // captions
+  var CAP_BIT = 'A classical bit is definitely 0 or definitely 1 — the pebble is in one box.';
+  var CAP_QUBIT = 'A qubit is a cloud of both-at-once — it has no single value until measured.';
+  var CAP_MEASURED = 'Measuring forces a choice — the cloud becomes a pebble. Run it again and the odds follow the lean.';
+
+  // ---- random in [0,1) ----
+  function rand(){
+    if (window.crypto && window.crypto.getRandomValues){
+      var a = new Uint32Array(1);
+      window.crypto.getRandomValues(a);
+      return a[0] / 4294967296;
+    }
+    return Math.random();
+  }
+
+  // ---- helpers ----
+  function showPebble(which){
+    pebble0.classList.toggle('show', which === 0);
+    pebble1.classList.toggle('show', which === 1);
+    box0.classList.toggle('hot', which === 0);
+    box1.classList.toggle('hot', which === 1);
+  }
+  function hidePebbles(){
+    pebble0.classList.remove('show');
+    pebble1.classList.remove('show');
+  }
+  function showClouds(on){
+    cloud0.classList.toggle('show', on);
+    cloud1.classList.toggle('show', on);
+    cloud0.classList.toggle('live', on);
+    cloud1.classList.toggle('live', on);
+    box0.classList.toggle('hot', on);
+    box1.classList.toggle('hot', on);
+  }
+
+  // lean -> P(1). slider 0 = all toward 0, 100 = all toward 1.
+  function p1(){ return parseInt(lean.value, 10) / 100; }
+
+  function applyLean(){
+    var pOne = p1();
+    var pZero = 1 - pOne;
+    // visual weight: opacity + slight scale of each cloud
+    cloud0.style.opacity = (0.30 + 0.70 * pZero).toFixed(3);
+    cloud1.style.opacity = (0.30 + 0.70 * pOne).toFixed(3);
+    cloud0.style.transform = 'scale(' + (0.78 + 0.34 * pZero).toFixed(3) + ')';
+    cloud1.style.transform = 'scale(' + (0.78 + 0.34 * pOne).toFixed(3) + ')';
+    // subtle % readout
+    pct0.textContent = Math.round(pZero * 100) + '%';
+    pct1.textContent = Math.round(pOne * 100) + '%';
+  }
+
+  function renderTally(){
+    var total = tally[0] + tally[1];
+    var p0 = total ? tally[0] / total : 0;
+    var pOne = total ? tally[1] / total : 0;
+    fill0.style.width = (p0 * 100) + '%';
+    fill1.style.width = (pOne * 100) + '%';
+    count0.textContent = tally[0] + ' (' + Math.round(p0 * 100) + '%)';
+    count1.textContent = tally[1] + ' (' + Math.round(pOne * 100) + '%)';
+  }
+
+  // ---- mode switching ----
+  function setMode(m){
+    mode = m;
+    segBit.classList.toggle('active', m === 'bit');
+    segQubit.classList.toggle('active', m === 'qubit');
+    segBit.setAttribute('aria-selected', m === 'bit');
+    segQubit.setAttribute('aria-selected', m === 'qubit');
+
+    if (m === 'bit'){
+      qubitControls.classList.add('hide');
+      // clouds off, pebble in current classical box, boxes clickable
+      showClouds(false);
+      pct0.classList.remove('show');
+      pct1.classList.remove('show');
+      cloud0.style.opacity = '';
+      cloud1.style.opacity = '';
+      cloud0.style.transform = '';
+      cloud1.style.transform = '';
+      box0.classList.add('clickable');
+      box1.classList.add('clickable');
+      showPebble(classicalBit);
+      caption.innerHTML = CAP_BIT;
+    } else {
+      qubitControls.classList.remove('hide');
+      box0.classList.remove('clickable');
+      box1.classList.remove('clickable');
+      enterCloudState();
+    }
+  }
+
+  function enterCloudState(){
+    measured = false;
+    hidePebbles();
+    showClouds(true);
+    pct0.classList.add('show');
+    pct1.classList.add('show');
+    applyLean();
+    caption.innerHTML = CAP_QUBIT;
+  }
+
+  // ---- measurement (collapse) ----
+  function measure(){
+    if (mode !== 'qubit') return;
+    var pOne = p1();
+    var result = (rand() < pOne) ? 1 : 0;
+    measured = true;
+    tally[result]++;
+    // collapse: clouds vanish, pebble appears in the chosen box
+    showClouds(false);
+    pct0.classList.remove('show');
+    pct1.classList.remove('show');
+    showPebble(result);
+    renderTally();
+    caption.innerHTML = CAP_MEASURED;
+  }
+
+  // ---- classical: click a box to move the pebble ----
+  function moveTo(which){
+    if (mode !== 'bit') return;
+    classicalBit = which;
+    showPebble(which);
+  }
+
+  // ---- wiring ----
+  segBit.addEventListener('click', function(){ setMode('bit'); });
+  segQubit.addEventListener('click', function(){ setMode('qubit'); });
+
+  box0.addEventListener('click', function(){ moveTo(0); });
+  box1.addEventListener('click', function(){ moveTo(1); });
+
+  lean.addEventListener('input', function(){
+    if (mode === 'qubit'){
+      if (measured) enterCloudState();  // nudging the lean re-forms the cloud
+      else applyLean();
+    }
+  });
+
+  measureBtn.addEventListener('click', measure);
+  resetCloud.addEventListener('click', function(){ if (mode === 'qubit') enterCloudState(); });
+  resetTally.addEventListener('click', function(){
+    tally = [0, 0];
+    renderTally();
+  });
+
+  // ---- init ----
+  renderTally();
+  setMode('bit');
+})();
+</script>
+</body>
+</html>

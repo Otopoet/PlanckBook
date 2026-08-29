@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quantum entanglement — from metaphor to exact Schrödinger evolution</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+<style>
+  :root{
+    --color-text-primary:#e8eaf2;
+    --color-text-secondary:#a3a8bd;
+    --color-text-tertiary:#7c8197;
+    --color-text-success:#5dcaa5;
+    --color-text-info:#85b7eb;
+    --color-background-primary:#0e1018;
+    --color-background-secondary:#161922;
+    --color-background-tertiary:#0a0c12;
+    --color-border-tertiary:rgba(180,190,220,0.14);
+    --color-border-secondary:rgba(180,190,220,0.26);
+    --border-radius-md:8px;
+    --border-radius-lg:12px;
+    --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-serif:Georgia,'Times New Roman',serif;
+    --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#0b0d14;
+    color:var(--color-text-primary);
+    font-family:var(--font-sans);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:2.5rem 1.25rem 5rem;}
+  h1{font-size:26px;font-weight:500;margin:0 0 .5rem;}
+  h2{font-size:19px;font-weight:500;margin:0 0 .4rem;}
+  .lead{color:var(--color-text-secondary);font-size:16px;margin:0 0 1rem;}
+  p{font-size:15px;color:#d2d6e4;}
+  section{padding:2.4rem 0;border-top:0.5px solid var(--color-border-tertiary);}
+  section:first-of-type{border-top:none;}
+  .tag{display:inline-block;font-family:var(--font-mono);font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.4rem;}
+  nav{position:sticky;top:0;background:rgba(11,13,20,0.92);backdrop-filter:blur(6px);border-bottom:0.5px solid var(--color-border-tertiary);padding:.6rem 1.25rem;z-index:5;font-size:13px;}
+  nav a{color:var(--color-text-secondary);text-decoration:none;margin-right:14px;white-space:nowrap;}
+  nav a:hover{color:var(--color-text-primary);}
+  .navwrap{max-width:880px;margin:0 auto;overflow-x:auto;white-space:nowrap;}
+  button{
+    background:transparent;color:var(--color-text-primary);
+    border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);
+    padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer;transition:background .15s,transform .05s;
+  }
+  button:hover{background:var(--color-background-secondary);}
+  button:active{transform:scale(0.98);}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:rgba(180,190,220,0.22);border-radius:2px;outline:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#e8eaf2;border:none;cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#e8eaf2;border:none;cursor:pointer;}
+  canvas{touch-action:none;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  code{font-family:var(--font-mono);font-size:13px;background:var(--color-background-secondary);padding:1px 5px;border-radius:4px;}
+  .eq{font-family:var(--font-serif);}
+  .foot{color:var(--color-text-tertiary);font-size:13px;margin-top:1.5rem;}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span></a><script defer src="../assets/planck-companion.js" data-pk-code=""></script><!--/planck-chrome-->
+
+
+
+
+
+
+<nav><div class="navwrap">
+  <a href="#scene">1 · Artistic scene</a>
+  <a href="#density">2 · Joint density</a>
+  <a href="#bell">3 · Bell correlation</a>
+  <a href="#chsh">4 · CHSH</a>
+  <a href="#coupled">5 · Coupled scene</a>
+  <a href="#exact">6 · Exact evolution</a>
+</div></nav>
+
+<div class="wrap">
+
+<header>
+  <h1>Quantum entanglement of two wavepackets</h1>
+  <p class="lead">Six linked visualizations of the spin singlet <span class="eq">|Ψ⁻⟩ = (|↑↓⟩ − |↓↑⟩)/√2</span> and its spatial cousin — running from an artistic composite, through the rigorous two-particle density and Bell statistics, to an exact free-particle Schrödinger evolution. The clouds and their anti-correlated spins are physically exact; the connecting "thread" is the metaphor, and each section makes clear which is which.</p>
+</header>
+
+<script>
+  window.sendPrompt = function(){};
+  window.openLink = function(u){ window.open(u, '_blank'); };
+  window.__vis = new WeakMap();
+  (function(){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ window.__vis.set(e.target, e.isIntersecting); }); }, {threshold:0.01});
+    window.vizActive = function(el){ var v = window.__vis.get(el); if(v===undefined){ window.__vis.set(el,true); io.observe(el); return true; } return v; };
+  })();
+</script>
+
+<!-- ============================================================= -->
+<section id="scene">
+<span class="tag">1 · Illustrative</span>
+<h2>The artistic scene</h2>
+<p>Two Gaussian wavepackets touch, interact, and drift apart while a faint thread marks their non-separability. The two arrows are always anti-correlated; before measurement they shimmer between ↑ and ↓ (indefinite superposition). Press <strong>Measure left</strong> to collapse the joint state into <span class="eq">|↑↓⟩</span> or <span class="eq">|↓↑⟩</span> — both clouds resolve at once, however far apart they've drifted. The thread is the one metaphorical element: a correlation has no location in space.</p>
+
+<h2 class="sr-only">Interactive animation of two entangled wavepacket clouds with anti-correlated spins.</h2>
+<div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+    <div style="font-family:var(--font-serif); font-size:17px; color:var(--color-text-primary); letter-spacing:.2px;">
+      |&Psi;<sup>&minus;</sup>&rang; &nbsp;=&nbsp; <span style="font-size:14px;">1/&radic;2</span> &nbsp;( |&uarr;&darr;&rang; &minus; |&darr;&uarr;&rang; )
+    </div>
+    <div id="state-readout" style="font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary);">state: superposition — spins indefinite</div>
+  </div>
+  <div style="position:relative; border-radius:var(--border-radius-lg); overflow:hidden; background:#080b18; border:0.5px solid var(--color-border-tertiary);">
+    <canvas id="ent-canvas" style="display:block; width:100%; height:360px;"></canvas>
+    <div id="stage-label" style="position:absolute; top:12px; left:14px; font-size:12px; font-family:var(--font-mono); color:rgba(220,228,255,.65);">overlapping · interacting</div>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <button id="play-btn" style="min-width:104px;"><i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Pause</button>
+    <label style="font-size:13px; color:var(--color-text-secondary);">Separation</label>
+    <input type="range" id="sep" min="0" max="100" value="0" step="1" style="flex:1; min-width:140px;" />
+    <button id="measure-btn"><i class="ti ti-target" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Measure left</button>
+    <button id="reset-btn"><i class="ti ti-refresh" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Reset</button>
+  </div>
+  <div style="display:flex; gap:18px; flex-wrap:wrap; font-size:12px; color:var(--color-text-secondary);">
+    <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#3fd6a8;"></span>particle A wavepacket</span>
+    <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#f08bb4;"></span>particle B wavepacket</span>
+    <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:18px; height:2px; background:rgba(190,200,255,.7);"></span>thread = non-separability (metaphor)</span>
+  </div>
+</div>
+<script>
+(function(){
+  var canvas = document.getElementById('ent-canvas');
+  var ctx = canvas.getContext('2d');
+  var sepSlider = document.getElementById('sep');
+  var playBtn = document.getElementById('play-btn');
+  var measureBtn = document.getElementById('measure-btn');
+  var resetBtn = document.getElementById('reset-btn');
+  var readout = document.getElementById('state-readout');
+  var stageLabel = document.getElementById('stage-label');
+  var W = 680, H = 360, dpr = Math.max(1, window.devicePixelRatio || 1);
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width || 680; H = 360;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function gauss(){ var u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function makeSprite(color, size){
+    var c = document.createElement('canvas'); c.width = c.height = size;
+    var g = c.getContext('2d');
+    var grd = g.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+    grd.addColorStop(0, color+'e0'); grd.addColorStop(0.35, color+'55'); grd.addColorStop(1, color+'00');
+    g.fillStyle = grd; g.fillRect(0,0,size,size); return c;
+  }
+  var spriteA = makeSprite('#3fd6a8', 46), spriteB = makeSprite('#f08bb4', 46);
+  var N = 110;
+  function makeCloud(){ var arr = []; for(var i=0;i<N;i++){ arr.push({x:gauss(),y:gauss(),s:0.55+Math.random()*0.9,tw:Math.random()*Math.PI*2,ts:1.4+Math.random()*2.0}); } return arr; }
+  var cloudA = makeCloud(), cloudB = makeCloud();
+  var state = { mode:'auto', theta:0, sep:0, spin:'super', collapse:0 };
+  var speed = 2*Math.PI/13;
+  function drawCloud(cloud, cx, cy, sprite, sigX, sigY, t){
+    for(var i=0;i<cloud.length;i++){
+      var p = cloud[i];
+      var px = cx + p.x*sigX, py = cy + p.y*sigY;
+      var tw = 0.55 + 0.45*Math.sin(t*p.ts + p.tw);
+      var sz = 46 * p.s;
+      ctx.globalAlpha = 0.5*tw;
+      ctx.drawImage(sprite, px - sz/2, py - sz/2, sz, sz);
+    }
+    ctx.globalAlpha = 1;
+  }
+  function drawThread(ax, ay, bx, by, t, sep){
+    var dx = bx-ax, dy = by-ay;
+    var dist = Math.sqrt(dx*dx+dy*dy);
+    var steps = 60, amp = Math.min(26, 8 + dist*0.07);
+    var faint = 0.10 + 0.42*(1-sep);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = 'rgba(170,185,255,'+faint.toFixed(3)+')';
+    ctx.beginPath();
+    for(var i=0;i<=steps;i++){
+      var u = i/steps, x = ax + dx*u, y = ay + dy*u, env = Math.sin(u*Math.PI);
+      y += Math.sin(u*9 - t*2.2)*amp*env;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    var beads = 5;
+    for(var b=0;b<beads;b++){
+      var u = ((t*0.12 + b/beads) % 1);
+      var x = ax + dx*u, env = Math.sin(u*Math.PI);
+      var y = ay + dy*u + Math.sin(u*9 - t*2.2)*amp*env;
+      ctx.globalAlpha = (0.18 + 0.5*env) * (0.5+0.5*faint);
+      ctx.fillStyle = 'rgba(210,220,255,0.9)';
+      ctx.beginPath(); ctx.arc(x,y,1.8,0,Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  function drawArrow(cx, cy, dir, alpha){
+    var len = 16;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = 'rgba(245,248,255,0.95)'; ctx.fillStyle = 'rgba(245,248,255,0.95)';
+    ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+    var tipY = cy - dir*len, tailY = cy + dir*len;
+    ctx.beginPath(); ctx.moveTo(cx, tailY); ctx.lineTo(cx, tipY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, tipY); ctx.lineTo(cx-5, tipY + dir*7); ctx.lineTo(cx+5, tipY + dir*7); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function drawSpin(cx, cy, who, t){
+    if(state.spin === 'super'){
+      var ph = Math.sin(t*2.4 + (who==='A'?0:Math.PI));
+      drawArrow(cx, cy, 1, 0.30 + 0.25*(ph*0.5+0.5));
+      drawArrow(cx, cy, -1, 0.30 + 0.25*((-ph)*0.5+0.5));
+    } else {
+      var up = (state.spin === 'A_up');
+      var dir = (who==='A') ? (up?1:-1) : (up?-1:1);
+      drawArrow(cx, cy, dir, 1);
+    }
+  }
+  function drawCollapseRing(cx, cy, prog){
+    var r = 14 + prog*70;
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = 'rgba(200,210,255,'+(0.5*(1-prog)).toFixed(3)+')';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  function label(text, x, y, align){
+    ctx.font = '500 12px ui-sans-serif, system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(220,228,255,0.7)';
+    ctx.textAlign = align || 'center';
+    ctx.fillText(text, x, y);
+    ctx.textAlign = 'start';
+  }
+  function frame(ts){
+    if(!window.vizActive(canvas)){ frame.last=ts; requestAnimationFrame(frame); return; }
+    if(!frame.last) frame.last = ts;
+    var dt = Math.min(0.05, (ts-frame.last)/1000); frame.last = ts;
+    if(state.mode === 'auto'){ state.theta += dt*speed; state.sep = (1-Math.cos(state.theta))/2; sepSlider.value = Math.round(state.sep*100); }
+    if(state.collapse > 0){ state.collapse = Math.max(0, state.collapse - dt*0.9); }
+    var t = ts/1000;
+    ctx.clearRect(0,0,W,H);
+    var midX = W/2, midY = H/2 - 6;
+    var maxOff = Math.min(W*0.30, 235);
+    var off = state.sep * maxOff;
+    var cxA = midX - off, cxB = midX + off;
+    var sigBase = 30, sigX = sigBase + state.sep*6, sigY = sigBase - 2;
+    drawThread(cxA, midY, cxB, midY, t, state.sep);
+    ctx.globalCompositeOperation = 'lighter';
+    drawCloud(cloudA, cxA, midY, spriteA, sigX, sigY, t);
+    drawCloud(cloudB, cxB, midY, spriteB, sigX, sigY, t);
+    if(state.sep < 0.32){
+      var glow = (1 - state.sep/0.32);
+      var pulse = 0.6 + 0.4*Math.sin(t*4);
+      var gr = ctx.createRadialGradient(midX,midY,0,midX,midY,90);
+      gr.addColorStop(0, 'rgba(225,210,255,'+(0.30*glow*pulse).toFixed(3)+')');
+      gr.addColorStop(1, 'rgba(225,210,255,0)');
+      ctx.fillStyle = gr;
+      ctx.fillRect(midX-100, midY-100, 200, 200);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    if(state.collapse > 0){ var prog = 1 - state.collapse; drawCollapseRing(cxA, midY, prog); drawCollapseRing(cxB, midY, prog); }
+    drawSpin(cxA, midY, 'A', t);
+    drawSpin(cxB, midY, 'B', t);
+    label('A', cxA, midY + sigY + 30);
+    label('B', cxB, midY + sigY + 30);
+    var sLabel;
+    if(state.sep < 0.22) sLabel = 'overlapping · interacting';
+    else if(state.sep < 0.7) sLabel = 'separating · still correlated';
+    else sLabel = 'far apart · still entangled';
+    stageLabel.textContent = sLabel;
+    requestAnimationFrame(frame);
+  }
+  sepSlider.addEventListener('input', function(){ state.mode = 'manual'; state.sep = parseInt(sepSlider.value,10)/100; setPlayUI(false); });
+  function setPlayUI(playing){
+    playBtn.innerHTML = playing
+      ? '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Pause'
+      : '<i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Play';
+  }
+  playBtn.addEventListener('click', function(){
+    if(state.mode === 'auto'){ state.mode = 'manual'; setPlayUI(false); }
+    else { state.theta = Math.acos(1 - 2*state.sep); state.mode = 'auto'; setPlayUI(true); }
+  });
+  measureBtn.addEventListener('click', function(){
+    state.spin = (Math.random() < 0.5) ? 'A_up' : 'A_down';
+    state.collapse = 1;
+    readout.textContent = (state.spin === 'A_up') ? 'measured: |↑↓⟩ — left up, right down' : 'measured: |↓↑⟩ — left down, right up';
+  });
+  resetBtn.addEventListener('click', function(){ state.spin = 'super'; state.collapse = 0; readout.textContent = 'state: superposition — spins indefinite'; });
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(canvas); } else { window.addEventListener('resize', resize); }
+  resize(); setPlayUI(true); requestAnimationFrame(frame);
+})();
+</script>
+</section>
+
+<!-- ============================================================= -->
+<section id="density">
+<span class="tag">2 · Exact</span>
+<h2>The two-particle joint density</h2>
+<p>This is the rigorous version of the thread. For the correlated Gaussian (EPR-type) state, the joint density is <span class="eq">ρ(x₁,x₂) ∝ exp[ −(x₁² − 2r·x₁x₂ + x₂²) / (2(1−r²)) ]</span>. Slide the spatial correlation <code>r</code> toward −1 and the probability mass collapses onto the dashed anti-diagonal <span class="eq">x₁ = −x₂</span>; at <code>r = 0</code> it is a round, factorizable product state. The teal/pink side curves are the single-particle marginals — they never move as you change <code>r</code>, which is why entanglement is invisible locally. The toggle compares the true joint density with the product of its marginals; that they differ <em>is</em> non-separability.</p>
+
+<h2 class="sr-only">Heatmap of the two-particle probability density with a spatial correlation slider.</h2>
+<div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+    <div style="font-family:var(--font-serif); font-size:17px; color:var(--color-text-primary);">|&Psi;(x&#8321;, x&#8322;)|&sup2;</div>
+    <div id="dens-readout" style="font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary);">joint density — non-separable, anti-correlated</div>
+  </div>
+  <div style="border-radius:var(--border-radius-lg); overflow:hidden; background:#06060f; border:0.5px solid var(--color-border-tertiary);">
+    <canvas id="dens-canvas" style="display:block; width:100%; height:340px;"></canvas>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <label style="font-size:13px; color:var(--color-text-secondary); min-width:118px;">Spatial correlation r</label>
+    <input type="range" id="rcorr" min="-96" max="96" value="-85" step="1" style="flex:1; min-width:150px;" />
+    <span id="rval" style="font-family:var(--font-mono); font-size:13px; font-weight:500; min-width:48px; text-align:right;">-0.85</span>
+    <button id="mode-btn" style="min-width:188px;"><i class="ti ti-arrows-split" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Show: joint density</button>
+  </div>
+  <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--color-text-secondary);">
+    <span>low |&Psi;|&sup2;</span>
+    <span style="flex:1; min-width:120px; height:10px; border-radius:5px; background:linear-gradient(to right, rgb(6,8,28), rgb(60,24,98), rgb(140,38,108), rgb(207,72,86), rgb(240,140,58), rgb(248,196,84), rgb(252,247,196));"></span>
+    <span>high</span>
+    <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:14px; height:2px; background:#3fd6a8;"></span>marginal &rho;(x&#8321;)</span>
+    <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:14px; height:2px; background:#f08bb4;"></span>marginal &rho;(x&#8322;)</span>
+  </div>
+</div>
+<script>
+(function(){
+  var canvas = document.getElementById('dens-canvas');
+  var ctx = canvas.getContext('2d');
+  var rSlider = document.getElementById('rcorr');
+  var rVal = document.getElementById('rval');
+  var modeBtn = document.getElementById('mode-btn');
+  var readout = document.getElementById('dens-readout');
+  var W = 680, H = 340, dpr = Math.max(1, window.devicePixelRatio || 1);
+  var mode = 'joint', L = 4.0;
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width || 680; H = 340;
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); draw();
+  }
+  function inferno(t){
+    t = t<0?0:(t>1?1:t);
+    var s = [[0,6,8,28],[0.2,60,24,98],[0.4,140,38,108],[0.6,207,72,86],[0.78,240,140,58],[0.9,248,196,84],[1,252,247,196]];
+    for(var i=1;i<s.length;i++){ if(t<=s[i][0]){ var a=s[i-1], b=s[i], f=(t-a[0])/(b[0]-a[0]); return [a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f, a[3]+(b[3]-a[3])*f]; } }
+    return [252,247,196];
+  }
+  var G = 200;
+  var off = document.createElement('canvas'); off.width = G; off.height = G;
+  var octx = off.getContext('2d');
+  var img = octx.createImageData(G, G);
+  function buildDensity(r){
+    var data = img.data;
+    var denom = 2*(1 - r*r);
+    for(var j=0;j<G;j++){
+      var x2 = L*(1 - 2*j/(G-1));
+      for(var i=0;i<G;i++){
+        var x1 = -L + 2*L*i/(G-1);
+        var rho;
+        if(mode === 'product'){ rho = Math.exp(-(x1*x1 + x2*x2)/2); }
+        else { rho = Math.exp(-(x1*x1 - 2*r*x1*x2 + x2*x2)/denom); }
+        var c = inferno(Math.pow(rho, 0.55));
+        var idx = (j*G + i)*4;
+        data[idx]=c[0]|0; data[idx+1]=c[1]|0; data[idx+2]=c[2]|0; data[idx+3]=255;
+      }
+    }
+    octx.putImageData(img, 0, 0);
+  }
+  function draw(){
+    var r = parseInt(rSlider.value,10)/100;
+    ctx.clearRect(0,0,W,H);
+    var topStrip = 40, bottomPad = 30, leftPad = 34, rightStrip = 40;
+    var availW = W - leftPad - rightStrip, availH = H - topStrip - bottomPad;
+    var side = Math.min(availW, availH);
+    var plotX = leftPad + (availW - side)/2, plotY = topStrip + (availH - side)/2;
+    buildDensity(r);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(off, plotX, plotY, side, side);
+    ctx.strokeStyle = 'rgba(160,170,210,0.35)'; ctx.lineWidth = 0.5;
+    ctx.strokeRect(plotX, plotY, side, side);
+    ctx.save(); ctx.setLineDash([5,4]); ctx.strokeStyle = 'rgba(225,232,255,0.55)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(plotX, plotY); ctx.lineTo(plotX + side, plotY + side); ctx.stroke(); ctx.restore();
+    ctx.font = '500 11px ui-monospace, monospace'; ctx.fillStyle = 'rgba(225,232,255,0.7)'; ctx.textAlign = 'left';
+    ctx.fillText('x₁ = −x₂', plotX + side - 70, plotY + side - 8);
+    var mh = topStrip - 8;
+    ctx.strokeStyle = '#3fd6a8'; ctx.lineWidth = 1.5; ctx.beginPath();
+    for(var i=0;i<=side;i++){ var x1 = -L + 2*L*i/side; var v = Math.exp(-x1*x1/2); var px = plotX + i, py = plotY - 4 - v*mh; if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.stroke();
+    var mw = rightStrip - 8;
+    ctx.strokeStyle = '#f08bb4'; ctx.beginPath();
+    for(var j=0;j<=side;j++){ var x2 = L*(1 - 2*j/side); var v2 = Math.exp(-x2*x2/2); var px2 = plotX + side + 4 + v2*mw, py2 = plotY + j; if(j===0) ctx.moveTo(px2,py2); else ctx.lineTo(px2,py2); }
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(210,218,245,0.85)'; ctx.font = '500 13px ui-sans-serif, system-ui, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('x₁', plotX + side/2, plotY + side + 22);
+    ctx.fillText('x₂', plotX - 18, plotY + side/2);
+    rVal.textContent = (r>=0?'+':'') + r.toFixed(2);
+    if(mode === 'product'){ readout.textContent = 'product ρ(x₁)·ρ(x₂) — round blob, ignores r'; }
+    else if(Math.abs(r) < 0.04){ readout.textContent = 'joint density — separable (product state)'; }
+    else if(r < 0){ readout.textContent = 'joint density — non-separable, anti-correlated (x₁≈−x₂)'; }
+    else { readout.textContent = 'joint density — non-separable, correlated (x₁≈x₂)'; }
+  }
+  rSlider.addEventListener('input', draw);
+  modeBtn.addEventListener('click', function(){
+    mode = (mode === 'joint') ? 'product' : 'joint';
+    modeBtn.innerHTML = (mode === 'joint')
+      ? '<i class="ti ti-arrows-split" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Show: joint density'
+      : '<i class="ti ti-circle" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Show: product of marginals';
+    draw();
+  });
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(canvas); } else { window.addEventListener('resize', resize); }
+  resize();
+})();
+</script>
+</section>
+
+<!-- ============================================================= -->
+<section id="bell">
+<span class="tag">3 · Exact (Monte Carlo)</span>
+<h2>Bell correlation on the singlet</h2>
+<p>Set the two detector angles θ_A and θ_B and fire trials. Each trial draws A = ±1 fairly, then sets B opposite with probability <span class="eq">cos²(Δθ/2)</span> — the exact singlet prediction. The empirical anti-correlation probability (teal dots) converges onto the blue curve; sweep the dials to trace it out. The dashed line is the best <em>linear</em> local-realist model pinned to the same endpoints, so the gap between curve and line is the region no local hidden-variable theory can reach.</p>
+
+<h2 class="sr-only">Bell correlation experiment with two adjustable detector angles.</h2>
+<div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
+        <circle cx="29" cy="29" r="24" fill="none" stroke="rgba(63,214,168,0.35)" stroke-width="1"/>
+        <circle cx="29" cy="29" r="3" fill="#3fd6a8"/>
+        <line id="needleA" x1="29" y1="29" x2="29" y2="7" stroke="#3fd6a8" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:12px; color:#3fd6a8;">detector A · <span id="aval">0°</span></label>
+        <input type="range" id="angA" min="0" max="360" value="0" step="1" style="width:130px;" />
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <svg width="58" height="58" viewBox="0 0 58 58" aria-hidden="true">
+        <circle cx="29" cy="29" r="24" fill="none" stroke="rgba(240,139,180,0.35)" stroke-width="1"/>
+        <circle cx="29" cy="29" r="3" fill="#f08bb4"/>
+        <line id="needleB" x1="29" y1="29" x2="29" y2="7" stroke="#f08bb4" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:12px; color:#f08bb4;">detector B · <span id="bval">0°</span></label>
+        <input type="range" id="angB" min="0" max="360" value="0" step="1" style="width:130px;" />
+      </div>
+    </div>
+    <div style="font-family:var(--font-mono); font-size:13px; color:var(--color-text-primary);">Δθ = <span id="dtheta">0</span>°</div>
+  </div>
+  <div style="border-radius:var(--border-radius-lg); overflow:hidden; background:#06060f; border:0.5px solid var(--color-border-tertiary);">
+    <canvas id="bell-canvas" style="display:block; width:100%; height:300px;"></canvas>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <button id="fire-btn"><i class="ti ti-bolt" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Fire 200</button>
+    <button id="auto-btn"><i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Auto</button>
+    <button id="clear-btn"><i class="ti ti-trash" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Clear</button>
+    <span id="bell-readout" style="font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary); margin-left:4px;">no trials yet</span>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px;">
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">P(anti) measured</div>
+      <div id="p-meas" style="font-size:22px; font-weight:500;">—</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">cos²(Δθ/2) theory</div>
+      <div id="p-theory" style="font-size:22px; font-weight:500;">1.00</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">correlation E(a,b)</div>
+      <div id="e-val" style="font-size:22px; font-weight:500;">—</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">trials at this Δθ</div>
+      <div id="n-here" style="font-size:22px; font-weight:500;">0</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var canvas = document.getElementById('bell-canvas');
+  var ctx = canvas.getContext('2d');
+  var angA = document.getElementById('angA'), angB = document.getElementById('angB');
+  var aval = document.getElementById('aval'), bval = document.getElementById('bval');
+  var dthetaEl = document.getElementById('dtheta');
+  var needleA = document.getElementById('needleA'), needleB = document.getElementById('needleB');
+  var fireBtn = document.getElementById('fire-btn'), autoBtn = document.getElementById('auto-btn'), clearBtn = document.getElementById('clear-btn');
+  var readout = document.getElementById('bell-readout');
+  var pMeasEl = document.getElementById('p-meas'), pTheoryEl = document.getElementById('p-theory'), eValEl = document.getElementById('e-val'), nHereEl = document.getElementById('n-here');
+  var W = 680, H = 300, dpr = Math.max(1, window.devicePixelRatio || 1);
+  var bins = {}, totalAll = 0, auto = false;
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width || 680; H = 300;
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); draw();
+  }
+  function effDelta(){
+    var a = parseInt(angA.value,10), b = parseInt(angB.value,10);
+    var raw = (((a-b)%360)+360)%360;
+    return raw > 180 ? 360-raw : raw;
+  }
+  function pTheory(d){ var h = d*Math.PI/180/2; var c = Math.cos(h); return c*c; }
+  function fire(n){
+    var d = Math.round(effDelta());
+    if(!bins[d]) bins[d] = {uu:0,ud:0,du:0,dd:0};
+    var bin = bins[d], p = pTheory(d);
+    for(var k=0;k<n;k++){
+      var A = Math.random() < 0.5 ? 1 : -1;
+      var opp = Math.random() < p;
+      var B = opp ? -A : A;
+      if(A>0 && B>0) bin.uu++;
+      else if(A>0 && B<0) bin.ud++;
+      else if(A<0 && B>0) bin.du++;
+      else bin.dd++;
+    }
+    totalAll += n; updateStats();
+  }
+  function binStats(d){
+    var bin = bins[d];
+    if(!bin) return null;
+    var total = bin.uu+bin.ud+bin.du+bin.dd, anti = bin.ud+bin.du;
+    return {total:total, anti:anti, p: total? anti/total : 0};
+  }
+  function updateStats(){
+    var d = Math.round(effDelta()), th = pTheory(d);
+    pTheoryEl.textContent = th.toFixed(2);
+    var s = binStats(d);
+    if(s && s.total>0){
+      pMeasEl.textContent = s.p.toFixed(2);
+      eValEl.textContent = (1 - 2*s.p).toFixed(2);
+      nHereEl.textContent = s.total.toLocaleString();
+      readout.textContent = totalAll.toLocaleString() + ' trials total · E = −cos(Δθ) at Δθ=' + d + '°';
+    } else {
+      pMeasEl.textContent = '—'; eValEl.textContent = '—'; nHereEl.textContent = '0';
+      readout.textContent = totalAll>0 ? (totalAll.toLocaleString()+' trials total · none yet at Δθ='+d+'°') : 'no trials yet';
+    }
+    draw();
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var mL = 46, mR = 16, mT = 16, mB = 34;
+    var pw = W - mL - mR, ph = H - mT - mB;
+    var px0 = mL, py0 = mT;
+    function X(d){ return px0 + d/180*pw; }
+    function Y(p){ return py0 + (1-p)*ph; }
+    ctx.strokeStyle = 'rgba(150,160,200,0.18)'; ctx.lineWidth = 0.5;
+    ctx.fillStyle = 'rgba(200,208,235,0.6)'; ctx.font = '11px ui-monospace, monospace'; ctx.textAlign = 'right';
+    var yt = [0,0.25,0.5,0.75,1];
+    for(var i=0;i<yt.length;i++){ var y = Y(yt[i]); ctx.beginPath(); ctx.moveTo(px0,y); ctx.lineTo(px0+pw,y); ctx.stroke(); ctx.fillText(yt[i].toFixed(2), px0-8, y+4); }
+    ctx.textAlign = 'center';
+    var xt = [0,45,90,135,180];
+    for(var j=0;j<xt.length;j++){ var x = X(xt[j]); ctx.beginPath(); ctx.moveTo(x,py0); ctx.lineTo(x,py0+ph); ctx.stroke(); ctx.fillText(xt[j]+'°', x, py0+ph+20); }
+    ctx.fillStyle = 'rgba(210,218,245,0.85)'; ctx.font = '500 12px ui-sans-serif, system-ui, sans-serif';
+    ctx.fillText('Δθ  (detector angle difference)', px0+pw/2, H-6);
+    ctx.save(); ctx.translate(13, py0+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText('P(anti-correlated)', 0, 0); ctx.restore();
+    ctx.setLineDash([5,4]); ctx.strokeStyle = 'rgba(180,188,215,0.5)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(0),Y(1)); ctx.lineTo(X(180),Y(0)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = '#5ad0ff'; ctx.lineWidth = 2; ctx.beginPath();
+    for(var d=0; d<=180; d+=1){ var xx = X(d), yy = Y(pTheory(d)); if(d===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
+    ctx.stroke();
+    for(var key in bins){
+      var dd = parseInt(key,10), s = binStats(dd);
+      if(!s || s.total===0) continue;
+      var rad = Math.min(7, 2 + Math.log(s.total));
+      ctx.beginPath(); ctx.arc(X(dd), Y(s.p), rad, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(63,214,168,0.85)'; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 0.5; ctx.stroke();
+    }
+    var cur = Math.round(effDelta());
+    ctx.setLineDash([3,3]); ctx.strokeStyle = 'rgba(240,139,180,0.7)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(cur),py0); ctx.lineTo(X(cur),py0+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#5ad0ff'; ctx.textAlign = 'left'; ctx.font = '11px ui-monospace, monospace';
+    ctx.fillText('cos²(Δθ/2)  quantum', X(8), Y(pTheory(8))-8);
+    ctx.fillStyle = 'rgba(180,188,215,0.85)';
+    ctx.fillText('linear  local-realist', X(96), Y(1-96/180)+16);
+  }
+  function syncAngles(){
+    var a = parseInt(angA.value,10), b = parseInt(angB.value,10);
+    aval.textContent = a+'°'; bval.textContent = b+'°';
+    needleA.setAttribute('transform','rotate('+a+' 29 29)');
+    needleB.setAttribute('transform','rotate('+b+' 29 29)');
+    dthetaEl.textContent = Math.round(effDelta());
+    updateStats();
+  }
+  angA.addEventListener('input', syncAngles);
+  angB.addEventListener('input', syncAngles);
+  fireBtn.addEventListener('click', function(){ fire(200); });
+  clearBtn.addEventListener('click', function(){ bins = {}; totalAll = 0; updateStats(); });
+  autoBtn.addEventListener('click', function(){
+    auto = !auto;
+    autoBtn.innerHTML = auto
+      ? '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Stop'
+      : '<i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Auto';
+  });
+  function loop(){ if(auto && window.vizActive(canvas)) fire(40); requestAnimationFrame(loop); }
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(canvas); } else { window.addEventListener('resize', resize); }
+  resize(); syncAngles(); requestAnimationFrame(loop);
+})();
+</script>
+</section>
+
+<!-- ============================================================= -->
+<section id="chsh">
+<span class="tag">4 · Exact (Monte Carlo)</span>
+<h2>CHSH inequality and Tsirelson's bound</h2>
+<p>The full Bell protocol: each trial randomly selects one of Alice's two settings (a, a′) and one of Bob's two (b, b′), and the four correlation terms combine into <span class="eq">S = E(a,b) − E(a,b′) + E(a′,b) + E(a′,b′)</span>. With the default optimal angles (0°, 90° for Alice; 45°, 135° for Bob), |S| climbs straight through the classical limit of 2 and settles at Tsirelson's bound <span class="eq">2√2 ≈ 2.83</span>. Drag the angles together and it drops back below 2.</p>
+
+<h2 class="sr-only">CHSH experiment with four adjustable detector angles and a convergence plot of |S|.</h2>
+<div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px;">
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <label style="font-size:12px; color:#3fd6a8;">Alice a · <span id="la">0</span>°</label>
+      <input type="range" id="aa" min="0" max="180" value="0" step="1" />
+      <label style="font-size:12px; color:#3fd6a8;">Alice a′ · <span id="lap">90</span>°</label>
+      <input type="range" id="aap" min="0" max="180" value="90" step="1" />
+    </div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <label style="font-size:12px; color:#f08bb4;">Bob b · <span id="lb">45</span>°</label>
+      <input type="range" id="bb" min="0" max="180" value="45" step="1" />
+      <label style="font-size:12px; color:#f08bb4;">Bob b′ · <span id="lbp">135</span>°</label>
+      <input type="range" id="bbp" min="0" max="180" value="135" step="1" />
+    </div>
+  </div>
+  <div style="border-radius:var(--border-radius-lg); overflow:hidden; background:#06060f; border:0.5px solid var(--color-border-tertiary);">
+    <canvas id="chsh-canvas" style="display:block; width:100%; height:240px;"></canvas>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <button id="c-fire"><i class="ti ti-bolt" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Fire 400</button>
+    <button id="c-auto"><i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Auto</button>
+    <button id="c-clear"><i class="ti ti-trash" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Clear</button>
+    <button id="c-opt"><i class="ti ti-target" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Optimal angles</button>
+    <span id="c-status" style="font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary); margin-left:4px;">awaiting trials</span>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px;">
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">|S| measured</div>
+      <div id="s-val" style="font-size:24px; font-weight:500;">—</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">classical limit</div>
+      <div style="font-size:24px; font-weight:500;">2.00</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">Tsirelson 2√2</div>
+      <div style="font-size:24px; font-weight:500;">2.83</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">total trials</div>
+      <div id="c-trials" style="font-size:24px; font-weight:500;">0</div>
+    </div>
+  </div>
+  <div id="e-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary);"></div>
+</div>
+<script>
+(function(){
+  var canvas = document.getElementById('chsh-canvas');
+  var ctx = canvas.getContext('2d');
+  var W = 680, H = 240, dpr = Math.max(1, window.devicePixelRatio || 1);
+  var ids = ['aa','aap','bb','bbp'];
+  var labs = {aa:'la',aap:'lap',bb:'lb',bbp:'lbp'};
+  var el = {};
+  ids.forEach(function(k){ el[k] = document.getElementById(k); });
+  var pairs = [
+    {key:'ab',   sign:1,  A:'aa',  B:'bb',  name:'E(a, b)'},
+    {key:'abp',  sign:-1, A:'aa',  B:'bbp', name:'E(a, b′)'},
+    {key:'apb',  sign:1,  A:'aap', B:'bb',  name:'E(a′, b)'},
+    {key:'apbp', sign:1,  A:'aap', B:'bbp', name:'E(a′, b′)'}
+  ];
+  var counts = {};
+  function resetCounts(){ pairs.forEach(function(p){ counts[p.key]={same:0,diff:0,total:0}; }); }
+  resetCounts();
+  var totalAll = 0, history = [], maxN = 1000, auto = false;
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width || 680; H = 240;
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); draw();
+  }
+  function ang(k){ return parseInt(el[k].value,10); }
+  function pAntiDeg(d){ var h = d*Math.PI/180/2; var c = Math.cos(h); return c*c; }
+  function fire(n){
+    for(var k=0;k<n;k++){
+      var aSet = Math.random()<0.5 ? 'aa' : 'aap';
+      var bSet = Math.random()<0.5 ? 'bb' : 'bbp';
+      var p = pairs.find(function(pp){ return pp.A===aSet && pp.B===bSet; });
+      var d = Math.abs(ang(aSet) - ang(bSet));
+      var pAnti = pAntiDeg(d);
+      var A = Math.random()<0.5 ? 1 : -1;
+      var opp = Math.random() < pAnti;
+      var B = opp ? -A : A;
+      var c = counts[p.key];
+      if(A===B) c.same++; else c.diff++;
+      c.total++;
+    }
+    totalAll += n;
+    var S = computeS();
+    if(S !== null){
+      history.push({n: totalAll, S: Math.abs(S)});
+      if(totalAll > maxN) maxN = totalAll;
+      if(history.length > 800) history = history.filter(function(_,i){ return i%2===0; });
+    }
+    updateUI(S);
+  }
+  function eOf(p){ var c = counts[p.key]; return c.total ? (c.same - c.diff)/c.total : null; }
+  function computeS(){
+    var S = 0;
+    for(var i=0;i<pairs.length;i++){ var e = eOf(pairs[i]); if(e === null) return null; S += pairs[i].sign * e; }
+    return S;
+  }
+  function updateUI(S){
+    document.getElementById('c-trials').textContent = totalAll.toLocaleString();
+    var sEl = document.getElementById('s-val'), status = document.getElementById('c-status');
+    if(S === null){ sEl.textContent = '—'; sEl.style.color = ''; status.textContent = 'need trials in all four settings'; }
+    else {
+      var aS = Math.abs(S);
+      sEl.textContent = aS.toFixed(3);
+      if(aS > 2){ sEl.style.color = 'var(--color-text-success)'; status.textContent = 'violation — |S| > 2, beyond any local hidden-variable model'; }
+      else { sEl.style.color = ''; status.textContent = '|S| ≤ 2 — consistent with local realism at these angles'; }
+    }
+    var grid = document.getElementById('e-grid'); grid.innerHTML = '';
+    pairs.forEach(function(p){
+      var e = eOf(p), d = Math.abs(ang(p.A) - ang(p.B));
+      var div = document.createElement('div');
+      div.style.cssText = 'background:var(--color-background-secondary); border-radius:6px; padding:6px 9px;';
+      div.innerHTML = '<span style="color:var(--color-text-primary);">'+p.name+'</span> = '+(e===null?'—':e.toFixed(3))+'  <span style="opacity:.7;">(Δ'+d+'°)</span>';
+      grid.appendChild(div);
+    });
+    draw();
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var mL = 40, mR = 14, mT = 14, mB = 28;
+    var pw = W-mL-mR, ph = H-mT-mB, px0 = mL, py0 = mT;
+    function X(n){ return px0 + (maxN? n/maxN:0)*pw; }
+    function Y(s){ return py0 + (1 - s/3)*ph; }
+    ctx.strokeStyle = 'rgba(150,160,200,0.16)'; ctx.lineWidth = 0.5;
+    ctx.fillStyle = 'rgba(200,208,235,0.6)'; ctx.font = '11px ui-monospace, monospace'; ctx.textAlign = 'right';
+    [0,1,2,3].forEach(function(v){ var y = Y(v); ctx.beginPath(); ctx.moveTo(px0,y); ctx.lineTo(px0+pw,y); ctx.stroke(); ctx.fillText(v.toFixed(0), px0-8, y+4); });
+    ctx.setLineDash([5,4]); ctx.strokeStyle = 'rgba(239,159,39,0.85)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(px0,Y(2)); ctx.lineTo(px0+pw,Y(2)); ctx.stroke();
+    ctx.strokeStyle = 'rgba(63,214,168,0.85)';
+    ctx.beginPath(); ctx.moveTo(px0,Y(2*Math.SQRT2)); ctx.lineTo(px0+pw,Y(2*Math.SQRT2)); ctx.stroke();
+    ctx.setLineDash([]); ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(239,159,39,0.95)'; ctx.fillText('classical limit 2', px0+6, Y(2)-6);
+    ctx.fillStyle = 'rgba(63,214,168,0.95)'; ctx.fillText('Tsirelson 2√2', px0+6, Y(2*Math.SQRT2)-6);
+    if(history.length > 1){
+      ctx.strokeStyle = '#c9b6ff'; ctx.lineWidth = 2; ctx.beginPath();
+      for(var i=0;i<history.length;i++){ var x = X(history[i].n), y = Y(history[i].S); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+      ctx.stroke();
+      var last = history[history.length-1];
+      ctx.beginPath(); ctx.arc(X(last.n), Y(last.S), 3.5, 0, Math.PI*2); ctx.fillStyle = '#c9b6ff'; ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(210,218,245,0.8)'; ctx.font = '500 12px ui-sans-serif, system-ui, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('trials →', px0+pw/2, H-6);
+    ctx.save(); ctx.translate(12, py0+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText('|S|', 0, 0); ctx.restore();
+  }
+  ids.forEach(function(k){
+    el[k].addEventListener('input', function(){
+      document.getElementById(labs[k]).textContent = el[k].value;
+      resetCounts(); totalAll = 0; history = []; maxN = 1000; updateUI(null);
+    });
+  });
+  document.getElementById('c-fire').addEventListener('click', function(){ fire(400); });
+  document.getElementById('c-clear').addEventListener('click', function(){ resetCounts(); totalAll=0; history=[]; maxN=1000; updateUI(null); });
+  document.getElementById('c-opt').addEventListener('click', function(){
+    el.aa.value=0; el.aap.value=90; el.bb.value=45; el.bbp.value=135;
+    document.getElementById('la').textContent='0'; document.getElementById('lap').textContent='90';
+    document.getElementById('lb').textContent='45'; document.getElementById('lbp').textContent='135';
+    resetCounts(); totalAll=0; history=[]; maxN=1000; updateUI(null);
+  });
+  document.getElementById('c-auto').addEventListener('click', function(){
+    auto = !auto;
+    document.getElementById('c-auto').innerHTML = auto
+      ? '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Stop'
+      : '<i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Auto';
+  });
+  function loop(){ if(auto && window.vizActive(canvas)) fire(120); requestAnimationFrame(loop); }
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(canvas); } else { window.addEventListener('resize', resize); }
+  resize(); updateUI(null); requestAnimationFrame(loop);
+})();
+</script>
+</section>
+
+<!-- ============================================================= -->
+<section id="coupled">
+<span class="tag">5 · Schematic clock</span>
+<h2>Coupled scene — real space and configuration space</h2>
+<p>One shared clock drives both pictures. Left, real space: the two wavepackets separate. Right, configuration space: the joint density <span class="eq">|Ψ(x₁,x₂)|²</span> for the spatially entangled state splits into two lobes sliding apart along the anti-diagonal, and the top marginal ρ(x₁) goes from one hump to two. The spin correlation stays pinned at E = −1.00 no matter the separation. (Here the separation is a presentation parameter, not yet a solution of the Schrödinger equation — the next section fixes that.)</p>
+
+<h2 class="sr-only">Coupled real-space and configuration-space animation driven by one separation clock.</h2>
+<div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="border-radius:var(--border-radius-lg); overflow:hidden; background:#06060f; border:0.5px solid var(--color-border-tertiary);">
+    <canvas id="cpl-canvas" style="display:block; width:100%; height:300px;"></canvas>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <button id="cpl-play" style="min-width:104px;"><i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Pause</button>
+    <label style="font-size:13px; color:var(--color-text-secondary);">Separation</label>
+    <input type="range" id="cpl-sep" min="0" max="100" value="0" step="1" style="flex:1; min-width:140px;" />
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px;">
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">cloud separation (real space)</div>
+      <div id="cpl-d" style="font-size:22px; font-weight:500;">0.0</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">spin correlation E</div>
+      <div style="font-size:22px; font-weight:500; color:var(--color-text-success);">−1.00</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">joint state</div>
+      <div style="font-size:15px; font-weight:500; margin-top:4px;">non-separable</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var canvas = document.getElementById('cpl-canvas');
+  var ctx = canvas.getContext('2d');
+  var sepSlider = document.getElementById('cpl-sep');
+  var playBtn = document.getElementById('cpl-play');
+  var dEl = document.getElementById('cpl-d');
+  var W = 680, H = 300, dpr = Math.max(1, window.devicePixelRatio || 1);
+  var state = { mode:'auto', theta:0, sNorm:0 };
+  var speed = 2*Math.PI/15;
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width || 680; H = 300;
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function gauss(){ var u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function makeSprite(color,size){
+    var c=document.createElement('canvas'); c.width=c.height=size; var g=c.getContext('2d');
+    var grd=g.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+    grd.addColorStop(0,color+'e0'); grd.addColorStop(0.35,color+'55'); grd.addColorStop(1,color+'00');
+    g.fillStyle=grd; g.fillRect(0,0,size,size); return c;
+  }
+  var spriteA=makeSprite('#3fd6a8',42), spriteB=makeSprite('#f08bb4',42);
+  var Np=80;
+  function makeCloud(){ var a=[]; for(var i=0;i<Np;i++){ a.push({x:gauss(),y:gauss(),s:0.55+Math.random()*0.8,tw:Math.random()*6.28,ts:1.4+Math.random()*2}); } return a; }
+  var cloudA=makeCloud(), cloudB=makeCloud();
+  function inferno(t){
+    t=t<0?0:(t>1?1:t);
+    var s=[[0,6,8,28],[0.2,60,24,98],[0.4,140,38,108],[0.6,207,72,86],[0.78,240,140,58],[0.9,248,196,84],[1,252,247,196]];
+    for(var i=1;i<s.length;i++){ if(t<=s[i][0]){ var a=s[i-1],b=s[i],f=(t-a[0])/(b[0]-a[0]); return [a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f,a[3]+(b[3]-a[3])*f]; } }
+    return [252,247,196];
+  }
+  var Gg=104, off=document.createElement('canvas'); off.width=Gg; off.height=Gg;
+  var octx=off.getContext('2d'), img=octx.createImageData(Gg,Gg);
+  var L=3.4, sig=0.62;
+  function buildJoint(s){
+    var data=img.data, s2=sig*sig;
+    var psiMax=1+Math.exp(-4*s*s/s2), maxDens=psiMax*psiMax;
+    for(var j=0;j<Gg;j++){
+      var x2=L*(1-2*j/(Gg-1));
+      for(var i=0;i<Gg;i++){
+        var x1=-L+2*L*i/(Gg-1);
+        var g1=Math.exp(-(((x1+s)*(x1+s)+(x2-s)*(x2-s)))/(2*s2));
+        var g2=Math.exp(-(((x1-s)*(x1-s)+(x2+s)*(x2+s)))/(2*s2));
+        var psi=g1+g2, dens=psi*psi/maxDens;
+        var c=inferno(Math.pow(dens,0.5));
+        var idx=(j*Gg+i)*4;
+        data[idx]=c[0]|0; data[idx+1]=c[1]|0; data[idx+2]=c[2]|0; data[idx+3]=255;
+      }
+    }
+    octx.putImageData(img,0,0);
+  }
+  function drawArrow(cx,cy,dir){
+    ctx.save();
+    ctx.strokeStyle='rgba(245,248,255,0.95)'; ctx.fillStyle='rgba(245,248,255,0.95)';
+    ctx.lineWidth=2.4; ctx.lineCap='round';
+    var len=13, tipY=cy-dir*len, tailY=cy+dir*len;
+    ctx.beginPath(); ctx.moveTo(cx,tailY); ctx.lineTo(cx,tipY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,tipY); ctx.lineTo(cx-4.5,tipY+dir*6); ctx.lineTo(cx+4.5,tipY+dir*6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function frame(ts){
+    if(!window.vizActive(canvas)){ frame.last=ts; requestAnimationFrame(frame); return; }
+    if(!frame.last) frame.last=ts;
+    var dt=Math.min(0.05,(ts-frame.last)/1000); frame.last=ts;
+    if(state.mode==='auto'){ state.theta+=dt*speed; state.sNorm=(1-Math.cos(state.theta))/2; sepSlider.value=Math.round(state.sNorm*100); }
+    var t=ts/1000;
+    ctx.clearRect(0,0,W,H);
+    var leftW=W*0.5, rightW=W-leftW;
+    var midX=leftW/2, midY=H/2+6;
+    var maxOff=leftW*0.28, off2=state.sNorm*maxOff;
+    var cxA=midX-off2, cxB=midX+off2;
+    ctx.strokeStyle='rgba(170,185,255,0.28)'; ctx.lineWidth=1.2;
+    ctx.beginPath();
+    var steps=40, amp=8+off2*0.12;
+    for(var i=0;i<=steps;i++){ var u=i/steps, x=cxA+(cxB-cxA)*u, y=midY+Math.sin(u*9-t*2.2)*amp*Math.sin(u*Math.PI); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.stroke();
+    ctx.globalCompositeOperation='lighter';
+    var sgX=30, sgY=27;
+    for(var p=0;p<Np;p++){ var q=cloudA[p], tw=0.55+0.45*Math.sin(t*q.ts+q.tw), sz=42*q.s; ctx.globalAlpha=0.5*tw; ctx.drawImage(spriteA,cxA+q.x*sgX-sz/2,midY+q.y*sgY-sz/2,sz,sz); }
+    for(var p2=0;p2<Np;p2++){ var q2=cloudB[p2], tw2=0.55+0.45*Math.sin(t*q2.ts+q2.tw), sz2=42*q2.s; ctx.globalAlpha=0.5*tw2; ctx.drawImage(spriteB,cxB+q2.x*sgX-sz2/2,midY+q2.y*sgY-sz2/2,sz2,sz2); }
+    ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+    drawArrow(cxA,midY,1); drawArrow(cxB,midY,-1);
+    ctx.fillStyle='rgba(220,228,255,0.7)'; ctx.font='500 12px ui-sans-serif, system-ui, sans-serif'; ctx.textAlign='center';
+    ctx.fillText('A', cxA, midY+sgY+22); ctx.fillText('B', cxB, midY+sgY+22);
+    ctx.textAlign='left'; ctx.font='500 12px ui-monospace, monospace'; ctx.fillStyle='rgba(200,208,235,0.65)';
+    ctx.fillText('real space (x)', 12, 22);
+    ctx.strokeStyle='rgba(120,130,170,0.25)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(leftW, 8); ctx.lineTo(leftW, H-8); ctx.stroke();
+    var s=0.06+state.sNorm*1.78;
+    var topM=24, side=Math.min(rightW-26, H-46-topM);
+    var plotX=leftW+(rightW-side)/2, plotY=topM+18;
+    buildJoint(s);
+    ctx.imageSmoothingEnabled=true;
+    ctx.drawImage(off, plotX, plotY, side, side);
+    ctx.strokeStyle='rgba(160,170,210,0.3)'; ctx.lineWidth=0.5; ctx.strokeRect(plotX,plotY,side,side);
+    ctx.save(); ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(225,232,255,0.5)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(plotX,plotY); ctx.lineTo(plotX+side,plotY+side); ctx.stroke(); ctx.restore();
+    var mh=15, s2=sig*sig;
+    ctx.strokeStyle='#3fd6a8'; ctx.lineWidth=1.4; ctx.beginPath();
+    for(var k=0;k<=side;k++){
+      var x1=-L+2*L*k/side;
+      var v=Math.exp(-((x1+s)*(x1+s))/s2)+Math.exp(-((x1-s)*(x1-s))/s2)+2*Math.exp(-2*s*s/s2)*Math.exp(-(x1*x1)/s2);
+      v=v/ (2+2*Math.exp(-2*s*s/s2));
+      var px=plotX+k, py=plotY-3-v*mh;
+      if(k===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.fillStyle='rgba(200,208,235,0.65)'; ctx.font='500 12px ui-monospace, monospace'; ctx.textAlign='left';
+    ctx.fillText('configuration space (x₁,x₂)', plotX, 16);
+    ctx.fillStyle='rgba(210,218,245,0.8)'; ctx.font='500 12px ui-sans-serif, system-ui, sans-serif'; ctx.textAlign='center';
+    ctx.fillText('x₁', plotX+side/2, plotY+side+18);
+    ctx.fillText('x₂', plotX-14, plotY+side/2);
+    dEl.textContent=(2*s).toFixed(1);
+    requestAnimationFrame(frame);
+  }
+  sepSlider.addEventListener('input', function(){ state.mode='manual'; state.sNorm=parseInt(sepSlider.value,10)/100; setPlay(false); });
+  function setPlay(p){ playBtn.innerHTML = p ? '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Pause' : '<i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Play'; }
+  playBtn.addEventListener('click', function(){
+    if(state.mode==='auto'){ state.mode='manual'; setPlay(false); }
+    else { state.theta=Math.acos(1-2*state.sNorm); state.mode='auto'; setPlay(true); }
+  });
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(canvas); } else { window.addEventListener('resize', resize); }
+  resize(); setPlay(true); requestAnimationFrame(frame);
+})();
+</script>
+</section>
+
+<!-- ============================================================= -->
+<section id="exact">
+<span class="tag">6 · Exact (Schrödinger)</span>
+<h2>Exact free-particle evolution</h2>
+<p>A genuine solution of the time-dependent Schrödinger equation (units ℏ = m = 1). Each wavepacket's center moves ballistically while its width spreads as <span class="eq">σ(t) = σ₀√(1 + (ℏt/2mσ₀²)²)</span>, and the configuration-space density is the exact <span class="eq">|Ψ(x₁,x₂,t)|²</span> for <span class="eq">Ψ ∝ φ_L(x₁)φ_R(x₂) + φ_R(x₁)φ_L(x₂)</span> — computed from the full complex wavefunction. Note the consequence: showing real entanglement forces <strong>each</strong> particle to be in a superposition of going left <em>and</em> right (left panel), so its own density splits both ways. At early times the anti-correlated momenta show up as genuine interference fringes; they then resolve into two lobes on the anti-diagonal. The spin correlation stays fixed at E = −1.00 throughout.</p>
+
+<h2 class="sr-only">Exact Schrödinger evolution of two entangled wavepackets with spreading and interference.</h2>
+<div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+    <div style="font-family:var(--font-serif); font-size:15px; color:var(--color-text-primary);">
+      &sigma;(t) = &sigma;&#8320;&radic;(1 + (&#8463;t / 2m&sigma;&#8320;&sup2;)&sup2;) &nbsp;<span style="font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary);">(&#8463; = m = 1)</span>
+    </div>
+    <div id="ex-readout" style="font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary);">free evolution</div>
+  </div>
+  <div style="border-radius:var(--border-radius-lg); overflow:hidden; background:#06060f; border:0.5px solid var(--color-border-tertiary);">
+    <canvas id="ex-canvas" style="display:block; width:100%; height:320px;"></canvas>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <button id="ex-play" style="min-width:104px;"><i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Pause</button>
+    <label style="font-size:13px; color:var(--color-text-secondary);">Time t</label>
+    <input type="range" id="ex-time" min="0" max="100" value="0" step="1" style="flex:1; min-width:140px;" />
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px;">
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">time t</div>
+      <div id="ex-t" style="font-size:22px; font-weight:500;">0.00</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">spread σ(t)/σ₀</div>
+      <div id="ex-spread" style="font-size:22px; font-weight:500;">1.00×</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">center separation</div>
+      <div id="ex-sep" style="font-size:22px; font-weight:500;">0.0</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">spin correlation E</div>
+      <div style="font-size:22px; font-weight:500; color:var(--color-text-success);">−1.00</div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var canvas = document.getElementById('ex-canvas');
+  var ctx = canvas.getContext('2d');
+  var timeSlider = document.getElementById('ex-time');
+  var playBtn = document.getElementById('ex-play');
+  var W = 680, H = 320, dpr = Math.max(1, window.devicePixelRatio || 1);
+  var sig0 = 0.7, k0 = 1.6, L = 5.2, tMax = 2.0;
+  var state = { mode:'auto', t:0 };
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width || 680; H = 320;
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function gaussRnd(){ var u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function makeSprite(color,size){
+    var c=document.createElement('canvas'); c.width=c.height=size; var g=c.getContext('2d');
+    var grd=g.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+    grd.addColorStop(0,color+'e0'); grd.addColorStop(0.35,color+'55'); grd.addColorStop(1,color+'00');
+    g.fillStyle=grd; g.fillRect(0,0,size,size); return c;
+  }
+  var spriteA=makeSprite('#3fd6a8',38), spriteB=makeSprite('#f08bb4',38);
+  var Nsub=40, parts=[];
+  for(var p=0;p<Nsub;p++){ parts.push({ox:gaussRnd(),oy:gaussRnd(),tw:Math.random()*6.28,ts:1.4+Math.random()*2,s:0.5+Math.random()*0.8}); }
+  function inferno(t){
+    t=t<0?0:(t>1?1:t);
+    var s=[[0,6,8,28],[0.2,60,24,98],[0.4,140,38,108],[0.6,207,72,86],[0.78,240,140,58],[0.9,248,196,84],[1,252,247,196]];
+    for(var i=1;i<s.length;i++){ if(t<=s[i][0]){ var a=s[i-1],b=s[i],f=(t-a[0])/(b[0]-a[0]); return [a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f,a[3]+(b[3]-a[3])*f]; } }
+    return [252,247,196];
+  }
+  var Gg=112, off=document.createElement('canvas'); off.width=Gg; off.height=Gg;
+  var octx=off.getContext('2d'), imgD=octx.createImageData(Gg,Gg);
+  var dens=new Float32Array(Gg*Gg), margin=new Float64Array(Gg);
+  var gLre=new Float64Array(Gg), gLim=new Float64Array(Gg), gRre=new Float64Array(Gg), gRim=new Float64Array(Gg);
+  function buildExact(t){
+    var ar=sig0*sig0, ai=t/2;
+    var den4=4*(ar*ar+ai*ai);
+    var br=ar/den4, bi=-ai/den4;
+    var cL=-k0*t, cR=k0*t, ph=k0*k0*t/2;
+    for(var i=0;i<Gg;i++){
+      var x=-L+2*L*i/(Gg-1);
+      var dl=x-cL, reL=-dl*dl*br, imL=(-k0)*x-ph-dl*dl*bi, aL=Math.exp(reL);
+      gLre[i]=aL*Math.cos(imL); gLim[i]=aL*Math.sin(imL);
+      var dr=x-cR, reR=-dr*dr*br, imR=(k0)*x-ph-dr*dr*bi, aR=Math.exp(reR);
+      gRre[i]=aR*Math.cos(imR); gRim[i]=aR*Math.sin(imR);
+    }
+    for(var m=0;m<Gg;m++) margin[m]=0;
+    var max=1e-12;
+    for(var j=0;j<Gg;j++){
+      var i2=Gg-1-j;
+      var gLr2=gLre[i2], gLi2=gLim[i2], gRr2=gRre[i2], gRi2=gRim[i2];
+      for(var ii=0;ii<Gg;ii++){
+        var t1re=gLre[ii]*gRr2-gLim[ii]*gRi2;
+        var t1im=gLre[ii]*gRi2+gLim[ii]*gRr2;
+        var t2re=gRre[ii]*gLr2-gRim[ii]*gLi2;
+        var t2im=gRre[ii]*gLi2+gRim[ii]*gLr2;
+        var re=t1re+t2re, im=t1im+t2im, d=re*re+im*im;
+        dens[j*Gg+ii]=d; if(d>max)max=d; margin[ii]+=d;
+      }
+    }
+    var data=imgD.data, inv=1/max;
+    for(var c=0;c<Gg*Gg;c++){
+      var col=inferno(Math.sqrt(dens[c]*inv));
+      var idx=c*4; data[idx]=col[0]|0; data[idx+1]=col[1]|0; data[idx+2]=col[2]|0; data[idx+3]=255;
+    }
+    octx.putImageData(imgD,0,0);
+  }
+  function frame(ts){
+    if(!window.vizActive(canvas)){ frame.last=ts; requestAnimationFrame(frame); return; }
+    if(!frame.last) frame.last=ts;
+    var dt=Math.min(0.05,(ts-frame.last)/1000); frame.last=ts;
+    if(state.mode==='auto'){ state.t+=dt*(tMax/11); if(state.t>tMax) state.t=0; timeSlider.value=Math.round(state.t/tMax*100); }
+    var t=state.t, tt=ts/1000;
+    ctx.clearRect(0,0,W,H);
+    var leftW=W*0.5;
+    var sigT=sig0*Math.sqrt(1+Math.pow(t/(2*sig0*sig0),2));
+    function xToPx(x){ return 8+(x+L)/(2*L)*(leftW-18); }
+    var cxL=xToPx(-k0*t), cxR=xToPx(k0*t);
+    var sigPx=(sigT/(2*L))*(leftW-18);
+    var laneAY=H*0.34, laneBY=H*0.70;
+    ctx.strokeStyle='rgba(170,185,255,0.16)'; ctx.lineWidth=1;
+    var pairsL=[[cxL,laneAY,cxR,laneBY],[cxR,laneAY,cxL,laneBY]];
+    for(var q=0;q<2;q++){ ctx.beginPath(); ctx.moveTo(pairsL[q][0],pairsL[q][1]); ctx.lineTo(pairsL[q][2],pairsL[q][3]); ctx.stroke(); }
+    ctx.globalCompositeOperation='lighter';
+    function lane(cx1,cx2,laneY,sprite){
+      for(var pp=0;pp<Nsub;pp++){
+        var pr=parts[pp], tw=0.5+0.45*Math.sin(tt*pr.ts+pr.tw), sz=38*pr.s;
+        ctx.globalAlpha=0.42*tw;
+        ctx.drawImage(sprite, cx1+pr.ox*sigPx-sz/2, laneY+pr.oy*15-sz/2, sz, sz);
+        ctx.drawImage(sprite, cx2+pr.ox*sigPx-sz/2, laneY+pr.oy*15-sz/2, sz, sz);
+      }
+    }
+    lane(cxL,cxR,laneAY,spriteA);
+    lane(cxL,cxR,laneBY,spriteB);
+    ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle='rgba(200,208,235,0.65)'; ctx.font='500 12px ui-monospace, monospace'; ctx.textAlign='left';
+    ctx.fillText('real space (x)', 10, 16);
+    ctx.fillStyle='#3fd6a8'; ctx.font='500 12px ui-sans-serif, system-ui, sans-serif';
+    ctx.fillText('particle A', 10, laneAY-26);
+    ctx.fillStyle='#f08bb4';
+    ctx.fillText('particle B', 10, laneBY-26);
+    ctx.fillStyle='rgba(190,198,225,0.5)'; ctx.font='11px ui-sans-serif, system-ui, sans-serif';
+    ctx.fillText('each splits ← and →', 10, H-8);
+    ctx.strokeStyle='rgba(120,130,170,0.25)'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(leftW,8); ctx.lineTo(leftW,H-8); ctx.stroke();
+    var rightW=W-leftW, topT=34;
+    var side=Math.min(rightW-26, H-topT-16);
+    var plotX=leftW+(rightW-side)/2, plotY=topT;
+    buildExact(t);
+    ctx.imageSmoothingEnabled=true;
+    ctx.drawImage(off, plotX, plotY, side, side);
+    ctx.strokeStyle='rgba(160,170,210,0.3)'; ctx.lineWidth=0.5; ctx.strokeRect(plotX,plotY,side,side);
+    ctx.save(); ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(225,232,255,0.5)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(plotX,plotY); ctx.lineTo(plotX+side,plotY+side); ctx.stroke(); ctx.restore();
+    var mmax=1e-12; for(var mi=0;mi<Gg;mi++) if(margin[mi]>mmax) mmax=margin[mi];
+    ctx.strokeStyle='#3fd6a8'; ctx.lineWidth=1.4; ctx.beginPath();
+    for(var s2=0;s2<=side;s2++){
+      var gi=Math.round(s2/side*(Gg-1));
+      var v=margin[gi]/mmax, px=plotX+s2, py=plotY-3-v*15;
+      if(s2===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.fillStyle='rgba(200,208,235,0.65)'; ctx.font='500 12px ui-monospace, monospace'; ctx.textAlign='left';
+    ctx.fillText('config space (x₁,x₂)', plotX, 16);
+    ctx.fillStyle='rgba(210,218,245,0.8)'; ctx.font='500 12px ui-sans-serif, system-ui, sans-serif'; ctx.textAlign='center';
+    ctx.fillText('x₁', plotX+side/2, plotY+side+14);
+    document.getElementById('ex-t').textContent=t.toFixed(2);
+    document.getElementById('ex-spread').textContent=(sigT/sig0).toFixed(2)+'×';
+    document.getElementById('ex-sep').textContent=(2*k0*t).toFixed(1);
+    document.getElementById('ex-readout').textContent = t<0.35 ? 'overlap — momentum interference fringes' : 'two lobes separating on the anti-diagonal';
+    requestAnimationFrame(frame);
+  }
+  timeSlider.addEventListener('input', function(){ state.mode='manual'; state.t=parseInt(timeSlider.value,10)/100*tMax; setPlay(false); });
+  function setPlay(p){ playBtn.innerHTML = p ? '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Pause' : '<i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Play'; }
+  playBtn.addEventListener('click', function(){ if(state.mode==='auto'){ state.mode='manual'; setPlay(false); } else { state.mode='auto'; setPlay(true); } });
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(canvas); } else { window.addEventListener('resize', resize); }
+  resize(); setPlay(true); requestAnimationFrame(frame);
+})();
+</script>
+</section>
+
+<p class="foot">Single self-contained file · no build step · the icon font loads from a CDN when online. Physics: spin singlet correlations and the free-particle Schrödinger evolution are exact; the "thread" in section 1 is an artistic rendering of non-separability.</p>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Interference · Grover's Search</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.7.0/tabler-icons.min.css"/>
+<style>
+  :root{
+    --bg:#1a1915; --panel:#23221d; --panel2:#2b2a24; --line:rgba(255,255,255,.12);
+    --line2:rgba(255,255,255,.22); --text:#ece9e0; --text2:#b3b0a6; --text3:#85837b;
+    --blue:#5aa0ec; --coral:#e88b62; --purple:#9a92ee; --teal:#4fc4a8; --amber:#efa52a;
+    --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --r:8px; --rl:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;padding:32px 18px 64px;}
+  .wrap{max-width:740px;margin:0 auto}
+  h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+  .sub{color:var(--text2);font-size:15px;margin:0 0 24px;max-width:64ch}
+  .sub em{color:var(--text);font-style:italic}
+  .seclab{font-size:12px;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;margin:24px 0 12px}
+  button{font-family:var(--sans);font-size:14px;color:var(--text);background:transparent;
+    border:.5px solid var(--line2);border-radius:var(--r);padding:8px 13px;cursor:pointer;
+    transition:background .12s,transform .05s}
+  button:hover:not(:disabled){background:var(--panel2)}
+  button:active:not(:disabled){transform:scale(.97)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .primary{background:rgba(79,196,168,.16);border-color:rgba(79,196,168,.5);color:#bfeade;font-weight:600}
+  .primary:hover:not(:disabled){background:rgba(79,196,168,.26)}
+  .mono{font-family:var(--mono)}
+  .lab{font-size:12px;color:var(--text3)}
+  .seg{padding:7px 13px;font-size:13px;border:.5px solid var(--line2);background:transparent;color:var(--text2)}
+  .seg.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .card{background:var(--panel);border:.5px solid var(--line);border-radius:var(--rl);padding:18px 20px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .badge{font-family:var(--mono);font-size:13px;background:var(--panel2);border:.5px solid var(--line);border-radius:var(--r);padding:5px 11px}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">7.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="7.1"></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="wrap">
+  <h1>Interference — the engine of the search</h1>
+  <p class="sub">A haystack of answers, all equally likely. Two moves — flip the needle's phase, then mirror every bar across the mean — and watch the wrong answers cancel while the right one piles up. <em>Do it the right number of times and the needle is almost all that's left.</em></p>
+
+  <div class="card" style="padding:12px 16px;margin-bottom:14px;font-size:13.5px;color:var(--text2);">
+    <b style="color:var(--text)">Three operations, one engine.</b> Grover uses <b>superposition</b> (every item equally likely), an <b>oracle</b> (a phase flip that marks the target), and a <b>diffuser</b> (a reflection about the mean that amplifies the marked state). These work through constructive and destructive <b>interference</b> — <em>entanglement is not required for the algorithm to work.</em>
+  </div>
+
+  <div class="row" style="margin-bottom:14px;">
+    <span class="lab">Haystack</span>
+    <span style="display:inline-flex;border-radius:var(--r);overflow:hidden;">
+      <button class="seg" id="n4" style="border-radius:var(--r) 0 0 var(--r);">4</button>
+      <button class="seg on" id="n8" style="border-left:none;">8</button>
+      <button class="seg" id="n16" style="border-radius:0 var(--r) var(--r) 0;border-left:none;">16</button>
+    </span>
+    <span class="lab" id="qinfo">3 qubits · 8 answers</span>
+    <span style="flex:1"></span>
+    <span class="lab"><i class="ti ti-search" style="vertical-align:-2px;color:var(--teal)"></i> needle = <span id="needle" class="mono" style="color:var(--teal)">101</span></span>
+    <button id="shuffle" style="font-size:12px;padding:6px 10px;"><i class="ti ti-dice" style="vertical-align:-2px;margin-right:3px;"></i>new needle</button>
+  </div>
+
+  <div class="card" style="padding:16px 18px;">
+    <div id="plot" style="position:relative;height:200px;">
+      <div style="position:absolute;left:0;right:0;top:100px;height:1px;background:var(--line2);"></div>
+      <div id="meanline" style="position:absolute;left:0;right:0;top:69px;height:0;border-top:1.5px dashed var(--amber);transition:top .45s;"></div>
+      <div id="meantag" style="position:absolute;right:2px;top:54px;font-size:10px;font-family:var(--mono);color:var(--amber);transition:top .45s;">mean</div>
+      <div id="bars" style="position:absolute;inset:0;display:flex;"></div>
+    </div>
+    <div id="barlabels" style="display:flex;margin-top:8px;"></div>
+    <div class="lab" style="text-align:center;margin-top:12px;">bar height = amplitude · up is +, down is − (phase-flipped) · <span style="color:var(--amber)">amber dashed = the mean the diffuser mirrors across</span></div>
+  </div>
+
+  <div class="row" style="margin-top:16px;">
+    <button id="superpose"><i class="ti ti-stack-2" style="vertical-align:-2px;margin-right:4px;"></i>Superpose</button>
+    <button id="oracle"><i class="ti ti-arrow-down" style="vertical-align:-2px;margin-right:3px;"></i>Oracle</button>
+    <button id="diffuse"><i class="ti ti-fold" style="vertical-align:-2px;margin-right:3px;"></i>Diffuser</button>
+    <button id="step" class="primary"><i class="ti ti-player-track-next" style="vertical-align:-2px;margin-right:3px;"></i>Grover step</button>
+    <button id="auto"><i class="ti ti-wand" style="vertical-align:-2px;margin-right:3px;"></i>Auto-solve</button>
+    <span style="flex:1"></span>
+    <span class="badge">iter <span id="iterN">0</span> / <span id="optN" style="color:var(--teal)">2</span></span>
+  </div>
+
+  <div id="narrate" style="font-size:14px;color:var(--text2);min-height:44px;margin-top:14px;">All answers start equally likely. A classical search would now begin checking them one by one.</div>
+
+  <div class="seclab">Did it work?</div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:flex-end;">
+      <div>
+        <div class="lab">chance a measurement returns the needle</div>
+        <div style="display:flex;align-items:baseline;gap:6px;"><span id="bigP" style="font-size:34px;font-weight:600;color:var(--teal);font-family:var(--mono);">12%</span></div>
+      </div>
+      <div style="text-align:right;font-size:13px;color:var(--text2);line-height:1.5;">
+        <div>classical: ~<span id="cAvg" class="mono">4</span> checks avg · <span id="cMax" class="mono">8</span> worst</div>
+        <div>Grover: <span id="gN" class="mono" style="color:var(--teal)">2</span> steps</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <button id="measure"><i class="ti ti-eye" style="vertical-align:-2px;margin-right:4px;"></i>Measure once</button>
+      <button id="run100">Run 100 shots</button>
+      <span id="mresult" style="font-size:14px;min-height:20px;"></span>
+      <span style="flex:1"></span>
+      <span id="tally" class="lab"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var nQ=3, N=8, marked=5, iter=0, optimal=2, busy=false, hits=0, shots=0;
+  var amp=[], barEls=[], probEls=[], labEls=[];
+  var ZY=100, SC=88;
+  function $(id){return document.getElementById(id);}
+  function rnd(){var u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]/4294967296;}
+  function bin(i){return i.toString(2).padStart(nQ,'0');}
+  function mean(){var s=0;for(var i=0;i<N;i++)s+=amp[i];return s/N;}
+
+  function superpose(){ amp=[]; for(var i=0;i<N;i++)amp.push(1/Math.sqrt(N)); iter=0; }
+  function oracle(){ amp[marked]=-amp[marked]; }
+  function diffuse(){ var m=mean(); for(var i=0;i<N;i++)amp[i]=2*m-amp[i]; }
+
+  function buildChart(){
+    var bars=$('bars'), labs=$('barlabels');
+    bars.innerHTML=''; labs.innerHTML=''; barEls=[]; probEls=[]; labEls=[];
+    var inset=N>=16?'8%':(N>=8?'14%':'22%');
+    for(var i=0;i<N;i++){
+      var col=document.createElement('div'); col.style.cssText='position:relative;flex:1;cursor:pointer;';
+      col.dataset.i=i;
+      var bar=document.createElement('div');
+      bar.style.cssText='position:absolute;left:'+inset+';right:'+inset+';border-radius:3px;transition:top .45s,height .45s,background .3s;';
+      col.appendChild(bar); bars.appendChild(col); barEls.push(bar);
+      col.onclick=function(){ if(busy)return; marked=parseInt(this.dataset.i,10); superpose(); shots=0;hits=0; render(); narrate('mark'); $('tally').textContent=''; $('mresult').textContent=''; };
+
+      var lc=document.createElement('div'); lc.style.cssText='flex:1;text-align:center;';
+      var fs=N>=16?'10px':'12px';
+      lc.innerHTML='<div class="mono" style="font-size:'+fs+';" data-lab="'+i+'">'+bin(i)+'</div><div class="mono" style="font-size:10px;color:var(--text3)" data-prob="'+i+'">—</div>';
+      labs.appendChild(lc);
+      probEls.push(lc.querySelector('[data-prob]'));
+      labEls.push(lc.querySelector('[data-lab]'));
+    }
+  }
+
+  function render(){
+    for(var i=0;i<N;i++){
+      var v=amp[i], h=Math.abs(v)*SC, b=barEls[i];
+      b.style.height=h+'px';
+      b.style.top=(v>=0?ZY-h:ZY)+'px';
+      b.style.background=(i===marked)?'var(--teal)':(v<-1e-9?'var(--coral)':'var(--blue)');
+      probEls[i].textContent=Math.round(v*v*100)+'%';
+      labEls[i].style.color=(i===marked)?'var(--teal)':'var(--text2)';
+    }
+    var m=mean();
+    $('meanline').style.top=(ZY-m*SC)+'px';
+    $('meantag').style.top=(ZY-m*SC-16)+'px';
+    var p=Math.round(amp[marked]*amp[marked]*100);
+    $('bigP').textContent=p+'%';
+    $('iterN').textContent=iter;
+    $('needle').textContent=bin(marked);
+  }
+
+  var MSG={
+    mark:'New needle chosen and the haystack reset. Press “Grover step” to start amplifying it.',
+    superpose:'All '+N+' answers equally likely again — a fair haystack. Classical search would check them one at a time.',
+    oracle:'The oracle flipped the needle’s phase — its bar dropped below zero. Look closely: every probability is still identical. The mark is hidden in the sign, invisible to measurement.',
+    diffuse:'Inversion about the mean: every bar mirrored across the amber line. The needle sat far below the mean, so it vaulted up; the others, just above, sank. That gap is interference doing the work.',
+    peak:'P(needle) is at its peak — measure now and you’ll almost certainly find it.',
+    over:'You’ve over-rotated. The amplitude is sloshing back out into the wrong answers. Grover is a rotation, not a ratchet — stop at the peak.'
+  };
+  function narrate(k){
+    var t=MSG[k]||'';
+    if(k==='diffuse'){
+      if(iter===optimal)t+=' '+MSG.peak;
+      else if(iter>optimal)t=MSG.over;
+    }
+    $('narrate').innerHTML=t;
+  }
+
+  function setN(newN,newQ,btn){
+    N=newN; nQ=newQ; marked=marked%N;
+    optimal=Math.max(1,Math.floor(Math.PI/4*Math.sqrt(N)));
+    $('optN').textContent=optimal; $('gN').textContent=optimal;
+    $('cAvg').textContent=Math.round(N/2); $('cMax').textContent=N;
+    $('qinfo').textContent=nQ+' qubits · '+N+' answers';
+    ['n4','n8','n16'].forEach(function(id){$(id).classList.remove('on');});
+    $(btn).classList.add('on');
+    superpose(); shots=0;hits=0; buildChart(); render(); narrate('superpose');
+    $('tally').textContent=''; $('mresult').textContent='';
+  }
+
+  function doStep(cb){
+    if(busy)return; busy=true;
+    oracle(); render(); narrate('oracle');
+    setTimeout(function(){ diffuse(); iter++; render(); narrate('diffuse'); busy=false; if(cb)cb(); },520);
+  }
+  function autoSolve(){
+    if(busy)return; superpose(); render(); narrate('superpose');
+    var k=0;
+    function next(){ if(k>=optimal){return;} k++; doStep(next); }
+    setTimeout(next,350);
+  }
+
+  function measure(){
+    var r=rnd(),c=0,got=N-1;
+    for(var i=0;i<N;i++){ c+=amp[i]*amp[i]; if(r<c){got=i;break;} }
+    shots++; if(got===marked)hits++;
+    var ok=got===marked;
+    $('mresult').innerHTML='<span class="mono" style="color:'+(ok?'var(--teal)':'var(--coral)')+'">'+(ok?'<i class="ti ti-target"></i> '+bin(got)+' — found it!':'<i class="ti ti-x"></i> '+bin(got)+' — missed')+'</span>';
+    $('tally').textContent='found in '+hits+' / '+shots+' shots';
+  }
+  function run100(){
+    for(var s=0;s<100;s++){
+      var r=rnd(),c=0,got=N-1;
+      for(var i=0;i<N;i++){ c+=amp[i]*amp[i]; if(r<c){got=i;break;} }
+      shots++; if(got===marked)hits++;
+    }
+    $('mresult').innerHTML='<span class="mono" style="color:var(--teal)">ran 100 shots</span>';
+    $('tally').textContent='found in '+hits+' / '+shots+' shots ('+Math.round(hits/shots*100)+'%)';
+  }
+
+  $('n4').onclick=function(){ setN(4,2,'n4'); };
+  $('n8').onclick=function(){ setN(8,3,'n8'); };
+  $('n16').onclick=function(){ setN(16,4,'n16'); };
+  $('shuffle').onclick=function(){ if(busy)return; var m;do{m=Math.floor(rnd()*N);}while(m===marked&&N>1); marked=m; superpose(); shots=0;hits=0; render(); narrate('mark'); $('tally').textContent='';$('mresult').textContent=''; };
+  $('superpose').onclick=function(){ if(busy)return; superpose(); render(); narrate('superpose'); };
+  $('oracle').onclick=function(){ if(busy)return; oracle(); render(); narrate('oracle'); };
+  $('diffuse').onclick=function(){ if(busy)return; diffuse(); iter++; render(); narrate('diffuse'); };
+  $('step').onclick=function(){ doStep(); };
+  $('auto').onclick=autoSolve;
+  $('measure').onclick=function(){ if(busy)return; measure(); };
+  $('run100').onclick=function(){ if(busy)return; run100(); };
+
+  setN(8,3,'n8');
+})();
+</script>
+
+</body>
+</html>

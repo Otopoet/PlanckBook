@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Quantum Search Explained for Everyone — PLANCK · Extra</title>
+<style>
+  :root{
+    --bg:#1a1915; --panel:#23221d; --panel2:#2b2a24; --line:rgba(255,255,255,.12);
+    --line2:rgba(255,255,255,.22); --text:#ece9e0; --text2:#b3b0a6; --text3:#85837b;
+    --blue:#5aa0ec; --coral:#e88b62; --purple:#9a92ee; --teal:#4fc4a8; --amber:#efa52a;
+    --green:#52c41a;
+    --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --r:8px; --rl:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.7;-webkit-font-smoothing:antialiased;padding:32px 18px 64px;}
+  .wrap{max-width:800px;margin:0 auto}
+  h1{font-size:32px;font-weight:700;letter-spacing:-.01em;margin:0 0 12px;color:var(--teal)}
+  h2{font-size:22px;font-weight:600;letter-spacing:-.01em;margin:32px 0 12px;color:var(--amber)}
+  h3{font-size:16px;font-weight:600;margin:20px 0 8px;color:var(--text)}
+  p{margin:0 0 14px;color:var(--text2);font-size:15px}
+  .intro{background:var(--panel);border:.5px solid var(--line);border-radius:var(--rl);
+    padding:24px 20px;margin:24px 0}
+  .intro p{margin:0 0 10px}
+  .intro p:last-child{margin:0}
+  .lesson{background:var(--panel);border-left:3px solid var(--teal);border-radius:var(--rl);
+    padding:20px;margin:20px 0}
+  .lesson h3{margin-top:0}
+  .lesson-num{display:inline-block;background:var(--teal);color:var(--bg);
+    font-weight:700;width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px}
+  .lesson-title{display:flex;align-items:center;margin-bottom:12px}
+  .highlight{color:var(--teal);font-weight:600}
+  .compare{margin:24px 0}
+  .compare-row{display:flex;gap:20px;margin:12px 0}
+  .compare-item{flex:1;background:var(--panel2);border:.5px solid var(--line);
+    border-radius:var(--r);padding:14px;text-align:center}
+  .compare-label{font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+  .compare-big{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--amber)}
+  .compare-big.win{color:var(--green)}
+  .table-wrapper{overflow-x:auto;margin:20px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{background:var(--panel2);border:.5px solid var(--line);padding:10px;
+    text-align:left;font-weight:600;color:var(--text)}
+  td{background:var(--panel);border:.5px solid var(--line);padding:10px;color:var(--text2)}
+  td.num{font-family:var(--mono);text-align:center;color:var(--amber)}
+  td.win{color:var(--green);font-weight:600}
+  .section{margin:32px 0}
+  .card{background:var(--panel);border:.5px solid var(--line);border-radius:var(--rl);
+    padding:20px;margin:16px 0}
+  .pill{display:inline-block;background:rgba(79,196,168,.16);border:.5px solid rgba(79,196,168,.5);
+    color:#bfeade;padding:4px 10px;border-radius:var(--r);font-size:13px;margin-right:6px;
+    margin-bottom:6px}
+  .visual{background:var(--panel2);border:.5px solid var(--line);border-radius:var(--r);
+    padding:16px;margin:16px 0;font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--text2)}
+  .visual code{color:var(--teal)}
+  code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:3px;color:var(--blue);
+    font-family:var(--mono);font-size:13px}
+  .note{background:rgba(239,165,42,.08);border-left:3px solid var(--amber);padding:12px 14px;
+    margin:16px 0;border-radius:var(--r)}
+  .note p{margin:0;font-size:14px}
+  .blockquote{border-left:3px solid var(--purple);padding-left:16px;margin:16px 0;color:var(--text2);
+    font-style:italic}
+  .footer{margin-top:48px;padding-top:24px;border-top:.5px solid var(--line);color:var(--text3);
+    font-size:13px;text-align:center}
+  .link-group{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}
+  .link-btn{display:inline-block;background:rgba(79,196,168,.16);border:.5px solid rgba(79,196,168,.5);
+    color:#bfeade;padding:10px 16px;border-radius:var(--r);text-decoration:none;font-size:14px;
+    font-weight:500;transition:background .12s}
+  .link-btn:hover{background:rgba(79,196,168,.26)}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span></a><script defer src="../assets/planck-companion.js" data-pk-code=""></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h1>Quantum Search: How to Find a Needle in Millions of Haystacks</h1>
+  <p style="font-size:16px;color:var(--text2);margin-bottom:24px;">A plain-English walkthrough of superposition, entanglement, and interference — the three ideas that make quantum computers revolutionary.</p>
+
+  <div class="intro">
+    <h3 style="margin-top:0">The Problem</h3>
+    <p><strong>Imagine:</strong> You have a locked box with N slots. Inside one slot is the key. In every other slot, there's nothing.</p>
+    <p>A normal computer opens slots one at a time: <code>open slot 1</code> → nope → <code>open slot 2</code> → nope → <code>open slot 3</code> → aha!</p>
+    <p><strong>On average, it takes N/2 checks to find the key.</strong></p>
+    <p>With 1 million slots? <strong>500,000 checks.</strong> With 1 billion? <strong>500 million.</strong> It's the same speed no matter how much you scale up — and at some point, it's too slow to be useful.</p>
+    <p><strong>A quantum computer can check all N slots at once.</strong> But there's a catch: if you measure now, you still get a random answer. The trick is to <em>amplify</em> the right answer and <em>cancel</em> the wrong ones before you look.</p>
+  </div>
+
+  <div class="section">
+    <h2>The Three Ideas Behind the Magic</h2>
+
+    <div class="lesson">
+      <div class="lesson-title">
+        <span class="lesson-num">1</span>
+        <div>
+          <h3 style="margin:0;color:var(--text)">Superposition: Many States at Once</h3>
+        </div>
+      </div>
+      <p>A regular bit is either 0 or 1 — like a coin that's either heads or tails <em>right now.</em></p>
+      <p>A <span class="highlight">qubit</span> can be 0 and 1 <em>at the same time</em> — like a coin spinning in the air, genuinely both-and-neither until it lands.</p>
+      <p><strong>Why it matters:</strong> In superposition, one qubit can represent two pieces of information at once. Two qubits can represent four. Three can represent eight. With just 20 qubits, you can hold a million states in parallel.</p>
+      <div class="visual">
+Normal computer: <code>slot 1 or slot 2 or slot 3</code> (pick one)<br/>
+Quantum computer: <code>slot 1 and slot 2 and slot 3</code> (all at once)
+      </div>
+      <p><strong>The catch:</strong> If you measure now, it collapses to just one random answer. You need the next idea to make it useful.</p>
+    </div>
+
+    <div class="lesson" style="border-left-color:var(--purple)">
+      <div class="lesson-title">
+        <span class="lesson-num" style="background:var(--purple)">2</span>
+        <div>
+          <h3 style="margin:0;color:var(--text)">Entanglement: Spooky Connections</h3>
+        </div>
+      </div>
+      <p>Entanglement links two qubits so tightly that measuring one <em>instantly decides</em> the other — no matter how far apart they are.</p>
+      <p><strong>Classic example:</strong> Create a pair of entangled coins. Flip the first coin and get heads. Instantly, the second coin — even if it's on the moon — becomes tails. Not because it was always tails in secret; because the moment you measured the first, the shared state collapsed.</p>
+      <p><strong>Why it matters:</strong> Entanglement is one of the deepest quantum resources — it lets qubits hold correlations no classical system can copy. For Grover's search <em>specifically</em>, though, the speed-up isn't powered by entanglement: it comes from <strong>interference</strong> (next section), which amplifies the marked answer and cancels the rest. Entanglement shows up in the circuitry, but it isn't what "spreads the mark."</p>
+      <div class="note">
+        <p><strong>Einstein called this "spooky action at a distance,"</strong> and he was skeptical. But experiments have confirmed it's real — not hidden information, but genuine quantum weirdness.</p>
+      </div>
+    </div>
+
+    <div class="lesson" style="border-left-color:var(--blue)">
+      <div class="lesson-title">
+        <span class="lesson-num" style="background:var(--blue)">3</span>
+        <div>
+          <h3 style="margin:0;color:var(--text)">Interference: Making the Right Answer Shout</h3>
+        </div>
+      </div>
+      <p>In quantum mechanics, amplitudes (the "height" of each possible answer) can be positive or negative. When they combine, they can <em>reinforce</em> or <em>cancel.</em></p>
+      <p><strong>Real-world analogy:</strong> Two speakers playing the same note. If they're in sync, the sound is loud (constructive interference). If one is backwards, they cancel and you hear silence (destructive interference).</p>
+      <p><strong>The algorithm (Grover's search):</strong></p>
+      <ol style="color:var(--text2);margin:12px 0">
+        <li><strong>Oracle:</strong> Flip the phase of the correct answer (put it "backwards"). All probabilities look the same — the mark is hidden in the phase.</li>
+        <li><strong>Diffuser:</strong> Mirror all amplitudes across the average. The marked answer was far below average, so it vaults up. The others were just above, so they sink.</li>
+        <li><strong>Repeat:</strong> Do this the optimal number of times and the right answer is almost all that's left. Then measure.</li>
+      </ol>
+      <div class="visual">
+Start: all answers equal amplitude (12% each for 8 answers)<br/>
+After oracle: needle has negative phase (still 12%)<br/>
+After diffuser: needle 78%, others 3%<br/>
+After step 2: needle 95%, others ~1%<br/>
+Measure: you find the needle.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>The Speed Difference: Why Quantum Matters</h2>
+    <p>Classical search checks one slot at a time. Quantum search amplifies the right answer using interference.</p>
+
+    <div class="table-wrapper">
+      <table>
+        <tr>
+          <th>Haystack Size</th>
+          <th>Classical (avg checks)</th>
+          <th>Grover (steps)</th>
+          <th>Speedup</th>
+        </tr>
+        <tr>
+          <td class="num">8</td>
+          <td class="num">4</td>
+          <td class="num">2</td>
+          <td class="win">2× faster</td>
+        </tr>
+        <tr>
+          <td class="num">16</td>
+          <td class="num">8</td>
+          <td class="num">3</td>
+          <td class="win">2.7× faster</td>
+        </tr>
+        <tr>
+          <td class="num">1,000</td>
+          <td class="num">500</td>
+          <td class="num">16</td>
+          <td class="win">31× faster</td>
+        </tr>
+        <tr>
+          <td class="num">1,000,000</td>
+          <td class="num">500,000</td>
+          <td class="num">785</td>
+          <td class="win">637× faster</td>
+        </tr>
+      </table>
+    </div>
+
+    <p style="margin-top:20px"><strong>The pattern:</strong> Classical takes <em>N</em> steps. Quantum takes √<em>N</em> steps. As the haystack grows, the gap explodes.</p>
+
+    <div class="compare">
+      <div class="compare-row">
+        <div class="compare-item">
+          <div class="compare-label">🔍 Classical Search</div>
+          <div class="compare-big">N</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:6px">Open each slot one by one</div>
+        </div>
+        <div class="compare-item">
+          <div class="compare-label">⚛️ Grover's Algorithm</div>
+          <div class="compare-big win">√N</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:6px">Amplify right answer, cancel wrong ones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Why This Isn't Magic</h2>
+    <div class="card">
+      <h3 style="margin-top:0">What's Really Happening</h3>
+      <p><strong>Superposition:</strong> The quantum computer computes <em>all</em> answers in parallel inside its quantum state. But that state is fragile — measure too early, and you collapse to a random answer.</p>
+      <p><strong>The Oracle:</strong> A controlled operation that marks the correct answer by flipping its phase. It doesn't "know" which answer is right — you program it to check each one using reversible logic.</p>
+      <p><strong>The Diffuser:</strong> Pure rotation. It mirrors every amplitude across the average. The math works out so that the marked answer gains while others lose.</p>
+      <p><strong>Interference:</strong> Not magic, but quantum mechanics. Amplitudes add and subtract like waves. This is the same reason a double-slit experiment makes a pattern instead of two stripes.</p>
+      <p><strong>Iteration count:</strong> The optimal number is roughly π/4 × √N. Too few iterations and you don't amplify enough. Too many and you overshoot — the amplitude sloshes back out into wrong answers. It's a precise rotation angle, not a ratchet.</p>
+    </div>
+
+    <div class="note">
+      <p><strong>This is not a magic trick.</strong> It's a clever use of quantum mechanics that leverages the rules of probability and wave interference to solve a specific problem (unsorted search) faster than any classical algorithm can.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>The Three Interactive Labs</h2>
+    <p>You can see all three ideas in action:</p>
+
+    <div class="card">
+      <h3 style="margin-top:0">Lab 1: Quantum Coin Flip</h3>
+      <p>A single qubit. Press H (Hadamard gate) to enter superposition, then measure to see it collapse randomly. Add X gates to flip the state. Watch the Bloch sphere rotate as you apply gates.</p>
+      <p><span class="pill">Demonstrates: Superposition</span><span class="pill">Measurement collapse</span><span class="pill">Probabilities</span></p>
+      <a href="../chapter-06/nudge-a-cloud.html" class="link-btn">Open Lab 1</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Lab 2: Bell State (Entanglement)</h3>
+      <p>Two qubits linked with a CX gate. Create a Bell state and watch the Bloch spheres merge into "no arrow" — the sign that they're entangled and don't have individual states. Measure one qubit and the other is forced.</p>
+      <p><span class="pill">Demonstrates: Entanglement</span><span class="pill">CX gate</span><span class="pill">Quantum correlation</span></p>
+      <a href="bell.html" class="link-btn">Open Lab 2</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Lab 3: Grover's Search (Interference)</h3>
+      <p>Pick a haystack size (4, 8, or 16 answers). Watch the oracle and diffuser work together: the oracle marks one answer, the diffuser amplifies it. One click per Grover step, or auto-solve to see it happen. Then run 100 measurement shots to verify the probability.</p>
+      <p><span class="pill">Demonstrates: Interference</span><span class="pill">Amplitude amplification</span><span class="pill">Optimal rotation angle</span></p>
+      <a href="../chapter-07/grover.html" class="link-btn">Open Lab 3</a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Key Formulas (No Calculus Required)</h2>
+
+    <div class="card">
+      <h3 style="margin-top:0;margin-bottom:12px">Superposition</h3>
+      <p style="margin:0;color:var(--text3);font-size:13px">When you put a qubit into superposition with a Hadamard gate:</p>
+      <div class="visual" style="margin:8px 0">
+Amplitude of |0⟩ = 1/√2 ≈ 0.707<br/>
+Amplitude of |1⟩ = 1/√2 ≈ 0.707<br/>
+<br/>
+Probability = amplitude²<br/>
+P(0) = 0.707² = 0.5 = 50%<br/>
+P(1) = 0.707² = 0.5 = 50%
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;margin-bottom:12px">Grover's Optimal Iterations</h3>
+      <p style="margin:0;color:var(--text3);font-size:13px">Number of oracle + diffuser pairs needed:</p>
+      <div class="visual" style="margin:8px 0">
+iterations = ⌊(π/4) × √N⌋<br/>
+<br/>
+For N=4: ⌊0.785 × 2⌋ = 1 iteration<br/>
+For N=8: ⌊0.785 × 2.83⌋ = 2 iterations<br/>
+For N=16: ⌊0.785 × 4⌋ = 3 iterations
+      </div>
+      <p style="font-size:13px;color:var(--text3);margin-top:12px">Do more than the optimal and you overshoot. The probability actually <em>decreases.</em></p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Common Questions</h2>
+
+    <div class="card">
+      <h3 style="margin-top:0">Why can't we just check all slots at once with a normal computer?</h3>
+      <p>A normal computer <em>can</em> be programmed to think about multiple possibilities, but it still has to output <em>one answer.</em> It's like having a checklist with a million items and saying "think about all of them" — in the end, you still only have time to output one result. Quantum computers exploit superposition to literally hold multiple states in parallel using just a handful of qubits.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">If I measure in the middle, does it ruin everything?</h3>
+      <p>Yes. Measuring collapses superposition to one random answer. This is why the oracle is so clever — it doesn't measure; it just flips the phase (the sign) of the answer. The mark is invisible until the diffuser uses it to amplify.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Does this work on a real quantum computer?</h3>
+      <p>The interactive labs simulate the algorithm perfectly. Real quantum hardware (IBM, Google, etc.) uses the same gates and the same math, but has noise and errors. The 3-qubit Bell state works reliably on a real chip; Grover on 16+ qubits would need error correction that doesn't exist yet.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Can quantum computers break passwords with this?</h3>
+      <p>Grover's search can speed up brute-force attacks on symmetric encryption (like AES). Shor's algorithm (a different quantum algorithm) can break RSA. This is why the tech industry is moving to post-quantum cryptography now.</p>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>Built to explain quantum computing from first principles — no background in physics or math required.</p>
+    <p>Run these labs in any browser. The simulation is local; no quantum hardware needed.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

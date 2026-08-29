@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gates as Bloch-sphere rotations · PLANCK</title>
+<style>
+:root{ --bg:#0a0e1a; --panel:#121833; --panel-2:#0e142a; --line:rgba(180,190,220,0.14); --line-2:rgba(180,190,220,0.30);
+  --text:#e8ecf5; --muted:#8a93b0; --faint:#5b6685; --cyan:#28e0d0; --violet:#9a92ee; --gold:#ffd166; --magenta:#ff5db1; --green:#5ad19a; --red:#ff6b6b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif; }
+*{box-sizing:border-box;}
+body{ margin:0; background:radial-gradient(1200px 800px at 60% -10%, #16204a 0%, var(--bg) 60%); color:var(--text); font-family:var(--sans); min-height:100vh; padding:40px 20px; line-height:1.6; }
+.wrap{max-width:880px;margin:0 auto;}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:0.18em;color:var(--cyan);text-transform:uppercase;margin-bottom:10px;}
+h1{font-size:clamp(24px,4vw,34px);font-weight:650;margin:0 0 12px;letter-spacing:-0.01em;}
+.lead{color:var(--muted);font-size:16px;max-width:62ch;margin:0 0 28px;}
+.lead b{color:var(--text);font-weight:600;}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;}
+.stage{display:flex;flex-direction:column;align-items:center;gap:6px;}
+svg{width:100%;max-width:420px;height:auto;display:block;touch-action:none;}
+.label{font-family:var(--mono);font-size:13px;}
+.section-title{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--faint);margin:0 0 12px;}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;}
+button{font-family:var(--sans);font-size:14px;color:var(--text);background:transparent;border:1px solid var(--line-2);
+  border-radius:9px;padding:8px 14px;cursor:pointer;transition:background .14s,border-color .14s,color .14s,transform .05s;}
+button:hover{background:var(--panel-2);}
+button:active{transform:scale(.96);}
+button:disabled{opacity:.4;cursor:default;}
+button.gate{min-width:46px;font-family:var(--mono);font-weight:600;font-size:15px;}
+button.gate.active{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset;}
+button.preset{border-color:var(--violet);color:var(--violet);font-weight:600;}
+button.preset:hover{background:rgba(154,146,238,0.10);}
+button.run{border-color:var(--green);color:var(--green);font-weight:600;}
+button.run:hover{background:rgba(90,209,154,0.10);}
+button.clear{border-color:var(--line-2);color:var(--muted);}
+.hint{font-size:13px;color:var(--faint);margin:14px 0 0;}
+.seq{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:42px;padding:8px 10px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:10px;margin-bottom:14px;}
+.seq .empty{color:var(--faint);font-size:13px;font-style:italic;}
+.chip{font-family:var(--mono);font-weight:600;font-size:14px;padding:5px 11px;border-radius:8px;background:rgba(40,224,208,0.10);
+  border:1px solid rgba(40,224,208,0.35);color:var(--cyan);}
+.chip.done{opacity:.45;}
+.chip.current{background:rgba(255,209,102,0.14);border-color:rgba(255,209,102,0.55);color:var(--gold);box-shadow:0 0 10px rgba(255,209,102,0.25);}
+.arrow{color:var(--faint);font-family:var(--mono);}
+.readout{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:baseline;font-family:var(--mono);font-size:14px;margin-top:14px;
+  padding-top:16px;border-top:1px solid var(--line);}
+.readout .k{color:var(--faint);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:3px;}
+.readout .state{font-size:22px;color:var(--gold);font-weight:600;}
+.readout .coords{color:var(--text);}
+.note{font-size:13px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--violet);
+  border-radius:8px;padding:12px 14px;margin-top:8px;}
+.grid{display:grid;grid-template-columns:1fr;gap:18px;}
+@media(min-width:760px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;}}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">6.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="6.1"></script><!--/planck-chrome-->
+
+
+<div class="wrap">
+  <div class="eyebrow">PLANCK · CHAPTER 6 · FIGURE 6.1</div>
+  <h1>Gates as Bloch-sphere rotations</h1>
+  <p class="lead">Every single-qubit gate is just a <b>rigid rotation</b> of the Bloch vector about a fixed axis &mdash; nothing more. Click a gate to watch the state swing into place, or <b>build a sequence</b> and run it gate by gate. Try the preset <b>H&nbsp;&rarr;&nbsp;Z</b>: it carries <span class="label">|0&rang;</span> to <span class="label">|+&rang;</span> and then to <span class="label">|&minus;&rang;</span>.</p>
+
+  <div class="grid">
+    <div class="panel stage">
+      <svg id="bloch" viewBox="0 0 420 420" aria-label="Bloch sphere"></svg>
+      <div class="readout">
+        <div><span class="k">State</span><span class="state" id="stateLabel">|0&rang;</span></div>
+        <div><span class="k">Bloch vector (x, y, z)</span><span class="coords" id="coords">( 0.00, 0.00, +1.00 )</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <p class="section-title">Single gates</p>
+        <div class="btn-row" id="gateRow"></div>
+        <p class="hint">H swaps z&harr;x (rotate &pi; about <span class="label">(x+z)/&radic;2</span>). X/Y/Z flip about their axis; S is &pi;/2 and T is &pi;/4 about z.</p>
+      </div>
+
+      <div class="panel">
+        <p class="section-title">Compose a sequence</p>
+        <div class="seq" id="seqStrip"><span class="empty">No gates queued &mdash; add some, or load the preset.</span></div>
+        <div class="btn-row">
+          <button class="preset" id="presetBtn">H &rarr; Z</button>
+          <button class="run" id="runBtn">Run &#9654;</button>
+          <button class="clear" id="clearBtn">Clear</button>
+          <button class="clear" id="resetBtn">Reset to |0&rang;</button>
+        </div>
+        <div class="note" id="storyNote">Build a chain of gates above, then <b>Run</b> to apply them in order. Each rotation plays in turn and you land on the net result.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var S2 = Math.SQRT1_2; // 1/sqrt(2)
+
+  // Gate table: each gate is a rotation of the Bloch vector by `angle` about unit `axis`.
+  var GATES = {
+    H: { axis: [S2, 0, S2], angle: Math.PI,        color: "var(--cyan)"    },
+    X: { axis: [1, 0, 0],   angle: Math.PI,        color: "var(--magenta)" },
+    Y: { axis: [0, 1, 0],   angle: Math.PI,        color: "var(--green)"   },
+    Z: { axis: [0, 0, 1],   angle: Math.PI,        color: "var(--violet)"  },
+    S: { axis: [0, 0, 1],   angle: Math.PI / 2,    color: "var(--gold)"    },
+    T: { axis: [0, 0, 1],   angle: Math.PI / 4,    color: "var(--red)"     }
+  };
+  var ORDER = ["H","X","Y","Z","S","T"];
+
+  // ---- Vector math --------------------------------------------------------
+  function rotate(v, axis, ang){
+    // Rodrigues' rotation: v' = v cos + (k x v) sin + k (k.v)(1-cos)
+    var c = Math.cos(ang), s = Math.sin(ang);
+    var kx=axis[0], ky=axis[1], kz=axis[2];
+    var dot = kx*v[0] + ky*v[1] + kz*v[2];
+    var crx = ky*v[2] - kz*v[1];
+    var cry = kz*v[0] - kx*v[2];
+    var crz = kx*v[1] - ky*v[0];
+    return [
+      v[0]*c + crx*s + kx*dot*(1-c),
+      v[1]*c + cry*s + ky*dot*(1-c),
+      v[2]*c + crz*s + kz*dot*(1-c)
+    ];
+  }
+
+  // ---- State labelling ----------------------------------------------------
+  var NAMED = [
+    { v:[0,0,1],  name:"|0⟩"  },
+    { v:[0,0,-1], name:"|1⟩"  },
+    { v:[1,0,0],  name:"|+⟩"  },
+    { v:[-1,0,0], name:"|−⟩" },
+    { v:[0,1,0],  name:"|+i⟩" },
+    { v:[0,-1,0], name:"|−i⟩" }
+  ];
+  function labelFor(v){
+    for(var i=0;i<NAMED.length;i++){
+      var d=NAMED[i].v;
+      var dist=Math.abs(v[0]-d[0])+Math.abs(v[1]-d[1])+Math.abs(v[2]-d[2]);
+      if(dist<0.02) return NAMED[i].name;
+    }
+    return "ψ"; // psi
+  }
+  function fmt(n){ var s=(n<0?"":"+")+n.toFixed(2); return s.replace("+-","-"); }
+
+  // ---- 3D -> 2D projection (fixed isometric-ish view) ---------------------
+  var CX=210, CY=210, R=150;
+  // viewing angles: tilt down a bit, rotate around vertical
+  var AZ = -0.55, EL = 0.42;
+  var cazA=Math.cos(AZ), sazA=Math.sin(AZ), celA=Math.cos(EL), selA=Math.sin(EL);
+  function project(v){
+    // rotate about world z (azimuth) then tilt (elevation about screen x)
+    var x =  v[0]*cazA - v[1]*sazA;
+    var y =  v[0]*sazA + v[1]*cazA;
+    var z =  v[2];
+    var sx = x;
+    var sy = y*selA + z*celA;   // screen vertical
+    var depth = -y*celA + z*selA; // toward viewer (for occlusion ordering)
+    return { x: CX + sx*R, y: CY - sy*R, depth: depth };
+  }
+
+  // ---- Build static sphere ------------------------------------------------
+  var svg = document.getElementById("bloch");
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs){
+    var n=document.createElementNS(SVGNS,tag);
+    for(var k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function ellipsePts(normal, samples){
+    // points of a great circle whose plane has the given normal
+    var n=normal;
+    // pick a vector not parallel to n
+    var t = Math.abs(n[2])<0.9 ? [0,0,1] : [1,0,0];
+    var u=[ n[1]*t[2]-n[2]*t[1], n[2]*t[0]-n[0]*t[2], n[0]*t[1]-n[1]*t[0] ];
+    var ul=Math.hypot(u[0],u[1],u[2]); u=[u[0]/ul,u[1]/ul,u[2]/ul];
+    var w=[ n[1]*u[2]-n[2]*u[1], n[2]*u[0]-n[0]*u[2], n[0]*u[1]-n[1]*u[0] ];
+    var pts=[];
+    for(var i=0;i<=samples;i++){
+      var a=2*Math.PI*i/samples;
+      var ca=Math.cos(a), sa=Math.sin(a);
+      pts.push([u[0]*ca+w[0]*sa, u[1]*ca+w[1]*sa, u[2]*ca+w[2]*sa]);
+    }
+    return pts;
+  }
+  function circlePath(normal){
+    var pts=ellipsePts(normal,72);
+    var d="";
+    for(var i=0;i<pts.length;i++){
+      var p=project(pts[i]);
+      d += (i===0?"M":"L") + p.x.toFixed(1) + " " + p.y.toFixed(1) + " ";
+    }
+    return d+"Z";
+  }
+
+  function buildSphere(){
+    // outline disc
+    svg.appendChild(el("circle",{cx:CX,cy:CY,r:R,fill:"rgba(40,224,208,0.04)",stroke:"var(--line-2)","stroke-width":1.4}));
+    // longitude (front-back, plane normal = y axis) and equator (normal = z)
+    svg.appendChild(el("path",{d:circlePath([0,1,0]),fill:"none",stroke:"var(--line)","stroke-width":1}));
+    svg.appendChild(el("path",{d:circlePath([1,0,0]),fill:"none",stroke:"var(--line)","stroke-width":1}));
+    // equator dashed (normal = z)
+    svg.appendChild(el("path",{d:circlePath([0,0,1]),fill:"none",stroke:"var(--line-2)","stroke-width":1.2,"stroke-dasharray":"4 4"}));
+
+    // axes
+    var axes=[
+      {a:[1,0,0],  lab:"x"},
+      {a:[0,1,0],  lab:"y"},
+      {a:[0,0,1],  lab:"z"}
+    ];
+    axes.forEach(function(ax){
+      var p1=project([-ax.a[0],-ax.a[1],-ax.a[2]]);
+      var p2=project([ax.a[0],ax.a[1],ax.a[2]]);
+      svg.appendChild(el("line",{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:"var(--line-2)","stroke-width":1}));
+    });
+
+    // pole / equator markers + labels
+    var marks=[
+      {v:[0,0,1],  t:"|0⟩", dy:-10, anchor:"middle", col:"var(--text)"},
+      {v:[0,0,-1], t:"|1⟩", dy:18,  anchor:"middle", col:"var(--text)"},
+      {v:[1,0,0],  t:"|+⟩", dy:4,   dx:14, anchor:"start", col:"var(--muted)"},
+      {v:[-1,0,0], t:"|−⟩", dy:4, dx:-14, anchor:"end", col:"var(--muted)"},
+      {v:[0,1,0],  t:"|+i⟩", dy:14, dx:6, anchor:"start", col:"var(--faint)"},
+      {v:[0,-1,0], t:"|−i⟩", dy:-6, dx:-6, anchor:"end", col:"var(--faint)"}
+    ];
+    marks.forEach(function(m){
+      var p=project(m.v);
+      svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:2.4,fill:"var(--line-2)"}));
+      var tx=el("text",{x:p.x+(m.dx||0),y:p.y+(m.dy||0),"text-anchor":m.anchor,
+        fill:m.col,"font-family":"var(--mono)","font-size":13});
+      tx.textContent=m.t;
+      svg.appendChild(tx);
+    });
+  }
+
+  // ---- Dynamic layers: trail, axis-hint, vector ---------------------------
+  var trailLayer = el("g",{}); svg.appendChild(trailLayer);
+  var axisHint   = el("line",{stroke:"var(--violet)","stroke-width":1.4,"stroke-dasharray":"3 4",opacity:0}); svg.appendChild(axisHint);
+  var arcLayer   = el("path",{fill:"none",stroke:"var(--gold)","stroke-width":1.2,opacity:0}); svg.appendChild(arcLayer);
+  var vecLine    = el("line",{stroke:"var(--gold)","stroke-width":3,"stroke-linecap":"round"}); svg.appendChild(vecLine);
+  var vecHead    = el("circle",{r:6,fill:"var(--gold)",stroke:"var(--bg)","stroke-width":1.5}); svg.appendChild(vecHead);
+
+  var trail=[]; // recent tip positions [x,y,z]
+  function drawTrail(){
+    while(trailLayer.firstChild) trailLayer.removeChild(trailLayer.firstChild);
+    for(var i=1;i<trail.length;i++){
+      var a=project(trail[i-1]), b=project(trail[i]);
+      var op=0.05 + 0.30*(i/trail.length);
+      trailLayer.appendChild(el("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,
+        stroke:"var(--gold)","stroke-width":2,"stroke-linecap":"round",opacity:op}));
+    }
+  }
+  function drawVector(v){
+    var p=project(v);
+    var depth=p.depth;
+    var w = depth>=0 ? 3 : 2.2;
+    var op = depth>=0 ? 1 : 0.55;
+    vecLine.setAttribute("x2",p.x); vecLine.setAttribute("y2",p.y);
+    vecLine.setAttribute("x1",CX); vecLine.setAttribute("y1",CY);
+    vecLine.setAttribute("stroke-width",w); vecLine.setAttribute("opacity",op);
+    vecHead.setAttribute("cx",p.x); vecHead.setAttribute("cy",p.y);
+    vecHead.setAttribute("opacity",op);
+  }
+  function setAxisHint(axis, show){
+    if(!show){ axisHint.setAttribute("opacity",0); return; }
+    var p1=project([-axis[0],-axis[1],-axis[2]]);
+    var p2=project([axis[0],axis[1],axis[2]]);
+    axisHint.setAttribute("x1",p1.x); axisHint.setAttribute("y1",p1.y);
+    axisHint.setAttribute("x2",p2.x); axisHint.setAttribute("y2",p2.y);
+    axisHint.setAttribute("opacity",0.8);
+  }
+
+  // ---- Readout ------------------------------------------------------------
+  var stateLabel=document.getElementById("stateLabel");
+  var coordsEl=document.getElementById("coords");
+  function updateReadout(v){
+    stateLabel.textContent=labelFor(v);
+    coordsEl.textContent="( "+fmt(v[0])+", "+fmt(v[1])+", "+fmt(v[2])+" )";
+  }
+
+  // ---- App state ----------------------------------------------------------
+  var state=[0,0,1];      // current Bloch vector
+  var animating=false;
+  var queue=[];           // sequence of gate names
+  var gateButtons={};
+
+  function render(){
+    drawTrail();
+    drawVector(state);
+    updateReadout(state);
+  }
+
+  // animate one gate; returns Promise
+  function animateGate(name){
+    return new Promise(function(resolve){
+      var g=GATES[name];
+      var start=state.slice();
+      var dur = 700;
+      var t0=null;
+      setAxisHint(g.axis,true);
+      vecLine.setAttribute("stroke",g.color);
+      vecHead.setAttribute("fill",g.color);
+      trail=[start.slice()];
+      function step(ts){
+        if(t0===null) t0=ts;
+        var p=Math.min(1,(ts-t0)/dur);
+        var e = p<0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2; // easeInOutQuad
+        var cur=rotate(start,g.axis,g.angle*e);
+        state=cur;
+        trail.push(cur.slice());
+        if(trail.length>40) trail.shift();
+        render();
+        if(p<1){ requestAnimationFrame(step); }
+        else{
+          state=rotate(start,g.axis,g.angle); // snap to exact
+          // tidy tiny numerical noise
+          state=state.map(function(c){ return Math.abs(c)<1e-9?0:c; });
+          setAxisHint(g.axis,false);
+          vecLine.setAttribute("stroke","var(--gold)");
+          vecHead.setAttribute("fill","var(--gold)");
+          render();
+          setTimeout(resolve,140);
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  function setBusy(b){
+    animating=b;
+    document.querySelectorAll("button").forEach(function(btn){
+      if(btn.id==="resetBtn"){ btn.disabled=b; return; }
+      btn.disabled=b;
+    });
+  }
+
+  // ---- Single-gate buttons ------------------------------------------------
+  var gateRow=document.getElementById("gateRow");
+  ORDER.forEach(function(name){
+    var b=document.createElement("button");
+    b.className="gate"; b.textContent=name;
+    b.addEventListener("click",function(){
+      if(animating) return;
+      flashActive(b);
+      setBusy(true);
+      animateGate(name).then(function(){ setBusy(false); });
+    });
+    gateRow.appendChild(b);
+    gateButtons[name]=b;
+  });
+  function flashActive(btn){
+    btn.classList.add("active");
+    setTimeout(function(){ btn.classList.remove("active"); },820);
+  }
+
+  // ---- Sequence strip -----------------------------------------------------
+  var seqStrip=document.getElementById("seqStrip");
+  function renderQueue(currentIdx){
+    seqStrip.innerHTML="";
+    if(queue.length===0){
+      var e=document.createElement("span");
+      e.className="empty";
+      e.textContent="No gates queued — add some, or load the preset.";
+      seqStrip.appendChild(e);
+      return;
+    }
+    queue.forEach(function(name,i){
+      if(i>0){
+        var ar=document.createElement("span");
+        ar.className="arrow"; ar.textContent="→";
+        seqStrip.appendChild(ar);
+      }
+      var c=document.createElement("span");
+      c.className="chip";
+      if(currentIdx!=null){
+        if(i<currentIdx) c.className+=" done";
+        else if(i===currentIdx) c.className+=" current";
+      }
+      c.textContent=name;
+      seqStrip.appendChild(c);
+    });
+  }
+
+  // add a gate to the queue when shift/long-click? Simpler: a tiny "+" per gate.
+  // We add a secondary set of "queue" buttons by reusing gate buttons via a modifier:
+  // Provide an explicit "Add" affordance: clicking a gate adds to queue when in build mode.
+  // To keep it intuitive, add small add-buttons under the gate row.
+
+  // Build "add to sequence" row
+  var addRow=document.createElement("div");
+  addRow.className="btn-row";
+  addRow.style.marginTop="10px";
+  var addLabel=document.createElement("span");
+  addLabel.style.cssText="font-size:12px;color:var(--faint);align-self:center;font-family:var(--mono);";
+  addLabel.textContent="+ queue:";
+  addRow.appendChild(addLabel);
+  ORDER.forEach(function(name){
+    var b=document.createElement("button");
+    b.className="gate"; b.textContent=name;
+    b.style.minWidth="40px"; b.style.padding="6px 11px"; b.style.fontSize="13px";
+    b.addEventListener("click",function(){
+      if(animating) return;
+      queue.push(name);
+      renderQueue(null);
+    });
+    addRow.appendChild(b);
+  });
+  gateRow.parentNode.appendChild(addRow);
+
+  // ---- Controls -----------------------------------------------------------
+  var runBtn=document.getElementById("runBtn");
+  var clearBtn=document.getElementById("clearBtn");
+  var resetBtn=document.getElementById("resetBtn");
+  var presetBtn=document.getElementById("presetBtn");
+  var storyNote=document.getElementById("storyNote");
+
+  function resetState(){
+    state=[0,0,1]; trail=[]; render();
+    setAxisHint([0,0,1],false);
+    vecLine.setAttribute("stroke","var(--gold)");
+    vecHead.setAttribute("fill","var(--gold)");
+  }
+
+  async function runQueue(){
+    if(animating || queue.length===0) return;
+    setBusy(true);
+    resetState();
+    for(var i=0;i<queue.length;i++){
+      renderQueue(i);
+      await animateGate(queue[i]);
+    }
+    renderQueue(null);
+    setBusy(false);
+  }
+
+  runBtn.addEventListener("click",runQueue);
+  clearBtn.addEventListener("click",function(){
+    if(animating) return;
+    queue=[]; renderQueue(null);
+    storyNote.innerHTML="Build a chain of gates above, then <b>Run</b> to apply them in order. Each rotation plays in turn and you land on the net result.";
+  });
+  resetBtn.addEventListener("click",function(){
+    if(animating) return;
+    resetState();
+  });
+  presetBtn.addEventListener("click",function(){
+    if(animating) return;
+    queue=["H","Z"];
+    renderQueue(null);
+    storyNote.innerHTML="<b>H → Z.</b> Hadamard tips |0⟩ down to the equator at |+⟩ (a π turn about the x+z axis); then Z spins a half-turn about z, carrying |+⟩ across to |−⟩.";
+    setTimeout(runQueue,300);
+  });
+
+  // ---- Init ---------------------------------------------------------------
+  buildSphere();
+  resetState();
+  renderQueue(null);
+})();
+</script>
+</body>
+</html>

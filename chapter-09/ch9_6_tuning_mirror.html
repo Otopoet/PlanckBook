@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuning the Mirror — PLANCK · Chapter 9 · Figure 9.6</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #05080E;
+  --surface: #0B101C;
+  --surface2: #0F1625;
+  --border: #172030;
+  --border2: #1E2D45;
+  --gold: #C9A84C;
+  --gold-dim: #6A5520;
+  --gold-faint: rgba(201,168,76,0.08);
+  --cyan: #4DBBD4;
+  --green: #52C97E;
+  --crimson: #C45C5C;
+  --violet: #9B7BC0;
+  --text: #D8D4C9;
+  --text-dim: #62748E;
+  --ff: 'Space Grotesk', system-ui, sans-serif;
+  --ff-mono: 'Space Mono', 'Courier New', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--ff);
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; padding: 2rem 1.2rem 3rem;
+}
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 0.64rem; letter-spacing: 0.18em;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 0.55rem; text-align: center;
+}
+h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.015em; text-align: center; margin-bottom: 0.4rem; }
+.subtitle { font-size: 0.8rem; color: var(--text-dim); text-align: center; max-width: 580px; line-height: 1.55; margin-bottom: 1.8rem; }
+
+/* ===== MAIN CARD ===== */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.5rem 1.5rem 1.25rem; width: 100%; max-width: 960px;
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.05), 0 8px 60px rgba(0,0,0,0.6);
+  position: relative; overflow: hidden;
+}
+.card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+}
+
+/* ===== TOP ROW: two canvases ===== */
+.top-row {
+  display: flex; gap: 1.2rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+}
+.panel {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem;
+}
+.panel-label {
+  font-family: var(--ff-mono); font-size: 0.62rem; letter-spacing: 0.14em;
+  color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.6rem;
+}
+.panel-energy { flex: 1.4; min-width: 300px; }
+.panel-hist   { flex: 1; min-width: 220px; }
+canvas { display: block; }
+
+/* ===== CONTROLS STRIP ===== */
+.controls-strip {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem 1.2rem; margin-bottom: 1.2rem;
+  display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;
+}
+.slider-group { flex: 1; min-width: 260px; }
+.slider-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.4rem; }
+.slider-row { display: flex; align-items: center; gap: 0.8rem; }
+input[type=range] {
+  flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gold); border: 2px solid var(--bg); cursor: grab;
+  box-shadow: 0 0 8px rgba(201,168,76,0.6);
+}
+.theta-display { font-family: var(--ff-mono); font-size: 0.78rem; color: var(--gold); min-width: 70px; }
+
+.btn-group { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
+.btn {
+  font-family: var(--ff); font-size: 0.77rem; font-weight: 500;
+  color: var(--bg); background: var(--gold); border: none; border-radius: 5px;
+  padding: 0.48rem 1rem; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.btn:hover { opacity: 0.87; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn.outline {
+  background: transparent; color: var(--text-dim); border: 1px solid var(--border2);
+}
+.btn.outline:hover { color: var(--text); border-color: var(--gold-dim); }
+.btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+.energy-display {
+  display: flex; flex-direction: column; gap: 0.25rem;
+  padding-left: 1rem; border-left: 1px solid var(--border2);
+}
+.e-row { display: flex; align-items: baseline; gap: 0.5rem; }
+.e-label { font-size: 0.7rem; color: var(--text-dim); min-width: 60px; }
+.e-val { font-family: var(--ff-mono); font-size: 0.9rem; color: var(--cyan); }
+.e-val.exact { color: var(--green); }
+.e-gap { font-family: var(--ff-mono); font-size: 0.78rem; color: var(--gold); }
+
+/* ===== CONVERGENCE PANEL ===== */
+.panel-conv { margin-top: 0; }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">9.6</span></a><script defer src="../assets/planck-companion.js" data-pk-code="9.6"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+
+<div class="eyebrow">Chapter 9 · The Mirror of the Meadow · VQE · Interactive Lab</div>
+<h1>Tuning the Mirror</h1>
+<p class="subtitle">Move the slider to tune the variational parameter θ by hand. Watch the energy point track the landscape curve and the measurement probabilities shift. Press Auto-tune to let a classical optimiser converge to the ground state automatically.</p>
+
+<div class="card">
+
+  <!-- TOP ROW -->
+  <div class="top-row">
+    <div class="panel panel-energy">
+      <div class="panel-label">Energy landscape · E(θ) vs θ</div>
+      <canvas id="cvEnergy" width="540" height="300"></canvas>
+    </div>
+    <div class="panel panel-hist">
+      <div class="panel-label">Measurement outcomes · readout noise</div>
+      <canvas id="cvHist" width="300" height="300"></canvas>
+    </div>
+  </div>
+
+  <!-- CONTROLS STRIP -->
+  <div class="controls-strip">
+    <div class="slider-group">
+      <div class="slider-label">Variational parameter θ (drag to explore)</div>
+      <div class="slider-row">
+        <span style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--text-dim)">0</span>
+        <input type="range" id="sliderTheta" min="0" max="6.2832" step="0.01" value="2.80">
+        <span style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--text-dim)">2π</span>
+        <span class="theta-display" id="thetaDisp">θ = 2.80</span>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn" id="btnAuto">Auto-tune</button>
+      <button class="btn outline" id="btnReset">Reset</button>
+    </div>
+
+    <div class="energy-display">
+      <div class="e-row">
+        <span class="e-label">Current E</span>
+        <span class="e-val" id="eVal">—</span>
+        <span style="font-size:0.7rem;color:var(--text-dim)">Ha</span>
+      </div>
+      <div class="e-row">
+        <span class="e-label">Ground E</span>
+        <span class="e-val exact">−1.137</span>
+        <span style="font-size:0.7rem;color:var(--text-dim)">Ha</span>
+      </div>
+      <div class="e-row">
+        <span class="e-label">Gap Δ</span>
+        <span class="e-gap" id="eGap">—</span>
+        <span style="font-size:0.7rem;color:var(--text-dim)">Ha</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONVERGENCE PANEL -->
+  <div class="panel panel-conv">
+    <div class="panel-label">Convergence history · Auto-tune iterations</div>
+    <canvas id="cvConv" width="900" height="160"></canvas>
+  </div>
+
+</div>
+
+<script>
+// ===================== PHYSICS =====================
+// E(θ) = -0.319 - 0.818·cos(θ)
+// Minimum at θ = 0 (and 2π): E = -1.137 — the ground state is |00⟩ with P(|00⟩) = 1.
+// Maximum at θ = π: E = 0.499
+// P(|00⟩) = cos²(θ/2), P(|11⟩) = sin²(θ/2)
+
+const E_EXACT = -1.137;
+const TAU = 2 * Math.PI;
+
+function energy(theta) { return -0.319 - 0.818 * Math.cos(theta); }
+function p00(theta) { const c = Math.cos(theta / 2); return c * c; }
+function p11(theta) { const s = Math.sin(theta / 2); return s * s; }
+function gradE(theta) { return 0.818 * Math.sin(theta); }
+
+// Readout noise — same model as figure 9.4: the ideal {|00⟩, |11⟩} populations are measured
+// through an imperfect detector (each qubit misread with probability P_RO), so a few percent
+// of shots scatter into the |01⟩/|10⟩ spin-mismatch bins. The energy/convergence story is
+// untouched — only the measurement histogram gains the noise bars, for consistency with 9.4.
+const P_RO = 0.03;
+function measuredProbs(P00, P11) {
+  const q = 1 - P_RO, p = P_RO;
+  return [ P00*q*q + P11*p*p, (P00 + P11)*p*q, (P00 + P11)*p*q, P00*p*p + P11*q*q ];
+}
+
+// ===================== STATE =====================
+let theta = 2.80;
+let convHistory = []; // [{theta, E}]
+let autoRunning = false;
+let autoId = null;
+
+// ===================== CANVAS SETUP =====================
+const cE = document.getElementById('cvEnergy');
+const ctxE = cE.getContext('2d');
+const WE = cE.width, HE = cE.height;
+const padE = { t: 32, r: 30, b: 50, l: 64 };
+const pwE = WE - padE.l - padE.r;
+const phE = HE - padE.t - padE.b;
+
+const cH = document.getElementById('cvHist');
+const ctxH = cH.getContext('2d');
+const WH = cH.width, HH = cH.height;
+const padH = { t: 32, r: 24, b: 56, l: 52 };
+const pwH = WH - padH.l - padH.r;
+const phH = HH - padH.t - padH.b;
+
+const cC = document.getElementById('cvConv');
+const ctxC = cC.getContext('2d');
+const WC = cC.width, HC = cC.height;
+const padC = { t: 22, r: 30, b: 44, l: 68 };
+const pwC = WC - padC.l - padC.r;
+const phC = HC - padC.t - padC.b;
+
+// Pre-compute curve points for energy landscape
+const CURVE_PTS = [];
+for (let i = 0; i <= 300; i++) {
+  const t = (i / 300) * TAU;
+  CURVE_PTS.push([t, energy(t)]);
+}
+
+const EY_MIN = -1.22, EY_MAX = 0.65;
+
+function toECanvas(t, e) {
+  return [
+    padE.l + (t / TAU) * pwE,
+    padE.t + (1 - (e - EY_MIN) / (EY_MAX - EY_MIN)) * phE
+  ];
+}
+
+// ===================== RENDER ENERGY =====================
+function renderEnergy(th) {
+  ctxE.clearRect(0, 0, WE, HE);
+
+  // Grid
+  ctxE.strokeStyle = 'rgba(23,32,48,0.9)'; ctxE.lineWidth = 1;
+  [-1.2, -0.8, -0.4, 0, 0.4].forEach(y => {
+    const [, cy] = toECanvas(0, y);
+    ctxE.beginPath(); ctxE.moveTo(padE.l, cy); ctxE.lineTo(padE.l + pwE, cy); ctxE.stroke();
+  });
+  [0, Math.PI/2, Math.PI, 3*Math.PI/2, TAU].forEach(t => {
+    const [cx] = toECanvas(t, 0);
+    ctxE.beginPath(); ctxE.moveTo(cx, padE.t); ctxE.lineTo(cx, padE.t + phE); ctxE.stroke();
+  });
+
+  // Axes
+  ctxE.strokeStyle = '#1E3050'; ctxE.lineWidth = 1.5;
+  ctxE.beginPath();
+  ctxE.moveTo(padE.l, padE.t); ctxE.lineTo(padE.l, padE.t + phE);
+  ctxE.lineTo(padE.l + pwE, padE.t + phE); ctxE.stroke();
+
+  // Axis ticks / labels
+  ctxE.fillStyle = '#62748E'; ctxE.font = '11px Space Grotesk, sans-serif';
+  ctxE.textAlign = 'center';
+  [[0,'0'],[Math.PI/2,'π/2'],[Math.PI,'π'],[3*Math.PI/2,'3π/2'],[TAU,'2π']].forEach(([t, lbl]) => {
+    const [cx] = toECanvas(t, 0);
+    ctxE.fillText(lbl, cx, padE.t + phE + 18);
+  });
+  ctxE.textAlign = 'right';
+  [-1.0, -0.6, -0.2, 0.2, 0.6].forEach(y => {
+    const [, cy] = toECanvas(0, y);
+    ctxE.fillText(y.toFixed(1), padE.l - 8, cy + 4);
+  });
+  ctxE.fillStyle = '#8A9BB8'; ctxE.font = '11px Space Grotesk, sans-serif';
+  ctxE.textAlign = 'center';
+  ctxE.fillText('θ (radians)', padE.l + pwE / 2, HE - 8);
+  ctxE.save(); ctxE.translate(12, padE.t + phE / 2);
+  ctxE.rotate(-Math.PI/2); ctxE.fillText('E (Ha)', 0, 0); ctxE.restore();
+
+  // Exact ground state line
+  const [x1e, y1e] = toECanvas(0, E_EXACT);
+  const [x2e] = toECanvas(TAU, E_EXACT);
+  ctxE.strokeStyle = 'rgba(82,201,126,0.4)'; ctxE.lineWidth = 1.2;
+  ctxE.setLineDash([5, 4]);
+  ctxE.beginPath(); ctxE.moveTo(x1e, y1e); ctxE.lineTo(x2e, y1e); ctxE.stroke();
+  ctxE.setLineDash([]);
+
+  // Energy curve
+  const grad = ctxE.createLinearGradient(padE.l, 0, padE.l + pwE, 0);
+  grad.addColorStop(0.0, '#52C97E');
+  grad.addColorStop(0.35, '#C9A84C');
+  grad.addColorStop(0.65, '#C45C5C');
+  grad.addColorStop(1.0, '#52C97E');
+  ctxE.strokeStyle = grad; ctxE.lineWidth = 2.2; ctxE.lineJoin = 'round';
+  ctxE.beginPath();
+  CURVE_PTS.forEach(([t, e], i) => {
+    const [cx, cy] = toECanvas(t, e);
+    if (i === 0) ctxE.moveTo(cx, cy); else ctxE.lineTo(cx, cy);
+  });
+  ctxE.stroke();
+
+  // Fill under curve
+  ctxE.save();
+  ctxE.beginPath();
+  CURVE_PTS.forEach(([t, e], i) => {
+    const [cx, cy] = toECanvas(t, e);
+    if (i === 0) ctxE.moveTo(cx, cy); else ctxE.lineTo(cx, cy);
+  });
+  ctxE.lineTo(padE.l + pwE, padE.t + phE);
+  ctxE.lineTo(padE.l, padE.t + phE);
+  ctxE.closePath();
+  ctxE.fillStyle = 'rgba(77,187,212,0.05)'; ctxE.fill();
+  ctxE.restore();
+
+  // Convergence history trail
+  if (convHistory.length > 1) {
+    ctxE.beginPath();
+    convHistory.forEach(({ theta: t, E: e }, i) => {
+      const [cx, cy] = toECanvas(t, e);
+      if (i === 0) ctxE.moveTo(cx, cy); else ctxE.lineTo(cx, cy);
+    });
+    ctxE.strokeStyle = 'rgba(255,255,255,0.5)'; ctxE.lineWidth = 1.5; ctxE.stroke();
+    convHistory.forEach(({ theta: t, E: e }, i) => {
+      const [cx, cy] = toECanvas(t, e);
+      const a = 0.2 + 0.8 * (i / convHistory.length);
+      ctxE.fillStyle = `rgba(255,255,255,${a})`;
+      ctxE.beginPath(); ctxE.arc(cx, cy, 2.5, 0, Math.PI * 2); ctxE.fill();
+    });
+  }
+
+  // Current point
+  const curE = energy(th);
+  const [px, py] = toECanvas(th, curE);
+
+  // Drop line from point to x-axis
+  const [, axisy] = toECanvas(th, EY_MIN);
+  ctxE.strokeStyle = 'rgba(201,168,76,0.3)'; ctxE.lineWidth = 1;
+  ctxE.setLineDash([3,3]);
+  ctxE.beginPath(); ctxE.moveTo(px, py); ctxE.lineTo(px, padE.t + phE); ctxE.stroke();
+  ctxE.setLineDash([]);
+
+  // Glow ring
+  ctxE.shadowColor = '#C9A84C'; ctxE.shadowBlur = 20;
+  ctxE.fillStyle = '#C9A84C';
+  ctxE.beginPath(); ctxE.arc(px, py, 7, 0, Math.PI * 2); ctxE.fill();
+  ctxE.shadowBlur = 0;
+
+  // Inner white dot
+  ctxE.fillStyle = '#FFFFFF';
+  ctxE.beginPath(); ctxE.arc(px, py, 3, 0, Math.PI * 2); ctxE.fill();
+
+  // E value label
+  ctxE.fillStyle = '#C9A84C'; ctxE.font = '600 11px Space Mono, monospace'; ctxE.textAlign = 'left';
+  const lx = px + 10, ly = Math.max(py - 5, padE.t + 14);
+  ctxE.fillText(curE.toFixed(4) + ' Ha', lx, ly);
+}
+
+// ===================== RENDER HISTOGRAM =====================
+const HIST_LABELS = ['|00⟩', '|01⟩', '|10⟩', '|11⟩'];
+const HIST_COLORS = ['#C9A84C', '#4DBBD4', '#4DBBD4', '#9B7BC0'];
+let histDisplayed = [0, 0, 0, 0];
+let histTarget = [0, 0, 0, 0];
+let histAnimId = null;
+
+function renderHist(probs) {
+  ctxH.clearRect(0, 0, WH, HH);
+
+  // Grid
+  ctxH.strokeStyle = 'rgba(23,32,48,0.8)'; ctxH.lineWidth = 1;
+  [0.25, 0.5, 0.75, 1.0].forEach(y => {
+    const cy = padH.t + (1 - y) * phH;
+    ctxH.beginPath(); ctxH.moveTo(padH.l, cy); ctxH.lineTo(padH.l + pwH, cy); ctxH.stroke();
+  });
+
+  // Axes
+  ctxH.strokeStyle = '#1E3050'; ctxH.lineWidth = 1.5;
+  ctxH.beginPath();
+  ctxH.moveTo(padH.l, padH.t); ctxH.lineTo(padH.l, padH.t + phH);
+  ctxH.lineTo(padH.l + pwH, padH.t + phH); ctxH.stroke();
+
+  ctxH.fillStyle = '#62748E'; ctxH.font = '10px Space Grotesk, sans-serif'; ctxH.textAlign = 'right';
+  [0, 0.25, 0.5, 0.75, 1.0].forEach(y => {
+    const cy = padH.t + (1 - y) * phH;
+    ctxH.fillText((y * 100).toFixed(0) + '%', padH.l - 6, cy + 4);
+  });
+
+  // Bars
+  const nBars = 4;
+  const totW = pwH * 0.8;
+  const bw = totW / nBars;
+  const gap = (pwH - totW) / (nBars + 1);
+
+  probs.forEach((p, i) => {
+    const bh = p * phH;
+    const bx = padH.l + gap + i * (bw + gap);
+    const by = padH.t + phH - bh;
+
+    if (i === 0 && p > 0.3) { ctxH.shadowColor = '#C9A84C'; ctxH.shadowBlur = 14; }
+    if (i === 3 && p > 0.3) { ctxH.shadowColor = '#9B7BC0'; ctxH.shadowBlur = 10; }
+
+    const barGrad = ctxH.createLinearGradient(bx, by, bx, by + bh);
+    barGrad.addColorStop(0, HIST_COLORS[i]);
+    barGrad.addColorStop(1, HIST_COLORS[i] + '33');
+    ctxH.fillStyle = barGrad;
+    if (bh > 0) { ctxH.beginPath(); ctxH.roundRect(bx, by, bw, Math.max(bh, 1), [3,3,0,0]); ctxH.fill(); }
+    ctxH.shadowBlur = 0;
+
+    // Label on top
+    if (p > 0.02) {
+      ctxH.fillStyle = HIST_COLORS[i]; ctxH.font = '600 10px Space Grotesk, sans-serif'; ctxH.textAlign = 'center';
+      ctxH.fillText((p * 100).toFixed(1) + '%', bx + bw / 2, Math.max(by - 5, padH.t + 12));
+    }
+
+    // Ket label
+    ctxH.fillStyle = '#A0B0C8'; ctxH.font = '500 12px Space Mono, monospace'; ctxH.textAlign = 'center';
+    ctxH.fillText(HIST_LABELS[i], bx + bw / 2, padH.t + phH + 22);
+  });
+
+  ctxH.fillStyle = '#62748E'; ctxH.font = '10px Space Grotesk, sans-serif'; ctxH.textAlign = 'center';
+  ctxH.fillText('Probability of each bitstring', padH.l + pwH / 2, HH - 6);
+}
+
+function animHist(target) {
+  if (histAnimId) cancelAnimationFrame(histAnimId);
+  const start = [...histDisplayed];
+  let t = 0;
+  function frame() {
+    t = Math.min(t + 0.12, 1);
+    const ease = 1 - Math.pow(1 - t, 2.5);
+    histDisplayed = start.map((s, i) => s + (target[i] - s) * ease);
+    renderHist(histDisplayed);
+    if (t < 1) histAnimId = requestAnimationFrame(frame);
+    else histDisplayed = [...target];
+  }
+  histAnimId = requestAnimationFrame(frame);
+}
+
+// ===================== RENDER CONVERGENCE =====================
+const CONV_E_MIN = -1.22, CONV_E_MAX = 0.65;
+
+function toConvCanvas(iter, e) {
+  const maxIter = Math.max(convHistory.length, 30);
+  return [
+    padC.l + (iter / maxIter) * pwC,
+    padC.t + (1 - (e - CONV_E_MIN) / (CONV_E_MAX - CONV_E_MIN)) * phC
+  ];
+}
+
+function renderConv() {
+  ctxC.clearRect(0, 0, WC, HC);
+
+  // Grid
+  ctxC.strokeStyle = 'rgba(23,32,48,0.9)'; ctxC.lineWidth = 1;
+  [-1.2, -0.8, -0.4, 0.0, 0.4].forEach(y => {
+    const [, cy] = toConvCanvas(0, y);
+    ctxC.beginPath(); ctxC.moveTo(padC.l, cy); ctxC.lineTo(padC.l + pwC, cy); ctxC.stroke();
+  });
+
+  // Axes
+  ctxC.strokeStyle = '#1E3050'; ctxC.lineWidth = 1.5;
+  ctxC.beginPath();
+  ctxC.moveTo(padC.l, padC.t); ctxC.lineTo(padC.l, padC.t + phC);
+  ctxC.lineTo(padC.l + pwC, padC.t + phC); ctxC.stroke();
+
+  // Y labels
+  ctxC.fillStyle = '#62748E'; ctxC.font = '10px Space Grotesk, sans-serif'; ctxC.textAlign = 'right';
+  [-1.0, -0.6, -0.2, 0.2].forEach(y => {
+    const [, cy] = toConvCanvas(0, y);
+    ctxC.fillText(y.toFixed(1), padC.l - 7, cy + 4);
+  });
+
+  // Exact line
+  const [x1c, y1c] = toConvCanvas(0, E_EXACT);
+  const [x2c] = toConvCanvas(Math.max(convHistory.length, 30), E_EXACT);
+  ctxC.strokeStyle = 'rgba(82,201,126,0.45)'; ctxC.lineWidth = 1.2; ctxC.setLineDash([5,4]);
+  ctxC.beginPath(); ctxC.moveTo(x1c, y1c); ctxC.lineTo(x2c, y1c); ctxC.stroke();
+  ctxC.setLineDash([]);
+  ctxC.fillStyle = '#52C97E'; ctxC.font = '9px Space Mono, monospace'; ctxC.textAlign = 'left';
+  ctxC.fillText('E₀ = −1.137 Ha', padC.l + 6, y1c - 5);
+
+  if (convHistory.length === 0) {
+    ctxC.fillStyle = 'rgba(98,116,142,0.5)'; ctxC.font = '12px Space Grotesk, sans-serif'; ctxC.textAlign = 'center';
+    ctxC.fillText('Press Auto-tune to start recording convergence history', padC.l + pwC / 2, padC.t + phC / 2 + 5);
+    return;
+  }
+
+  // Convergence curve
+  ctxC.beginPath();
+  convHistory.forEach(({ E: e }, i) => {
+    const [cx, cy] = toConvCanvas(i, e);
+    if (i === 0) ctxC.moveTo(cx, cy); else ctxC.lineTo(cx, cy);
+  });
+  ctxC.strokeStyle = '#4DBBD4'; ctxC.lineWidth = 2.2; ctxC.lineJoin = 'round';
+  ctxC.shadowColor = '#4DBBD4'; ctxC.shadowBlur = 6; ctxC.stroke(); ctxC.shadowBlur = 0;
+
+  // Fill
+  ctxC.save();
+  ctxC.beginPath();
+  convHistory.forEach(({ E: e }, i) => { const [cx, cy] = toConvCanvas(i, e); if (i===0) ctxC.moveTo(cx,cy); else ctxC.lineTo(cx,cy); });
+  ctxC.lineTo(toConvCanvas(convHistory.length-1, CONV_E_MIN)[0], padC.t + phC);
+  ctxC.lineTo(padC.l, padC.t + phC);
+  ctxC.closePath();
+  ctxC.fillStyle = 'rgba(77,187,212,0.07)'; ctxC.fill();
+  ctxC.restore();
+
+  // Leading dot
+  const last = convHistory[convHistory.length - 1];
+  const [lx, ly] = toConvCanvas(convHistory.length - 1, last.E);
+  ctxC.fillStyle = '#4DBBD4'; ctxC.shadowColor = '#4DBBD4'; ctxC.shadowBlur = 12;
+  ctxC.beginPath(); ctxC.arc(lx, ly, 4, 0, Math.PI * 2); ctxC.fill(); ctxC.shadowBlur = 0;
+
+  // X axis labels (iterations)
+  ctxC.fillStyle = '#62748E'; ctxC.textAlign = 'center'; ctxC.font = '10px Space Grotesk, sans-serif';
+  const maxI = Math.max(convHistory.length, 30);
+  [0, 10, 20, 30].filter(n => n <= maxI).forEach(n => {
+    const [cx] = toConvCanvas(n, CONV_E_MIN);
+    ctxC.fillText(n, cx, padC.t + phC + 16);
+  });
+  ctxC.textAlign = 'center';
+  ctxC.fillText('Iteration', padC.l + pwC / 2, HC - 4);
+  ctxC.save(); ctxC.translate(10, padC.t + phC / 2); ctxC.rotate(-Math.PI/2); ctxC.fillText('E (Ha)', 0, 0); ctxC.restore();
+}
+
+// ===================== UPDATE UI =====================
+function updateDisplays(th) {
+  const e = energy(th);
+  const gap = Math.abs(e - E_EXACT);
+  document.getElementById('thetaDisp').textContent = 'θ = ' + th.toFixed(3);
+  document.getElementById('eVal').textContent = e.toFixed(4);
+  document.getElementById('eGap').textContent = gap.toFixed(4);
+  renderEnergy(th);
+  const probs = measuredProbs(p00(th), p11(th));
+  animHist(probs);
+}
+
+// ===================== AUTO-TUNE =====================
+function autoTune() {
+  if (autoRunning) return;
+  autoRunning = true;
+  document.getElementById('btnAuto').disabled = true;
+  document.getElementById('btnAuto').textContent = 'Running…';
+
+  let t = theta;
+  const alpha = 0.42;
+  const STEPS = 28;
+  let step = 0;
+
+  function tick() {
+    const e = energy(t);
+    convHistory.push({ theta: t, E: e });
+    theta = t;
+    document.getElementById('sliderTheta').value = t;
+    updateDisplays(t);
+    renderConv();
+
+    if (step < STEPS && Math.abs(e - E_EXACT) > 0.001) {
+      const g = gradE(t);
+      t -= alpha * g;
+      // Wrap to [0, 2π]
+      while (t < 0) t += TAU;
+      while (t > TAU) t -= TAU;
+      step++;
+      autoId = setTimeout(tick, 120);
+    } else {
+      autoRunning = false;
+      document.getElementById('btnAuto').disabled = false;
+      document.getElementById('btnAuto').textContent = 'Auto-tune';
+      // Final comparison annotation
+      const finalE = energy(t);
+      const finalGap = Math.abs(finalE - E_EXACT) * 1000;
+      document.getElementById('eGap').textContent =
+        Math.abs(finalE - E_EXACT).toFixed(4) + ' Ha (' + finalGap.toFixed(1) + ' mHa)';
+    }
+  }
+
+  tick();
+}
+
+// ===================== EVENT HANDLERS =====================
+document.getElementById('sliderTheta').addEventListener('input', function () {
+  if (autoRunning) return;
+  theta = parseFloat(this.value);
+  updateDisplays(theta);
+});
+
+document.getElementById('btnAuto').addEventListener('click', autoTune);
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (autoId) clearTimeout(autoId);
+  autoRunning = false;
+  theta = 2.80;
+  convHistory = [];
+  document.getElementById('sliderTheta').value = theta;
+  document.getElementById('btnAuto').disabled = false;
+  document.getElementById('btnAuto').textContent = 'Auto-tune';
+  updateDisplays(theta);
+  renderConv();
+});
+
+// ===================== INIT =====================
+updateDisplays(theta);
+renderConv();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parameter Landscape — PLANCK Ch. 9</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06090F;
+  --surface: #0C1220;
+  --border: #182338;
+  --gold: #C9A84C;
+  --gold-dim: #6A5520;
+  --cyan: #4DBBD4;
+  --green: #52C97E;
+  --crimson: #C45C5C;
+  --text: #D8D4C9;
+  --text-dim: #62748E;
+  --ff: 'Space Grotesk', system-ui, sans-serif;
+  --ff-mono: 'Space Mono', 'Courier New', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--ff);
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; padding: 2.5rem 1.5rem 3rem;
+}
+.eyebrow {
+  font-family: var(--ff-mono); font-size: 0.65rem; letter-spacing: 0.18em;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 0.6rem; text-align: center;
+}
+h1 { font-size: 1.55rem; font-weight: 600; letter-spacing: -0.015em; text-align: center; margin-bottom: 0.45rem; }
+.subtitle { font-size: 0.82rem; color: var(--text-dim); text-align: center; max-width: 600px; line-height: 1.55; margin-bottom: 2rem; }
+.layout {
+  display: flex; gap: 1.5rem; width: 100%; max-width: 900px; align-items: flex-start; flex-wrap: wrap;
+}
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1.75rem 1.75rem 1.5rem;
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.06), 0 4px 40px rgba(0,0,0,0.5);
+  position: relative; overflow: hidden; flex: 1; min-width: 300px;
+}
+.card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), var(--gold), var(--gold-dim), transparent);
+}
+canvas { display: block; }
+.controls { margin-top: 1.2rem; display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; }
+.btn {
+  font-family: var(--ff); font-size: 0.78rem; font-weight: 500;
+  color: var(--bg); background: var(--gold); border: none; border-radius: 5px;
+  padding: 0.5rem 1.1rem; cursor: pointer; transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.85; }
+.btn.outline {
+  background: transparent; color: var(--text-dim); border: 1px solid var(--border);
+}
+.btn.outline:hover { border-color: var(--gold-dim); color: var(--text); }
+.info-box {
+  background: rgba(12,18,32,0.8); border: 1px solid var(--border); border-radius: 6px;
+  padding: 1rem; flex: 0 0 220px; min-width: 180px;
+}
+.info-box h3 { font-size: 0.75rem; color: var(--gold); margin-bottom: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; font-family: var(--ff-mono); }
+.info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.72rem; }
+.info-row .label { color: var(--text-dim); }
+.info-row .val { font-family: var(--ff-mono); color: var(--cyan); }
+.eq-block {
+  font-family: var(--ff-mono); font-size: 0.75rem; color: var(--gold);
+  background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.18);
+  border-radius: 5px; padding: 0.5rem 0.9rem; margin-top: 1.2rem; text-align: center;
+}
+.colorbar-wrap { display: flex; align-items: center; gap: 0.6rem; margin-top: 1.2rem; }
+.colorbar-canvas { border-radius: 3px; flex: 1; }
+.colorbar-label { font-family: var(--ff-mono); font-size: 0.68rem; color: var(--text-dim); white-space: nowrap; }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">9.5</span></a><script defer src="../assets/planck-companion.js" data-pk-code="9.5"></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="eyebrow">Chapter 9 · The Mirror of the Meadow · VQE</div>
+<h1>Variational Parameter Landscape</h1>
+<p class="subtitle">Energy as a function of two variational parameters (θ₁, θ₂). The classical optimiser follows the gradient downhill. Each step reshapes the quantum circuit's state, nudging the energy toward the ground-state minimum.</p>
+
+<div class="layout">
+  <div class="card" style="flex: 2; min-width: 400px;">
+    <canvas id="main" width="480" height="480"></canvas>
+    <div class="controls">
+      <button class="btn" id="btnDescend">Animate descent</button>
+      <button class="btn outline" id="btnReset">Reset path</button>
+    </div>
+    <div class="colorbar-wrap">
+      <span class="colorbar-label">High E</span>
+      <canvas id="cbar" class="colorbar-canvas" width="300" height="16"></canvas>
+      <span class="colorbar-label">Low E</span>
+    </div>
+    <div class="eq-block">E(θ₁, θ₂) = −0.437 − 0.3·cos(θ₁) − 0.3·cos(θ₂) − 0.1·cos(θ₁+θ₂)</div>
+  </div>
+
+  <div style="flex: 0 0 auto; display: flex; flex-direction: column; gap: 1rem;">
+    <div class="info-box">
+      <h3>Current state</h3>
+      <div class="info-row"><span class="label">θ₁</span><span class="val" id="vt1">—</span></div>
+      <div class="info-row"><span class="label">θ₂</span><span class="val" id="vt2">—</span></div>
+      <div class="info-row"><span class="label">E(θ)</span><span class="val" id="vE">—</span></div>
+      <div class="info-row"><span class="label">E_min</span><span class="val" style="color:var(--green)">−1.137 Ha</span></div>
+      <div class="info-row"><span class="label">Gap</span><span class="val" id="vGap">—</span></div>
+      <div class="info-row"><span class="label">Step</span><span class="val" id="vStep">0</span></div>
+    </div>
+
+    <div class="info-box">
+      <h3>Gradient descent</h3>
+      <div style="font-size: 0.7rem; color: var(--text-dim); line-height: 1.6;">
+        <p>∂E/∂θ₁ = 0.3·sin(θ₁) + 0.1·sin(θ₁+θ₂)</p>
+        <br>
+        <p>∂E/∂θ₂ = 0.3·sin(θ₂) + 0.1·sin(θ₁+θ₂)</p>
+        <br>
+        <p style="color:var(--gold);">θ ← θ − α·∇E(θ)</p>
+        <br>
+        <p>Learning rate α = 0.28</p>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <h3>Landscape features</h3>
+      <div style="font-size: 0.7rem; color: var(--text-dim); line-height: 1.6;">
+        <p><span style="color:var(--gold);">★</span> Global minima at (0,0), (2π,2π)…</p>
+        <br>
+        <p><span style="color:var(--crimson);">●</span> Local maxima at (π,π)</p>
+        <br>
+        <p>Saddle points at (0,π) and (π,0)</p>
+        <br>
+        <p style="margin-top:0.5rem; color:var(--text-dim);">Gradient barren plateau risk increases exponentially with qubit count.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('main');
+const ctx = cv.getContext('2d');
+const S = cv.width; // 480 × 480
+const pad = 44;
+const ps = S - 2 * pad; // plot size
+
+// Energy function
+function E(t1, t2) {
+  return -0.437 - 0.3 * Math.cos(t1) - 0.3 * Math.cos(t2) - 0.1 * Math.cos(t1 + t2);
+}
+
+const E_MIN = E(0, 0);   // ≈ -1.137
+const E_MAX = E(Math.PI, Math.PI); // ≈ +0.263
+
+// Color map: deep purple (high E) → midnight blue → teal → gold (low E)
+function energyColor(e) {
+  const t = 1 - (e - E_MIN) / (E_MAX - E_MIN); // 0=high, 1=low
+  // Multi-stop palette
+  if (t < 0.25) {
+    const f = t / 0.25;
+    return [lerp(180,100,f), lerp(30,40,f), lerp(80,140,f)];
+  } else if (t < 0.5) {
+    const f = (t-0.25)/0.25;
+    return [lerp(100,20,f), lerp(40,100,f), lerp(140,160,f)];
+  } else if (t < 0.75) {
+    const f = (t-0.5)/0.25;
+    return [lerp(20,30,f), lerp(100,150,f), lerp(160,120,f)];
+  } else {
+    const f = (t-0.75)/0.25;
+    return [lerp(30,201,f), lerp(150,168,f), lerp(120,76,f)];
+  }
+}
+function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+
+// Build heatmap image
+const imgData = ctx.createImageData(ps, ps);
+const GRID = ps;
+for (let yi = 0; yi < GRID; yi++) {
+  for (let xi = 0; xi < GRID; xi++) {
+    const t1 = (xi / (GRID - 1)) * 2 * Math.PI;
+    const t2 = ((GRID - 1 - yi) / (GRID - 1)) * 2 * Math.PI;
+    const e = E(t1, t2);
+    const [r, g, b] = energyColor(e);
+    const idx = 4 * (yi * GRID + xi);
+    imgData.data[idx]   = r;
+    imgData.data[idx+1] = g;
+    imgData.data[idx+2] = b;
+    imgData.data[idx+3] = 255;
+  }
+}
+
+function toCanvas(t1, t2) {
+  return [
+    pad + (t1 / (2 * Math.PI)) * ps,
+    pad + (1 - t2 / (2 * Math.PI)) * ps
+  ];
+}
+
+// Pre-compute gradient descent path
+function computePath(t1_0, t2_0, alpha, steps) {
+  const path = [[t1_0, t2_0]];
+  let t1 = t1_0, t2 = t2_0;
+  for (let i = 0; i < steps; i++) {
+    const g1 = 0.3 * Math.sin(t1) + 0.1 * Math.sin(t1 + t2);
+    const g2 = 0.3 * Math.sin(t2) + 0.1 * Math.sin(t1 + t2);
+    t1 -= alpha * g1;
+    t2 -= alpha * g2;
+    path.push([t1, t2]);
+  }
+  return path;
+}
+
+const INIT_T1 = 2.2, INIT_T2 = 2.0;
+const PATH = computePath(INIT_T1, INIT_T2, 0.28, 35);
+
+let drawn = 0;
+let animId = null;
+let running = false;
+
+function drawBase() {
+  // Draw heatmap
+  ctx.putImageData(imgData, pad, pad);
+
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(pad, pad, ps, ps);
+
+  // Axis labels
+  ctx.fillStyle = '#62748E';
+  ctx.font = '11px Space Grotesk, sans-serif';
+  ctx.textAlign = 'center';
+  [0, 1, 2].forEach(k => {
+    const label = k === 0 ? '0' : k === 1 ? 'π' : '2π';
+    const x = pad + (k / 2) * ps;
+    ctx.fillText(label, x, S - 10);
+    const y = pad + (1 - k/2) * ps;
+    ctx.textAlign = 'right';
+    ctx.fillText(label, pad - 8, y + 4);
+    ctx.textAlign = 'center';
+  });
+
+  ctx.fillStyle = '#A0B0C8';
+  ctx.font = '12px Space Grotesk, sans-serif';
+  ctx.fillText('θ₁', S / 2, S - 0);
+  ctx.save(); ctx.translate(10, S / 2); ctx.rotate(-Math.PI/2); ctx.fillText('θ₂', 0, 0); ctx.restore();
+
+  // Mark global minima
+  [[0,0],[2*Math.PI,0],[0,2*Math.PI],[2*Math.PI,2*Math.PI]].forEach(([t1,t2]) => {
+    const [cx, cy] = toCanvas(t1, t2);
+    if (cx >= pad && cx <= pad+ps && cy >= pad && cy <= pad+ps) {
+      ctx.fillStyle = '#C9A84C';
+      ctx.shadowColor = '#C9A84C'; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.arc(cx, cy, 5.5, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#C9A84C';
+      ctx.font = '10px Space Mono, monospace'; ctx.textAlign = 'left';
+      if (t1 < Math.PI && t2 < Math.PI) ctx.fillText('★ min', cx + 8, cy + 4);
+    }
+  });
+
+  // Mark saddle points
+  [[Math.PI,0],[0,Math.PI]].forEach(([t1,t2]) => {
+    const [cx, cy] = toCanvas(t1, t2);
+    ctx.strokeStyle = 'rgba(200,200,200,0.3)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.stroke();
+  });
+}
+
+function drawPath(n) {
+  if (n < 2) return;
+  const visible = PATH.slice(0, n);
+
+  // Path line
+  ctx.beginPath();
+  visible.forEach(([t1, t2], i) => {
+    const [cx, cy] = toCanvas(t1, t2);
+    if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+  });
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.setLineDash([]);
+  ctx.stroke();
+
+  // Step dots
+  visible.forEach(([t1, t2], i) => {
+    const [cx, cy] = toCanvas(t1, t2);
+    const alpha = 0.3 + 0.7 * (i / (n - 1));
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Start marker
+  const [sx, sy] = toCanvas(PATH[0][0], PATH[0][1]);
+  ctx.fillStyle = '#C45C5C';
+  ctx.shadowColor = '#C45C5C'; ctx.shadowBlur = 10;
+  ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#C45C5C'; ctx.font = '10px Space Mono, monospace'; ctx.textAlign = 'right';
+  ctx.fillText('start', sx - 9, sy + 4);
+
+  // Current position
+  const last = visible[visible.length - 1];
+  const [lx, ly] = toCanvas(last[0], last[1]);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.shadowColor = '#FFFFFF'; ctx.shadowBlur = 12;
+  ctx.beginPath(); ctx.arc(lx, ly, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.shadowBlur = 0;
+
+  updateInfo(last[0], last[1], n - 1);
+}
+
+function updateInfo(t1, t2, step) {
+  const e = E(t1, t2);
+  document.getElementById('vt1').textContent = t1.toFixed(3) + ' rad';
+  document.getElementById('vt2').textContent = t2.toFixed(3) + ' rad';
+  document.getElementById('vE').textContent = e.toFixed(4) + ' Ha';
+  document.getElementById('vGap').textContent = (e - E_MIN).toFixed(4) + ' Ha';
+  document.getElementById('vStep').textContent = step;
+}
+
+function fullRender(n) {
+  ctx.clearRect(0, 0, S, S);
+  drawBase();
+  drawPath(n);
+}
+
+function animate() {
+  if (drawn < PATH.length) {
+    fullRender(drawn + 1);
+    drawn++;
+    animId = setTimeout(animate, 80);
+  } else {
+    running = false;
+  }
+}
+
+// Colorbar
+const cbar = document.getElementById('cbar');
+const cctx = cbar.getContext('2d');
+const cw = cbar.width, ch = cbar.height;
+const cimg = cctx.createImageData(cw, ch);
+for (let xi = 0; xi < cw; xi++) {
+  const t = 1 - xi / (cw - 1);
+  const e = E_MIN + (E_MAX - E_MIN) * (1 - t);
+  const [r, g, b] = energyColor(e);
+  for (let yi = 0; yi < ch; yi++) {
+    const idx = 4 * (yi * cw + xi);
+    cimg.data[idx] = r; cimg.data[idx+1] = g; cimg.data[idx+2] = b; cimg.data[idx+3] = 255;
+  }
+}
+cctx.putImageData(cimg, 0, 0);
+
+document.getElementById('btnDescend').addEventListener('click', () => {
+  if (running) return;
+  if (drawn >= PATH.length) { drawn = 0; }
+  running = true;
+  animate();
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  clearTimeout(animId); running = false; drawn = 0;
+  fullRender(1);
+  ['vt1','vt2','vE','vGap'].forEach(id => document.getElementById(id).textContent = '—');
+  document.getElementById('vStep').textContent = '0';
+});
+
+// Initial
+fullRender(1);
+updateInfo(INIT_T1, INIT_T2, 0);
+</script>
+
+</body>
+</html>

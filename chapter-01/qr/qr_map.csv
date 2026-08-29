@@ -1,0 +1,37 @@
+chapter,code,title,type,url,image
+1,1.1,Bit vs qubit,lab,https://ivanroche.com/planck/chapter-01/bit-vs-qubit.html,1_1.png
+1,1.2,The cloud of where,lab,https://ivanroche.com/planck/chapter-01/cloud_of_where.html,1_2.png
+2,2.1,Superposition on the Bloch sphere,lab,https://ivanroche.com/planck/chapter-02/bloch_sphere_superposition.html,2_1.png
+3,3.1,The artistic scene,lab,https://ivanroche.com/planck/chapter-03/01-scene.html,3_1.png
+3,3.2,The two-particle joint density,lab,https://ivanroche.com/planck/chapter-03/02-density.html,3_2.png
+3,3.3,Bell correlation on the singlet,lab,https://ivanroche.com/planck/chapter-03/03-bell.html,3_3.png
+3,3.4,CHSH & Tsirelson's bound,lab,https://ivanroche.com/planck/chapter-03/04-chsh.html,3_4.png
+3,3.5,Coupled real & configuration space,lab,https://ivanroche.com/planck/chapter-03/05-coupled.html,3_5.png
+3,3.6,Exact free-particle evolution,lab,https://ivanroche.com/planck/chapter-03/06-exact.html,3_6.png
+4,4.1,Wavefunction collapse,lab,https://ivanroche.com/planck/chapter-04/wavefunction_collapse.html,4_1.png
+4,4.2,Measurement & noise — first look,lab,https://ivanroche.com/planck/chapter-11/quantum_measurement.html,4_2.png
+5,5.1,"One qubit, three bodies",lab,https://ivanroche.com/planck/chapter-05/physical_qubit.html,5_1.png
+5,5.2,The Bloch sphere,lab,https://ivanroche.com/planck/chapter-05/bloch_sphere.html,5_2.png
+5,5.3,The growth of Hilbert space,lab,https://ivanroche.com/planck/chapter-05/hilbert_space.html,5_3.png
+5,5.4,Quantum wave interference,lab,https://ivanroche.com/planck/chapter-05/quantum_interference.html,5_4.png
+6,6.1,Gates as Bloch-sphere rotations,lab,https://ivanroche.com/planck/chapter-06/gate_rotations.html,6_1.png
+6,6.2,Nudge a cloud — the quantum coin,lab,https://ivanroche.com/planck/chapter-06/nudge-a-cloud.html,6_2.png
+7,7.1,Interference — the engine of the search,lab,https://ivanroche.com/planck/chapter-07/grover.html,7_1.png
+7,7.2,"Oracle, diffuser & amplification",lab,https://ivanroche.com/planck/chapter-07/grover-visualization.html,7_2.png
+8,8.1,The clockwork maze,lab,https://ivanroche.com/planck/chapter-08/clockwork_maze.html,8_1.png
+8,8.2,The QFT resonance sweep,lab,https://ivanroche.com/planck/chapter-08/qft_resonance_sweep.html,8_2.png
+8,8.3,The pillars of light,lab,https://ivanroche.com/planck/chapter-08/pillars_of_light.html,8_3.png
+9,9.1,H₂ molecular energy landscape,lab,https://ivanroche.com/planck/chapter-09/ch9_1_vqe_loop.html,9_1.png
+9,9.3,Hardware-efficient ansatz circuit,figure,https://ivanroche.com/planck/chapter-09/ch9_3_ansatz_circuit.html,9_3.png
+9,9.2,VQE convergence curve,lab,https://ivanroche.com/planck/chapter-09/ch9_2_vqe_convergence.html,9_2.png
+9,9.4,Measurement outcome probabilities,lab,https://ivanroche.com/planck/chapter-09/ch9_4_measurement_histogram.html,9_4.png
+9,9.5,Variational parameter landscape,lab,https://ivanroche.com/planck/chapter-09/ch9_5_parameter_landscape.html,9_5.png
+9,9.6,Tuning the mirror,lab,https://ivanroche.com/planck/chapter-09/ch9_6_tuning_mirror.html,9_6.png
+10,10.1,The slow melt — quantum annealing,lab,https://ivanroche.com/planck/chapter-10/annealing_simulator.html,10_1.png
+10,10.2,Shaping the mist — QAOA Max-Cut,lab,https://ivanroche.com/planck/chapter-10/qaoa_maxcut_lab.html,10_2.png
+11,11.1,The mixed state,lab,https://ivanroche.com/planck/chapter-11/11_1_density_matrix.html,11_1.png
+11,11.2,T₁ and T₂,lab,https://ivanroche.com/planck/chapter-11/11_2_t1_t2.html,11_2.png
+11,11.3,Decoherence of entanglement,lab,https://ivanroche.com/planck/chapter-11/singlet_decoherence.html,11_3.png
+11,11.6,Fighting back: the repetition code,lab,https://ivanroche.com/planck/chapter-11/11_6_repetition_code.html,11_6.png
+11,11.7,Surface code & the threshold,lab,https://ivanroche.com/planck/chapter-11/11_7_threshold.html,11_7.png
+11,11.8,The full noise-to-correction sandbox,lab,https://ivanroche.com/planck/chapter-11/quantum_measurement.html,11_8.png

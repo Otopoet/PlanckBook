@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Spooky Action · Bell State Lab — PLANCK · Extra</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.7.0/tabler-icons.min.css"/>
+<style>
+  :root{
+    --bg:#1a1915; --panel:#23221d; --panel2:#2b2a24; --line:rgba(255,255,255,.12);
+    --line2:rgba(255,255,255,.22); --text:#ece9e0; --text2:#b3b0a6; --text3:#85837b;
+    --blue:#5aa0ec; --coral:#e88b62; --purple:#9a92ee; --teal:#4fc4a8; --dis:#6f6e67;
+    --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --r:8px; --rl:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;padding:32px 18px 64px;}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+  .sub{color:var(--text2);font-size:15px;margin:0 0 26px;max-width:62ch}
+  .sub em{color:var(--text);font-style:italic}
+  .seclab{font-size:12px;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;margin:26px 0 12px}
+  button{font-family:var(--sans);font-size:14px;color:var(--text);background:transparent;
+    border:.5px solid var(--line2);border-radius:var(--r);padding:8px 13px;cursor:pointer;
+    transition:background .12s,transform .05s}
+  button:hover:not(:disabled){background:var(--panel2)}
+  button:active:not(:disabled){transform:scale(.97)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .primary{background:rgba(154,146,238,.18);border-color:rgba(154,146,238,.5);color:#d6d1f7;font-weight:600}
+  .primary:hover:not(:disabled){background:rgba(154,146,238,.28)}
+  .mono{font-family:var(--mono)}
+  .lab{font-size:12px;color:var(--text3)}
+  input[type=range]{-webkit-appearance:none;height:4px;border-radius:4px;background:var(--line);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:var(--text);cursor:pointer;border:none}
+  .seg{padding:8px 14px;font-size:13px;border:.5px solid var(--line2);background:transparent;color:var(--text2)}
+  .seg.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .card{background:var(--panel);border:.5px solid var(--line);border-radius:var(--rl);padding:18px 20px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .qcard{flex:1;min-width:200px;background:var(--panel);border:.5px solid var(--line);border-radius:var(--rl);padding:16px;text-align:center}
+  .bigval{font-family:var(--mono);font-size:40px;font-weight:600;line-height:1;margin:4px 0 8px;transition:color .2s}
+  .link{width:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--text3);transition:color .2s,transform .2s}
+  .link.flash{color:var(--purple);transform:scale(1.25)}
+  sub{font-size:.7em}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span></a><script defer src="../assets/planck-companion.js" data-pk-code=""></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h1>Spooky action at the kitchen table</h1>
+  <p class="sub">Two qubits, one Bell state. Press <span class="mono">H</span> on q₀, then <span class="mono">CX</span> to braid them together — and watch each qubit lose its own identity. <em>Measure one, and the other answers instantly, with nothing passing between them.</em></p>
+
+  <div class="row" style="margin-bottom:16px;">
+    <button id="bell" class="primary"><i class="ti ti-bolt" style="vertical-align:-2px;margin-right:4px;"></i>Build Bell state</button>
+    <span style="width:8px"></span>
+    <button id="hq0" class="mono">H q₀</button>
+    <button id="hq1" class="mono">H q₁</button>
+    <button id="xq0" class="mono">X q₀</button>
+    <button id="xq1" class="mono">X q₁</button>
+    <button id="cx" class="mono">CX 0→1</button>
+    <button id="clr"><i class="ti ti-trash" style="vertical-align:-2px;"></i></button>
+  </div>
+
+  <div style="background:var(--panel2);border-radius:var(--rl);padding:14px 16px;margin-bottom:6px;overflow-x:auto;">
+    <div id="circuit"></div>
+  </div>
+
+  <div class="seclab">The two qubits — measure one, watch the other</div>
+  <div class="row" style="align-items:stretch;gap:14px;">
+    <div class="qcard" style="border-color:rgba(90,160,236,.35);">
+      <div class="row" style="justify-content:center;gap:6px;margin-bottom:4px;"><span class="mono" style="color:var(--blue);font-weight:600;">q₀</span></div>
+      <svg id="sph0" width="150" height="150" viewBox="0 0 150 150"></svg>
+      <div id="val0" class="bigval" style="color:var(--text3)">?</div>
+      <div id="note0" class="lab" style="min-height:16px;">— undetermined —</div>
+      <button id="m0" style="margin-top:10px;width:100%;">Measure q₀</button>
+    </div>
+    <div class="link" id="link"><i class="ti ti-link" style="font-size:22px;"></i><span style="font-size:10px;text-align:center;">entangled</span></div>
+    <div class="qcard" style="border-color:rgba(232,139,98,.35);">
+      <div class="row" style="justify-content:center;gap:6px;margin-bottom:4px;"><span class="mono" style="color:var(--coral);font-weight:600;">q₁</span></div>
+      <svg id="sph1" width="150" height="150" viewBox="0 0 150 150"></svg>
+      <div id="val1" class="bigval" style="color:var(--text3)">?</div>
+      <div id="note1" class="lab" style="min-height:16px;">— undetermined —</div>
+      <button id="m1" style="margin-top:10px;width:100%;">Measure q₁</button>
+    </div>
+  </div>
+  <div id="narrate" style="text-align:center;font-size:14px;color:var(--text2);min-height:22px;margin-top:14px;">Build the Bell state, then measure q₀ first.</div>
+  <div class="row" style="justify-content:center;margin-top:10px;">
+    <button id="reprep"><i class="ti ti-refresh" style="vertical-align:-2px;margin-right:4px;"></i>Re-prepare</button>
+  </div>
+
+  <div class="seclab">The joint state — what the math says right now</div>
+  <div class="card" id="jointCard"></div>
+
+  <div class="seclab">The statistics — what many measurements give</div>
+  <div class="card">
+    <div class="row" style="margin-bottom:16px;">
+      <input type="range" id="shots" min="100" max="4000" step="100" value="1000" style="flex:1;min-width:160px;"/>
+      <button id="runN">Run <span id="shotsOut" class="mono">1000</span> ↻</button>
+      <span style="flex:1"></span>
+      <span class="lab">on</span>
+      <span style="display:inline-flex;border-radius:var(--r);overflow:hidden;">
+        <button class="seg on" id="modeSim" style="border-radius:var(--r) 0 0 var(--r);">simulator</button>
+        <button class="seg" id="modeQpu" style="border-radius:0 var(--r) var(--r) 0;border-left:none;">real QPU</button>
+      </span>
+    </div>
+    <div id="hist" style="display:flex;align-items:flex-end;justify-content:space-around;height:150px;gap:18px;"></div>
+    <div id="histLabels" class="row" style="justify-content:space-around;border-top:.5px solid var(--line);padding-top:9px;margin-top:2px;"></div>
+    <div id="corr" style="text-align:center;font-size:14px;color:var(--text2);margin-top:14px;min-height:20px;">Run some shots to see the correlation.</div>
+    <div class="row" style="justify-content:space-between;margin-top:10px;">
+      <span id="countsDict" class="mono" style="font-size:12px;color:var(--text3);">counts = {}</span>
+      <button id="reset" style="font-size:12px;padding:5px 11px;">reset counts</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var S2=Math.SQRT2;
+  var gates=[], mode='sim';
+  var prepared=[1,0,0,0], live=[1,0,0,0], meas=[null,null];
+  var counts=[0,0,0,0], busy=false;
+  var OUT=['00','01','10','11'];
+  function $(id){return document.getElementById(id);}
+  function rnd(){var u=new Uint32Array(1);crypto.getRandomValues(u);return u[0]/4294967296;}
+  function copy(a){return [a[0],a[1],a[2],a[3]];}
+
+  function applyX(a,k){var m=k===0?2:1,r=[0,0,0,0];for(var i=0;i<4;i++)r[i]=a[i^m];return r;}
+  function applyH(a,k){var m=k===0?2:1,r=[0,0,0,0];for(var i=0;i<4;i++){if((i&m)===0){var j=i|m;r[i]=(a[i]+a[j])/S2;r[j]=(a[i]-a[j])/S2;}}return r;}
+  function applyCX(a){var r=[0,0,0,0];for(var i=0;i<4;i++)r[i]=(i&2)?a[i^1]:a[i];return r;}
+
+  function compute(){
+    var a=[1,0,0,0];
+    for(var i=0;i<gates.length;i++){
+      var g=gates[i];
+      if(g.g==='H')a=applyH(a,g.q);
+      else if(g.g==='X')a=applyX(a,g.q);
+      else if(g.g==='CX')a=applyCX(a);
+    }
+    return a;
+  }
+  function reduced(a){
+    var p=[a[0]*a[0],a[1]*a[1],a[2]*a[2],a[3]*a[3]];
+    var q0p0=p[0]+p[1], q0p1=p[2]+p[3];
+    var x0=2*(a[0]*a[2]+a[1]*a[3]), z0=q0p0-q0p1;
+    var q1p0=p[0]+p[2], q1p1=p[1]+p[3];
+    var x1=2*(a[0]*a[1]+a[2]*a[3]), z1=q1p0-q1p1;
+    return {probs:p,
+      q0:{x:x0,z:z0,p1:q0p1,len:Math.sqrt(x0*x0+z0*z0)},
+      q1:{x:x1,z:z1,p1:q1p1,len:Math.sqrt(x1*x1+z1*z1)}};
+  }
+
+  // ---------- circuit drawing ----------
+  function renderCircuit(){
+    var n=gates.length, step=58, x0=70, endX=x0+Math.max(n,1)*step+34;
+    var W=Math.max(endX+50, 430), y0=42, y1=98, H=132;
+    var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style="min-width:'+W+'px">';
+    s+='<line x1="56" y1="'+y0+'" x2="'+(endX+30)+'" y2="'+y0+'" stroke="var(--line2)" stroke-width=".5"/>';
+    s+='<line x1="56" y1="'+y1+'" x2="'+(endX+30)+'" y2="'+y1+'" stroke="var(--line2)" stroke-width=".5"/>';
+    s+='<text x="20" y="'+(y0+5)+'" font-family="var(--mono)" font-size="13" fill="var(--blue)">q₀</text>';
+    s+='<text x="20" y="'+(y1+5)+'" font-family="var(--mono)" font-size="13" fill="var(--coral)">q₁</text>';
+    for(var i=0;i<n;i++){
+      var g=gates[i], cx=x0+i*step+17;
+      if(g.g==='CX'){
+        s+='<line x1="'+cx+'" y1="'+y0+'" x2="'+cx+'" y2="'+y1+'" stroke="var(--purple)" stroke-width="1.5"/>';
+        s+='<circle cx="'+cx+'" cy="'+y0+'" r="5" fill="var(--purple)"/>';
+        s+='<circle cx="'+cx+'" cy="'+y1+'" r="11" fill="var(--bg)" stroke="var(--purple)" stroke-width="1.5"/>';
+        s+='<line x1="'+(cx-11)+'" y1="'+y1+'" x2="'+(cx+11)+'" y2="'+y1+'" stroke="var(--purple)" stroke-width="1.5"/>';
+        s+='<line x1="'+cx+'" y1="'+(y1-11)+'" x2="'+cx+'" y2="'+(y1+11)+'" stroke="var(--purple)" stroke-width="1.5"/>';
+      }else{
+        var yy=g.q===0?y0:y1, col=g.g==='H'?'rgba(154,146,238,.2)':'rgba(232,139,98,.18)', ink=g.g==='H'?'#cdc8f6':'#f3c4ac';
+        s+='<rect x="'+(cx-17)+'" y="'+(yy-17)+'" width="34" height="34" rx="7" fill="'+col+'" stroke="var(--line2)" stroke-width=".5"/>';
+        s+='<text x="'+cx+'" y="'+(yy+6)+'" text-anchor="middle" font-family="var(--mono)" font-size="16" font-weight="600" fill="'+ink+'">'+g.g+'</text>';
+      }
+    }
+    var mx=endX;
+    [y0,y1].forEach(function(yy){
+      s+='<rect x="'+(mx-15)+'" y="'+(yy-15)+'" width="30" height="30" rx="6" fill="var(--panel2)" stroke="var(--line2)" stroke-width=".5"/>';
+      s+='<path d="M '+(mx-8)+' '+(yy+5)+' A 8 8 0 0 1 '+(mx+8)+' '+(yy+5)+'" fill="none" stroke="var(--text2)" stroke-width="1.2"/>';
+      s+='<line x1="'+mx+'" y1="'+(yy+5)+'" x2="'+(mx+6)+'" y2="'+(yy-7)+'" stroke="var(--text2)" stroke-width="1.2"/>';
+    });
+    s+='</svg>';
+    $('circuit').innerHTML=s;
+  }
+
+  // ---------- bloch spheres ----------
+  function drawSphere(id,vec,measVal,color){
+    var cx=75,cy=72,R=56;
+    var s='';
+    s+='<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+R+'" ry="16" fill="none" stroke="var(--line)" stroke-width=".5" stroke-dasharray="3 3"/>';
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="none" stroke="var(--line2)" stroke-width=".5"/>';
+    s+='<line x1="'+cx+'" y1="'+(cy-R)+'" x2="'+cx+'" y2="'+(cy+R)+'" stroke="var(--line)" stroke-width=".5"/>';
+    s+='<line x1="'+(cx-R)+'" y1="'+cy+'" x2="'+(cx+R)+'" y2="'+cy+'" stroke="var(--line)" stroke-width=".5"/>';
+    s+='<text x="'+cx+'" y="9" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--text3)">|0⟩</text>';
+    s+='<text x="'+cx+'" y="'+(cy+R+13)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--text3)">|1⟩</text>';
+    var vx,vz,show;
+    if(measVal!==null){ vx=0; vz=measVal===0?1:-1; show=true; }
+    else if(vec.len<0.08){ show=false; }
+    else { vx=vec.x; vz=vec.z; show=true; }
+    if(show){
+      var tx=cx+R*vx, ty=cy-R*vz;
+      s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+tx+'" y2="'+ty+'" stroke="'+color+'" stroke-width="2.5"/>';
+      s+='<circle cx="'+tx+'" cy="'+ty+'" r="5.5" fill="'+color+'"/>';
+    }else{
+      s+='<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-dasharray="2 2"/>';
+      s+='<text x="'+cx+'" y="'+(cy+22)+'" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--text3)">no arrow</text>';
+    }
+    $(id).innerHTML=s;
+  }
+
+  // ---------- joint bars ----------
+  function renderJoint(){
+    var r=reduced(live), p=r.probs;
+    var s='<div style="display:flex;align-items:flex-end;justify-content:space-around;height:120px;gap:14px;">';
+    for(var i=0;i<4;i++){
+      var agree=(i===0||i===3), col=agree?'var(--teal)':'var(--dis)';
+      var h=Math.round(p[i]*104);
+      s+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">';
+      s+='<span class="mono" style="font-size:12px;color:var(--text2);margin-bottom:5px;">'+Math.round(p[i]*100)+'%</span>';
+      s+='<div style="width:100%;max-width:90px;height:'+h+'px;background:'+col+';border-radius:4px 4px 0 0;transition:height .3s;"></div>';
+      s+='</div>';
+    }
+    s+='</div><div style="display:flex;justify-content:space-around;border-top:.5px solid var(--line);padding-top:8px;margin-top:2px;gap:14px;">';
+    for(var j=0;j<4;j++){
+      var ag=(j===0||j===3);
+      s+='<div style="flex:1;text-align:center;"><span class="mono" style="color:'+(ag?'var(--teal)':'var(--text3)')+';font-size:15px;">|'+OUT[j]+'⟩</span></div>';
+    }
+    s+='</div><div class="lab" style="text-align:center;margin-top:8px;">teal = qubits agree · gray = qubits disagree (q₀q₁)</div>';
+    $('jointCard').innerHTML=s;
+  }
+
+  // ---------- statistics histogram ----------
+  function renderHist(){
+    var total=counts[0]+counts[1]+counts[2]+counts[3];
+    var mx=Math.max(1,counts[0],counts[1],counts[2],counts[3]);
+    var s='';
+    for(var i=0;i<4;i++){
+      var agree=(i===0||i===3), col=agree?'var(--teal)':'var(--dis)';
+      var h=Math.round(counts[i]/mx*128);
+      s+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">';
+      s+='<span class="mono" style="font-size:12px;color:var(--text2);margin-bottom:5px;">'+counts[i]+'</span>';
+      s+='<div style="width:100%;max-width:90px;height:'+h+'px;background:'+col+';border-radius:4px 4px 0 0;transition:height .25s;"></div>';
+      s+='</div>';
+    }
+    $('hist').innerHTML=s;
+    var ls='';
+    for(var j=0;j<4;j++){
+      var ag=(j===0||j===3), pct=total?Math.round(counts[j]/total*100):0;
+      ls+='<div style="flex:1;text-align:center;"><div class="mono" style="color:'+(ag?'var(--teal)':'var(--text3)')+';font-size:15px;">'+OUT[j]+'</div><div class="lab">'+(total?pct+'%':'—')+'</div></div>';
+    }
+    $('histLabels').innerHTML=ls;
+    $('countsDict').textContent="counts = {'00': "+counts[0]+", '01': "+counts[1]+", '10': "+counts[2]+", '11': "+counts[3]+"}";
+    if(total){
+      var agree=Math.round((counts[0]+counts[3])/total*100);
+      var msg='q₀ and q₁ agreed in <span class="mono" style="color:var(--teal)">'+agree+'%</span> of '+total.toLocaleString()+' shots';
+      if(mode==='qpu'&&agree<100)msg+=' — the missing few % are noise leaking into |01⟩ and |10⟩';
+      else if(agree===100)msg+=' — never once did they disagree';
+      $('corr').innerHTML=msg;
+    }
+  }
+
+  // ---------- full render ----------
+  function render(){
+    var r=reduced(live);
+    drawSphere('sph0', r.q0, meas[0], 'var(--blue)');
+    drawSphere('sph1', r.q1, meas[1], 'var(--coral)');
+    $('val0').textContent=meas[0]===null?'?':meas[0];
+    $('val1').textContent=meas[1]===null?'?':meas[1];
+    $('val0').style.color=meas[0]===null?'var(--text3)':'var(--blue)';
+    $('val1').style.color=meas[1]===null?'var(--text3)':'var(--coral)';
+    function note(q,m){
+      if(m!==null)return 'collapsed → '+m;
+      if(q.len<0.08)return '— undetermined —';
+      if(q.len>0.92)return 'definite: P(1)='+Math.round(q.p1*100)+'%';
+      return 'P(1)='+Math.round(q.p1*100)+'%';
+    }
+    $('note0').textContent=note(r.q0,meas[0]);
+    $('note1').textContent=note(r.q1,meas[1]);
+    var entangled=(r.q0.len<0.08 && reduced(prepared).q0.len<0.08 && meas[0]===null && meas[1]===null);
+    $('link').style.opacity=(reduced(prepared).q0.len<0.08)?'1':'.4';
+    $('m0').disabled=meas[0]!==null;
+    $('m1').disabled=meas[1]!==null;
+    renderJoint();
+  }
+
+  function measure(k){
+    if(meas[k]!==null||busy)return;
+    var other=1-k;
+    var r=reduced(live), p1=k===0?r.q0.p1:r.q1.p1;
+    var v=rnd()<p1?1:0;
+    var mask=k===0?2:1;
+    for(var i=0;i<4;i++){ if(((i&mask)?1:0)!==v) live[i]=0; }
+    var nrm=Math.sqrt(live[0]*live[0]+live[1]*live[1]+live[2]*live[2]+live[3]*live[3]);
+    for(var j=0;j<4;j++) live[j]/=nrm;
+    meas[k]=v;
+    render();
+    var r2=reduced(live), op1=other===0?r2.q0.p1:r2.q1.p1, forced=null;
+    if(op1>0.999)forced=1; else if(op1<0.001)forced=0;
+    var ql=k===0?'q₀':'q₁', qo=other===0?'q₀':'q₁';
+    if(meas[other]!==null){
+      $('narrate').innerHTML='Both measured. They '+(meas[0]===meas[1]?'<span style="color:var(--teal)">agree</span>':'<span style="color:var(--coral)">disagree</span>')+'.';
+    }else if(forced!==null){
+      $('link').classList.add('flash');
+      setTimeout(function(){$('link').classList.remove('flash');},650);
+      $('narrate').innerHTML='You measured '+ql+' = <span class="mono" style="color:var(--purple)">'+v+'</span>. '+qo+' is now <span style="color:var(--purple)">forced to '+forced+'</span> — instantly. Click “Measure '+qo+'” to confirm it always matches.';
+    }else{
+      $('narrate').innerHTML='You measured '+ql+' = <span class="mono">'+v+'</span>. '+qo+' is still a free coin — these qubits aren’t entangled.';
+    }
+  }
+
+  function reprep(){ live=copy(prepared); meas=[null,null]; $('narrate').textContent=reduced(prepared).q0.len<0.08?'Entangled and ready. Measure q₀ first.':'Ready. Measure a qubit.'; render(); }
+
+  function noisy(i){
+    var q0=(i>>1)&1, q1=i&1;
+    if(mode==='qpu'){
+      if(rnd()<0.05){ if(rnd()<0.5)q0^=1; else q1^=1; }
+      if(rnd()<0.02)q0^=1;
+      if(rnd()<0.02)q1^=1;
+    }
+    return (q0<<1)|q1;
+  }
+  function sampleOne(){
+    var p=reduced(prepared).probs, x=rnd(), c=0, i;
+    for(i=0;i<4;i++){ c+=p[i]; if(x<c)break; }
+    if(i>3)i=3;
+    return noisy(i);
+  }
+  function runShots(){
+    if(busy)return; busy=true;
+    var n=parseInt($('shots').value,10);
+    var go=function(){
+      for(var s=0;s<n;s++) counts[sampleOne()]++;
+      renderHist(); busy=false;
+    };
+    $('runN').disabled=true;
+    var done=function(){go();$('runN').disabled=false;};
+    if(mode==='qpu'){$('corr').textContent='queued on ibm_torino…';setTimeout(done,500);}else done();
+  }
+
+  function setGates(g){ gates=g; prepared=compute(); reprep(); counts=[0,0,0,0]; renderCircuit(); renderHist(); }
+  function add(g){ if(gates.length<6){ gates.push(g); setGates(gates); } }
+
+  $('bell').onclick=function(){ setGates([{g:'H',q:0},{g:'CX'}]); };
+  $('hq0').onclick=function(){ add({g:'H',q:0}); };
+  $('hq1').onclick=function(){ add({g:'H',q:1}); };
+  $('xq0').onclick=function(){ add({g:'X',q:0}); };
+  $('xq1').onclick=function(){ add({g:'X',q:1}); };
+  $('cx').onclick=function(){ add({g:'CX'}); };
+  $('clr').onclick=function(){ setGates([]); };
+  $('m0').onclick=function(){ measure(0); };
+  $('m1').onclick=function(){ measure(1); };
+  $('reprep').onclick=reprep;
+  $('shots').oninput=function(){ $('shotsOut').textContent=this.value; };
+  $('runN').onclick=runShots;
+  $('reset').onclick=function(){ counts=[0,0,0,0]; $('corr').textContent='Run some shots to see the correlation.'; renderHist(); };
+  $('modeSim').onclick=function(){ mode='sim'; this.classList.add('on'); $('modeQpu').classList.remove('on'); counts=[0,0,0,0]; renderHist(); };
+  $('modeQpu').onclick=function(){ mode='qpu'; this.classList.add('on'); $('modeSim').classList.remove('on'); counts=[0,0,0,0]; renderHist(); };
+
+  setGates([{g:'H',q:0},{g:'CX'}]);
+})();
+</script>
+
+</body>
+</html>

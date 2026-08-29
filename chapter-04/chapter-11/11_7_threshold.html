@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface code &amp; the threshold — PLANCK · Chapter 11 · Figure 11.7</title>
+<style>
+:root{ --bg:#0a0e1a; --panel:#121833; --panel-2:#0e142a; --line:rgba(180,190,220,0.14); --line-2:rgba(180,190,220,0.30);
+  --text:#e8ecf5; --muted:#8a93b0; --faint:#5b6685; --cyan:#28e0d0; --violet:#9a92ee; --gold:#ffd166; --magenta:#ff5db1; --green:#5ad19a; --red:#ff6b6b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif; }
+*{box-sizing:border-box}
+body{ margin:0; background:radial-gradient(1200px 800px at 60% -10%, #16204a 0%, var(--bg) 60%); color:var(--text); font-family:var(--sans); min-height:100vh; padding:40px 20px; line-height:1.6; }
+.wrap{max-width:920px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase;margin-bottom:10px}
+h1{font-size:clamp(24px,4.5vw,34px);margin:0 0 12px;font-weight:650;letter-spacing:-.01em}
+.lead{color:var(--muted);font-size:16px;max-width:70ch;margin:0 0 26px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.panel + .panel{margin-top:18px}
+.canvas-wrap{position:relative;width:100%}
+canvas{display:block;width:100%;height:auto;border-radius:10px}
+.controls{display:flex;flex-wrap:wrap;gap:18px 26px;align-items:flex-start}
+.toggles{display:flex;flex-wrap:wrap;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:7px 13px 7px 11px;cursor:pointer;font-size:13px;color:var(--text);user-select:none;transition:border-color .15s,opacity .15s}
+.chip:hover{border-color:var(--line-2)}
+.chip .swatch{width:14px;height:14px;border-radius:4px;flex:0 0 auto;box-shadow:0 0 0 1px rgba(0,0,0,.3) inset}
+.chip.off{opacity:.42}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.slider-block{flex:1 1 280px;min-width:240px}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row label{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;white-space:nowrap}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:5px;border-radius:5px;background:linear-gradient(90deg,var(--faint),var(--line-2));outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--cyan);border:2px solid #0a0e1a;cursor:pointer;box-shadow:0 0 0 1px var(--cyan),0 0 12px rgba(40,224,208,.5)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--cyan);border:2px solid #0a0e1a;cursor:pointer;box-shadow:0 0 10px rgba(40,224,208,.5)}
+.eps-readout{font-family:var(--mono);font-size:15px;color:var(--cyan);min-width:96px;text-align:right;font-variant-numeric:tabular-nums}
+.regime{margin-top:14px;font-size:14px;border-radius:10px;padding:12px 14px;border:1px solid var(--line);display:flex;gap:10px;align-items:flex-start}
+.regime .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:7px}
+.regime.below{background:rgba(90,209,154,.08);border-color:rgba(90,209,154,.3)}
+.regime.below .dot{background:var(--green)}
+.regime.above{background:rgba(255,107,107,.08);border-color:rgba(255,107,107,.32)}
+.regime.above .dot{background:var(--red)}
+.regime b{color:var(--text);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:4px}
+.card{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;border-left-width:3px}
+.card .ttl{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.card .ttl .sw{width:11px;height:11px;border-radius:3px}
+.card .big{font-family:var(--mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.card .sub{font-family:var(--mono);font-size:12px;color:var(--faint);margin-top:6px}
+.card.dim{opacity:.4}
+.sec-label{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 12px}
+.model-note{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:16px;padding-top:14px;border-top:1px solid var(--line);line-height:1.7}
+.model-note code{color:var(--violet)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media(max-width:480px){body{padding:24px 12px}.panel{padding:14px}.eps-readout{min-width:78px;font-size:13px}}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">11.7</span></a><script defer src="../assets/planck-companion.js" data-pk-code="11.7"></script><!--/planck-chrome-->
+
+
+
+
+
+
+<div class="wrap">
+  <h2 class="sr-only">Interactive log-log plot of surface-code logical error rate versus physical error rate for code distances 1, 3, 5 and 7, with a 1% threshold line and a slider.</h2>
+  <div class="eyebrow">PLANCK · CHAPTER 11 · FIGURE 11.7</div>
+  <h1>Surface code &amp; the threshold</h1>
+  <p class="lead">A quantum error-correcting code only helps below a critical physical error rate — the <b style="color:var(--text);font-weight:600">threshold</b>, here about 1%. Below it, adding physical qubits (larger code distance <i>d</i>) suppresses the logical error rate exponentially. Above it, encoding actively makes things worse: more qubits, more error. Drag the slider to move the physical error rate across the threshold and watch each code respond.</p>
+
+  <div class="panel">
+    <div class="canvas-wrap">
+      <canvas id="plot" role="img" aria-label="Log-log plot: logical error rate versus physical error rate. The unencoded diagonal (d=1) sits along y=x; codes d=3, 5, 7 curve steeply below the 1% threshold line and rise above it."></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="controls">
+      <div class="toggles" id="toggles"></div>
+      <div class="slider-block">
+        <div class="slider-row">
+          <label for="eps">physical&nbsp;ε</label>
+          <input type="range" id="eps" min="-4" max="-1" step="0.01" value="-2.3">
+          <span class="eps-readout" id="epsOut">5.0×10⁻³</span>
+        </div>
+      </div>
+    </div>
+    <div class="regime below" id="regime">
+      <span class="dot"></span>
+      <span id="regimeText"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="sec-label">Logical error &amp; qubit cost at current ε</p>
+    <div class="cards" id="cards"></div>
+    <div class="model-note">
+      model &nbsp;·&nbsp; <code>ε_logical = ε_th·(ε/ε_th)^((d+1)/2)</code> &nbsp;with&nbsp; <code>ε_th = 0.01</code> &nbsp;·&nbsp; d=1 is unencoded (<code>ε_logical = ε</code>) &nbsp;·&nbsp; physical-qubit cost <code>n = 2d²−1</code>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const EPS_TH = 0.01;
+  const COLORS = {1:'#8a93b0',3:'#28e0d0',5:'#9a92ee',7:'#ffd166'};
+  const THRESH = '#ff5db1';
+  const DISTS = [1,3,5,7];
+  const X_MIN=1e-4, X_MAX=1e-1, Y_MIN=1e-12, Y_MAX=1;
+
+  // logical error for distance d at physical error eps
+  function logicalErr(d, eps){
+    if(d===1) return eps;            // unencoded diagonal y=x
+    return EPS_TH * Math.pow(eps/EPS_TH, (d+1)/2);
+  }
+  function nCost(d){ return 2*d*d - 1; }
+
+  // visibility state
+  const visible = {1:true,3:true,5:true,7:true};
+
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+
+  // ---- log helpers ----
+  const lgXmin=Math.log10(X_MIN), lgXmax=Math.log10(X_MAX);
+  const lgYmin=Math.log10(Y_MIN), lgYmax=Math.log10(Y_MAX);
+
+  let PAD = {l:64,r:18,t:18,b:46};
+  let W=0,H=0,plotW=0,plotH=0;
+
+  function xToPx(eps){
+    const t=(Math.log10(eps)-lgXmin)/(lgXmax-lgXmin);
+    return PAD.l + t*plotW;
+  }
+  function yToPx(y){
+    const yc=Math.max(y, Y_MIN*1e-3); // clamp for drawing only
+    const t=(Math.log10(yc)-lgYmin)/(lgYmax-lgYmin);
+    return PAD.t + (1-t)*plotH;
+  }
+
+  function fmtSci(v){
+    if(v===0) return '0';
+    if(v>=1) return v.toPrecision(2).replace(/\.0+$/,'');
+    const exp=Math.floor(Math.log10(v));
+    const mant=v/Math.pow(10,exp);
+    const sup=String(exp).replace('-','⁻').replace(/[0-9]/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+    return mant.toFixed(1)+'×10'+sup;
+  }
+  function supExp(exp){
+    return String(exp).replace('-','⁻').replace(/[0-9]/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+  }
+
+  function resize(){
+    const cssW = canvas.parentElement.clientWidth;
+    const cssH = Math.max(300, Math.min(480, Math.round(cssW*0.62)));
+    if(cssW < 420){ PAD={l:50,r:12,t:14,b:42}; }
+    else { PAD={l:64,r:18,t:18,b:46}; }
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.height = cssH+'px';
+    canvas.width = Math.round(cssW*dpr);
+    canvas.height = Math.round(cssH*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    W=cssW; H=cssH;
+    plotW = W - PAD.l - PAD.r;
+    plotH = H - PAD.t - PAD.b;
+    draw();
+  }
+
+  function curEps(){ return Math.pow(10, parseFloat(document.getElementById('eps').value)); }
+
+  function drawGrid(){
+    ctx.lineWidth=1;
+    ctx.font='11px '+getComputedStyle(document.body).getPropertyValue('--mono');
+    ctx.textBaseline='middle';
+    // vertical (x) decade lines
+    for(let e=lgXmin; e<=lgXmax+1e-9; e++){
+      const px=xToPx(Math.pow(10,e));
+      ctx.strokeStyle='rgba(180,190,220,0.10)';
+      ctx.beginPath();ctx.moveTo(px,PAD.t);ctx.lineTo(px,PAD.t+plotH);ctx.stroke();
+      ctx.fillStyle='#5b6685';
+      ctx.textAlign='center';
+      ctx.fillText('10'+supExp(e), px, PAD.t+plotH+16);
+    }
+    // horizontal (y) decade lines — label every 2 decades to avoid clutter
+    for(let e=lgYmin; e<=lgYmax+1e-9; e++){
+      const py=yToPx(Math.pow(10,e));
+      ctx.strokeStyle='rgba(180,190,220,0.08)';
+      ctx.beginPath();ctx.moveTo(PAD.l,py);ctx.lineTo(PAD.l+plotW,py);ctx.stroke();
+      if(e % 2 === 0 || e===lgYmin){
+        ctx.fillStyle='#5b6685';
+        ctx.textAlign='right';
+        ctx.fillText('10'+supExp(e), PAD.l-8, py);
+      }
+    }
+    // frame
+    ctx.strokeStyle='rgba(180,190,220,0.30)';
+    ctx.lineWidth=1;
+    ctx.strokeRect(PAD.l+.5,PAD.t+.5,plotW,plotH);
+    // axis titles
+    ctx.fillStyle='#8a93b0';
+    ctx.font='12px '+getComputedStyle(document.body).getPropertyValue('--sans');
+    ctx.textAlign='center';
+    ctx.fillText('physical error rate  ε', PAD.l+plotW/2, H-6);
+    ctx.save();
+    ctx.translate(13, PAD.t+plotH/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.fillText('logical error rate', 0,0);
+    ctx.restore();
+  }
+
+  function drawThreshold(){
+    const px=xToPx(EPS_TH);
+    ctx.save();
+    ctx.strokeStyle=THRESH;
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([6,5]);
+    ctx.beginPath();ctx.moveTo(px,PAD.t);ctx.lineTo(px,PAD.t+plotH);ctx.stroke();
+    ctx.restore();
+    // label
+    ctx.save();
+    ctx.fillStyle=THRESH;
+    ctx.font='11px '+getComputedStyle(document.body).getPropertyValue('--mono');
+    ctx.textAlign='left';
+    ctx.textBaseline='top';
+    const lx=Math.min(px+6, PAD.l+plotW-72);
+    ctx.fillText('threshold', lx, PAD.t+4);
+    ctx.fillStyle='rgba(255,93,177,0.75)';
+    ctx.fillText('ε_th = 1%', lx, PAD.t+18);
+    ctx.restore();
+  }
+
+  function drawCurve(d){
+    ctx.save();
+    ctx.strokeStyle=COLORS[d];
+    ctx.lineWidth = d===1?1.6:2.2;
+    if(d===1) ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    const N=320;
+    let started=false;
+    for(let i=0;i<=N;i++){
+      const lgx=lgXmin+(lgXmax-lgXmin)*i/N;
+      const eps=Math.pow(10,lgx);
+      const y=logicalErr(d,eps);
+      const px=xToPx(eps), py=yToPx(y);
+      if(!started){ctx.moveTo(px,py);started=true;}
+      else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawMarker(d,eps){
+    const y=logicalErr(d,eps);
+    const px=xToPx(eps), py=yToPx(y);
+    // clamp marker into plot vertically so it stays visible
+    const pyc=Math.max(PAD.t+2, Math.min(PAD.t+plotH-2, py));
+    ctx.save();
+    ctx.fillStyle=COLORS[d];
+    ctx.strokeStyle='#0a0e1a';
+    ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(px,pyc,5.2,0,Math.PI*2);ctx.fill();ctx.stroke();
+    if(y < Y_MIN){ // arrow indicating off-bottom
+      ctx.fillStyle=COLORS[d];
+      ctx.beginPath();
+      ctx.moveTo(px,PAD.t+plotH-1);
+      ctx.lineTo(px-4,PAD.t+plotH-8);
+      ctx.lineTo(px+4,PAD.t+plotH-8);
+      ctx.closePath();ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawEpsLine(eps){
+    const px=xToPx(eps);
+    ctx.save();
+    ctx.strokeStyle='rgba(232,236,245,0.30)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([2,3]);
+    ctx.beginPath();ctx.moveTo(px,PAD.t);ctx.lineTo(px,PAD.t+plotH);ctx.stroke();
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    drawGrid();
+    drawThreshold();
+    const eps=curEps();
+    drawEpsLine(eps);
+    DISTS.forEach(d=>{ if(visible[d]) drawCurve(d); });
+    DISTS.forEach(d=>{ if(visible[d]) drawMarker(d,eps); });
+  }
+
+  // ---- readout panels ----
+  function buildToggles(){
+    const box=document.getElementById('toggles');
+    box.innerHTML='';
+    DISTS.forEach(d=>{
+      const lab=document.createElement('label');
+      lab.className='chip'+(visible[d]?'':' off');
+      lab.innerHTML='<span class="swatch" style="background:'+COLORS[d]+'"></span>'+
+        '<span>d = '+d+(d===1?' · unencoded':'')+'</span>'+
+        '<input type="checkbox" '+(visible[d]?'checked':'')+'>';
+      const cb=lab.querySelector('input');
+      cb.addEventListener('change',()=>{
+        visible[d]=cb.checked;
+        lab.classList.toggle('off',!cb.checked);
+        draw(); updateCards();
+      });
+      box.appendChild(lab);
+    });
+  }
+
+  function buildCards(){
+    const box=document.getElementById('cards');
+    box.innerHTML='';
+    DISTS.forEach(d=>{
+      const c=document.createElement('div');
+      c.className='card';
+      c.id='card-'+d;
+      c.style.borderLeftColor=COLORS[d];
+      c.innerHTML=
+        '<div class="ttl"><span class="sw" style="background:'+COLORS[d]+'"></span>d = '+d+(d===1?' (unencoded)':'')+'</div>'+
+        '<div class="big" id="big-'+d+'">—</div>'+
+        '<div class="sub" id="sub-'+d+'">n = '+nCost(d)+' qubit'+(nCost(d)===1?'':'s')+'</div>';
+      box.appendChild(c);
+    });
+  }
+
+  function updateCards(){
+    const eps=curEps();
+    DISTS.forEach(d=>{
+      const y=logicalErr(d,eps);
+      const big=document.getElementById('big-'+d);
+      const card=document.getElementById('card-'+d);
+      card.classList.toggle('dim',!visible[d]);
+      big.style.color=COLORS[d];
+      big.textContent = y<Y_MIN ? '< 10⁻¹²' : fmtSci(y);
+    });
+  }
+
+  function updateRegime(){
+    const eps=curEps();
+    const r=document.getElementById('regime');
+    const t=document.getElementById('regimeText');
+    if(eps < EPS_TH){
+      r.className='regime below';
+      t.innerHTML='<b>Below threshold.</b> Physical ε = '+fmtSci(eps)+' &lt; 1%. Bigger codes suppress logical error <b>exponentially</b> — each step up in distance buys orders of magnitude.';
+    } else {
+      r.className='regime above';
+      t.innerHTML='<b>Above threshold.</b> Physical ε = '+fmtSci(eps)+' ≥ 1%. Encoding <b>makes things worse</b> — more physical qubits only amplify the logical error rate.';
+    }
+  }
+
+  function updateEpsOut(){
+    document.getElementById('epsOut').textContent = fmtSci(curEps());
+  }
+
+  function onSlide(){
+    updateEpsOut(); updateRegime(); updateCards(); draw();
+  }
+
+  // init
+  buildToggles();
+  buildCards();
+  document.getElementById('eps').addEventListener('input',onSlide);
+  window.addEventListener('resize',resize);
+  resize();
+  updateEpsOut(); updateRegime(); updateCards();
+})();
+</script>
+</body>
+</html>

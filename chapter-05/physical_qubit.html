@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The physical qubit — three realizations of one state — PLANCK · Chapter 5 · Figure 5.1</title>
+<style>
+  :root{
+    --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+    --text:#2c2c2a; --muted:#5f5e5a; --faint:#888780; --border:#d3d1c7;
+    --eq:#d4537e; --vec:#d85a30; --accent:#185fa5;
+    --radius:12px; --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1f1e1b; --surface:#2a2926; --surface2:#33322e;
+      --text:#ece9e0; --muted:#b4b2a9; --faint:#888780; --border:#44443f;
+      --eq:#ed93b1; --vec:#f0997b; --accent:#85b7eb;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.6;
+       display:flex; justify-content:center; padding:2rem 1rem;}
+  .wrap{width:100%; max-width:760px;}
+  h1{font-size:22px; font-weight:500; margin:0 0 .25rem;}
+  p.lede{color:var(--muted); font-size:15px; margin:0 0 1.5rem;}
+  .row{display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin:0 0 1rem;}
+  .ctrl{display:flex; align-items:center; gap:10px; flex:1; min-width:220px;}
+  label{font-size:13px; color:var(--muted); min-width:54px;}
+  .out{font-size:13px; font-weight:500; min-width:40px; text-align:right;}
+  input[type=range]{flex:1; -webkit-appearance:none; appearance:none; height:4px;
+    background:var(--border); border-radius:2px; outline:none; cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent); cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px; height:18px; border:none; border-radius:50%; background:var(--accent); cursor:pointer;}
+  .presets{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 1rem;}
+  button{font-family:var(--font); font-size:13px; color:var(--text); background:transparent;
+    border:1px solid var(--border); border-radius:8px; padding:6px 12px; cursor:pointer; transition:background .12s,transform .05s;}
+  button:hover{background:var(--surface2);} button:active{transform:scale(.97);}
+  .panel{background:var(--surface2); border-radius:var(--radius); padding:.4rem .6rem; margin-bottom:.75rem;}
+  canvas{width:100%; display:block;}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px;}
+  .card{background:var(--surface2); border-radius:8px; padding:.7rem 1rem;}
+  .card .k{font-size:13px; color:var(--muted);}
+  .card .v{font-size:15px; font-weight:500; margin-top:4px;}
+  .card .v.mono{font-family:var(--mono);}
+  sup{font-size:.7em;}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">5.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="5.1"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h1>One qubit, three bodies</h1>
+  <p class="lede">The angles θ and φ define a single abstract state |ψ⟩ = cos(θ/2)|0⟩ + e<sup>iφ</sup> sin(θ/2)|1⟩. The same state is rendered below as a spin-½ magnetic moment, a superconducting transmon's level populations, and a photon's polarization. Press play to watch the shared relative phase evolve.</p>
+
+  <div class="row">
+    <div class="ctrl"><label>θ (polar)</label><input type="range" id="theta" min="0" max="180" step="1" value="60"><span class="out" id="thetaOut">60°</span></div>
+    <div class="ctrl"><label>φ (azim.)</label><input type="range" id="phi" min="0" max="360" step="1" value="45"><span class="out" id="phiOut">45°</span></div>
+    <button id="play">⏸ pause</button>
+  </div>
+
+  <div class="presets">
+    <button data-t="0" data-p="0">|0⟩</button>
+    <button data-t="180" data-p="0">|1⟩</button>
+    <button data-t="90" data-p="0">|+⟩ / D</button>
+    <button data-t="90" data-p="90">|+i⟩ / R</button>
+    <button data-t="120" data-p="60">mixed angle</button>
+  </div>
+
+  <div class="panel"><canvas id="cSpin"></canvas></div>
+  <div class="panel"><canvas id="cTrans"></canvas></div>
+  <div class="panel"><canvas id="cPhot"></canvas></div>
+
+  <div class="cards">
+    <div class="card"><div class="k">Shared state |ψ⟩</div><div class="v" id="ket"></div></div>
+    <div class="card"><div class="k">Populations</div><div class="v mono" id="pop"></div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const PI=Math.PI, cos=Math.cos, sin=Math.sin, hypot=Math.hypot, acos=Math.acos;
+  const YAW=0.6, PIT=0.34;
+  const FT="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  const css=getComputedStyle(document.documentElement);
+  const cv=n=>css.getPropertyValue(n).trim();
+  const C={ grid:cv('--muted'), axis:cv('--faint'), text:cv('--text'), muted:cv('--muted'),
+            eq:cv('--eq'), vec:cv('--vec'), accent:cv('--accent') };
+  let theta=PI/3, phi=PI/4, playing=true, t=0, last=null;
+
+  const spin=document.getElementById('cSpin'), trans=document.getElementById('cTrans'), phot=document.getElementById('cPhot');
+  [spin,trans,phot].forEach(c=>c._g=c.getContext('2d'));
+  const HS=[[spin,260],[trans,260],[phot,240]];
+  function resize(){
+    const dpr=window.devicePixelRatio||1;
+    HS.forEach(([c,h])=>{ const w=c.clientWidth||620; c._w=w; c._h=h;
+      c.width=Math.round(w*dpr); c.height=Math.round(h*dpr); c.style.height=h+'px';
+      c._g.setTransform(dpr,0,0,dpr,0,0); });
+  }
+  window.addEventListener('resize',resize);
+
+  const sph=(th,ph)=>[sin(th)*cos(ph), sin(th)*sin(ph), cos(th)];
+  function P3(p,cx,cy,r){
+    const ca=cos(YAW),sa=sin(YAW);
+    const x1=p[0]*ca+p[1]*sa, y1=-p[0]*sa+p[1]*ca, z1=p[2];
+    const cp=cos(PIT),sp=sin(PIT);
+    return [cx+x1*r, cy-(-y1*sp+z1*cp)*r, y1*cp+z1*sp];
+  }
+  function sCurve(g,fn,cx,cy,r,col,w,a,dash){
+    g.save();g.strokeStyle=col;g.lineWidth=w;g.globalAlpha=a;if(dash)g.setLineDash(dash);
+    g.beginPath();
+    for(let i=0;i<=120;i++){const P=P3(fn(i/120*2*PI),cx,cy,r); i?g.lineTo(P[0],P[1]):g.moveTo(P[0],P[1]);}
+    g.stroke();g.restore();
+  }
+  function seg3(g,a,b,cx,cy,r,col,w,al){const A=P3(a,cx,cy,r),B=P3(b,cx,cy,r);
+    g.save();g.strokeStyle=col;g.lineWidth=w;g.globalAlpha=al||1;g.beginPath();g.moveTo(A[0],A[1]);g.lineTo(B[0],B[1]);g.stroke();g.restore();}
+  function arr3(g,a,b,cx,cy,r,col,w){
+    const A=P3(a,cx,cy,r),B=P3(b,cx,cy,r), front=B[2]>=0, al=front?1:.5;
+    const dx=B[0]-A[0],dy=B[1]-A[1],L=hypot(dx,dy)||1,ux=dx/L,uy=dy/L,px=-uy,py=ux,h=12,wd=5.5;
+    g.save();g.globalAlpha=al;g.strokeStyle=col;g.fillStyle=col;g.lineWidth=w;g.lineCap='round';
+    g.beginPath();g.moveTo(A[0],A[1]);g.lineTo(B[0]-ux*9,B[1]-uy*9);g.stroke();
+    g.beginPath();g.moveTo(B[0],B[1]);g.lineTo(B[0]-h*ux+wd*px,B[1]-h*uy+wd*py);g.lineTo(B[0]-h*ux-wd*px,B[1]-h*uy-wd*py);g.closePath();g.fill();
+    g.restore();
+  }
+  function txt(g,x,y,s,col,size,align,weight){
+    g.save();g.fillStyle=col;g.font=(weight||'400')+' '+(size||12)+'px '+FT;g.textAlign=align||'left';g.textBaseline='middle';g.fillText(s,x,y);g.restore();}
+  function txt3(g,p,cx,cy,r,s,col,dx,dy,size){const P=P3(p,cx,cy,r);txt(g,P[0]+(dx||0),P[1]+(dy||0),s,col,size,'center');}
+
+  function drawSpin(){
+    const g=spin._g,W=spin._w,H=spin._h; g.clearRect(0,0,W,H);
+    txt(g,14,18,'spin-½ — magnetic moment μ precessing about field B',C.muted,12,'left','500');
+    const cx=W/2, cy=H/2+6, R=Math.min(82,H*0.32);
+    g.save();g.strokeStyle=C.grid;g.globalAlpha=.4;g.lineWidth=1;g.beginPath();g.arc(cx,cy,R,0,2*PI);g.stroke();g.restore();
+    sCurve(g,a=>sph(a,0),cx,cy,R,C.grid,.6,.16);
+    sCurve(g,a=>sph(a,PI/2),cx,cy,R,C.grid,.6,.16);
+    sCurve(g,a=>[cos(a),sin(a),0],cx,cy,R,C.eq,1.4,.7);
+    seg3(g,[0,0,-1.12],[0,0,1.24],cx,cy,R,C.accent,1.4,.8);
+    arr3(g,[0,0,1.0],[0,0,1.26],cx,cy,R,C.accent,1.4);
+    txt3(g,[0,0,1.34],cx,cy,R,'B',C.accent,12,-2,12);
+    sCurve(g,a=>[sin(theta)*cos(a),sin(theta)*sin(a),cos(theta)],cx,cy,R,C.vec,1,.35,[4,4]);
+    arr3(g,[0,0,0],sph(theta,phi+0.9*t),cx,cy,R,C.vec,3);
+    txt3(g,[0,0,1.12],cx,cy,R,'|0⟩ ↑',C.text,-26,-4,13);
+    txt3(g,[0,0,-1.16],cx,cy,R,'|1⟩ ↓',C.text,0,14,13);
+  }
+
+  function drawTransmon(){
+    const g=trans._g,W=trans._w,H=trans._h; g.clearRect(0,0,W,H);
+    txt(g,14,18,'superconducting transmon — anharmonic ladder, qubit = |0⟩,|1⟩',C.muted,12,'left','500');
+    const Lm=44, Rw=W*0.58, top=46, bot=H-30, midX=(Lm+Rw)/2, halfW=(Rw-Lm)/2;
+    const Emax=1.6, sE=(bot-top)/Emax, X=x=>midX+(x/PI)*halfW, Y=e=>bot-e*sE, U=x=>1-cos(x);
+    g.save();g.strokeStyle=C.grid;g.lineWidth=1.4;g.globalAlpha=.65;g.beginPath();
+    for(let i=0;i<=120;i++){const x=-PI+i/120*2*PI; const px=X(x),py=Y(U(x)); i?g.lineTo(px,py):g.moveTo(px,py);}
+    g.stroke();g.restore();
+    const E=[0.16,0.46,0.74,1.00,1.22], P=[cos(theta/2)**2, sin(theta/2)**2,0,0,0];
+    E.forEach((e,n)=>{
+      const xt=acos(Math.max(-1,1-e)), x0=X(-xt), x1=X(xt), yy=Y(e), q=n<2;
+      g.save();g.strokeStyle=q?C.vec:C.grid;g.globalAlpha=q?0.9:0.4;g.lineWidth=q?1.8:1;g.setLineDash(q?[]:[3,3]);
+      g.beginPath();g.moveTo(x0,yy);g.lineTo(x1,yy);g.stroke();g.restore();
+      txt(g,x1+8,yy,'|'+n+'⟩',q?C.text:C.muted,12,'left',q?'500':'400');
+      if(P[n]>0.001){g.save();g.fillStyle=C.vec;g.globalAlpha=0.2+0.8*P[n];g.beginPath();g.arc(midX,yy,3+5*P[n],0,2*PI);g.fill();g.restore();}
+    });
+    const bx=Rw+30, bw=26, gap=24, maxH=bot-top-8;
+    [['|0⟩',P[0]],['|1⟩',P[1]]].forEach(([lab,p],i)=>{
+      const x=bx+i*(bw+gap);
+      g.save();g.fillStyle=C.grid;g.globalAlpha=.15;g.fillRect(x,bot-maxH,bw,maxH);g.restore();
+      g.save();g.fillStyle=C.vec;g.globalAlpha=.85;g.fillRect(x,bot-maxH*p,bw,maxH*p);g.restore();
+      txt(g,x+bw/2,bot+12,lab,C.muted,12,'center');
+      txt(g,x+bw/2,bot-maxH*p-10,Math.round(p*100)+'%',C.text,12,'center','500');
+    });
+    const fx=W-34, fy=52, fr=15, ang=phi+0.9*t;
+    g.save();g.strokeStyle=C.grid;g.globalAlpha=.5;g.lineWidth=1;g.beginPath();g.arc(fx,fy,fr,0,2*PI);g.stroke();g.restore();
+    g.save();g.strokeStyle=C.vec;g.lineWidth=2;g.lineCap='round';g.beginPath();g.moveTo(fx,fy);g.lineTo(fx+fr*cos(-ang),fy+fr*sin(-ang));g.stroke();g.restore();
+    txt(g,fx,fy+fr+12,'phase φ',C.muted,12,'center');
+  }
+
+  function polLabel(){
+    const d=180/PI, th=theta*d; let ph=((phi*d)%360+360)%360;
+    if(th<8) return 'horizontal (H)';
+    if(th>172) return 'vertical (V)';
+    if(Math.abs(th-90)<8){
+      if(ph<10||ph>350) return 'diagonal +45° (D)';
+      if(Math.abs(ph-180)<10) return 'anti-diagonal −45° (A)';
+      if(Math.abs(ph-90)<10) return 'right circular (R)';
+      if(Math.abs(ph-270)<10) return 'left circular (L)';
+    }
+    return 'elliptical';
+  }
+  function drawPhoton(){
+    const g=phot._g,W=phot._w,H=phot._h; g.clearRect(0,0,W,H);
+    txt(g,14,18,'photon — polarization traced by the E-field vector',C.muted,12,'left','500');
+    const cx=W/2, cy=H/2+10, A=Math.min(W*0.4,H*0.34);
+    g.save();g.strokeStyle=C.axis;g.globalAlpha=.5;g.lineWidth=.8;
+    g.beginPath();g.moveTo(cx-A-18,cy);g.lineTo(cx+A+18,cy);g.stroke();
+    g.beginPath();g.moveTo(cx,cy-A-18);g.lineTo(cx,cy+A+18);g.stroke();g.restore();
+    txt(g,cx+A+24,cy,'H',C.muted,12,'left'); txt(g,cx,cy-A-26,'V',C.muted,12,'center');
+    const ca=cos(theta/2), sa=sin(theta/2), Ex=s=>ca*cos(s), Ey=s=>sa*cos(s-phi);
+    g.save();g.strokeStyle=C.eq;g.lineWidth=1.6;g.globalAlpha=.85;g.beginPath();
+    for(let i=0;i<=160;i++){const s=i/160*2*PI; const x=cx+Ex(s)*A, y=cy-Ey(s)*A; i?g.lineTo(x,y):g.moveTo(x,y);}
+    g.stroke();g.restore();
+    const s=2.0*t, px=cx+Ex(s)*A, py=cy-Ey(s)*A;
+    g.save();g.strokeStyle=C.vec;g.lineWidth=2.6;g.lineCap='round';g.beginPath();g.moveTo(cx,cy);g.lineTo(px,py);g.stroke();
+    g.fillStyle=C.vec;g.beginPath();g.arc(px,py,4,0,2*PI);g.fill();g.restore();
+    txt(g,W-14,H-16,polLabel(),C.eq,12,'right','500');
+  }
+
+  function readout(){
+    const ct=cos(theta/2), st=sin(theta/2), dp=Math.round(((phi*180/PI)%360+360)%360);
+    document.getElementById('ket').innerHTML=`${ct.toFixed(2)} |0⟩ + e<sup>i·${dp}°</sup> ${st.toFixed(2)} |1⟩`;
+    document.getElementById('pop').textContent=`P(0)=${Math.round(ct*ct*100)}%   P(1)=${Math.round(st*st*100)}%`;
+  }
+
+  function render(){ drawSpin();drawTransmon();drawPhoton();readout(); }
+  function frame(ts){ if(last==null)last=ts; const dt=Math.min(0.05,(ts-last)/1000); last=ts; if(playing)t+=dt;
+    render(); requestAnimationFrame(frame); }
+  document.addEventListener('visibilitychange',()=>{ last=null; if(!document.hidden) render(); });
+
+  const thS=document.getElementById('theta'), phS=document.getElementById('phi');
+  const thO=document.getElementById('thetaOut'), phO=document.getElementById('phiOut');
+  function sync(){ theta=(+thS.value)*PI/180; phi=(+phS.value)*PI/180; thO.textContent=thS.value+'°'; phO.textContent=phS.value+'°'; render(); }
+  thS.addEventListener('input',sync); phS.addEventListener('input',sync);
+  document.querySelectorAll('button[data-t]').forEach(b=>b.addEventListener('click',()=>{thS.value=b.dataset.t;phS.value=b.dataset.p;sync();}));
+  const pb=document.getElementById('play');
+  pb.addEventListener('click',()=>{ playing=!playing; pb.textContent=playing?'⏸ pause':'▶ play'; });
+
+  resize(); render(); requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>

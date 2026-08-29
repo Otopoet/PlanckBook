@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloch Sphere — Spin-1/2 Superposition — PLANCK · Chapter 2 · Figure 2.1</title>
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b22;
+    --surface-alt: #1c2230;
+    --text: #e6edf3;
+    --text-alt: #8b96a8;
+    --border: #2b3344;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface-alt: #eef1f5;
+      --text: #1f2328;
+      --text-alt: #656d76;
+      --border: #d0d7de;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--text-alt); margin-bottom: 24px; }
+  .container { width: 100%; max-width: 760px; }
+  .layout { display: flex; gap: 18px; flex-wrap: wrap; }
+  .canvas-wrapper {
+    position: relative;
+    flex: 1 1 300px;
+    min-width: 280px;
+    aspect-ratio: 1;
+    background: var(--surface-alt);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .flash {
+    position: absolute; inset: 0;
+    background: #fff; opacity: 0; pointer-events: none;
+    transition: opacity 0.08s ease-out;
+  }
+  .side { flex: 1 1 300px; min-width: 260px; display: flex; flex-direction: column; gap: 14px; }
+
+  .eq-block { background: var(--surface-alt); border-radius: 8px; padding: 14px; }
+  .eq-line { font-family: "Monaco","Courier New",monospace; font-size: 16px; line-height: 1.7; }
+  .eq-sub { font-size: 11px; color: var(--text-alt); margin-top: 6px; }
+  .amp { font-weight: 700; padding: 1px 4px; border-radius: 3px; }
+  .amp-up { color: #2563eb; background: rgba(37,99,235,0.14); }
+  .amp-down { color: #db2777; background: rgba(219,39,119,0.14); }
+  .phase { color: #a78bfa; font-size: 13px; }
+  .plus { color: var(--text-alt); }
+
+  .prob-block { background: var(--surface-alt); border-radius: 8px; padding: 14px; }
+  .prob-title { font-size: 11px; font-weight: 600; color: var(--text-alt); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .prob-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .prob-label { width: 44px; font-size: 13px; font-weight: 600; }
+  .prob-bar { flex: 1; height: 18px; background: var(--border); border-radius: 9px; overflow: hidden; }
+  .prob-fill { height: 100%; border-radius: 9px; transition: width 0.12s ease; }
+  .prob-fill.up { background: #2563eb; }
+  .prob-fill.down { background: #db2777; }
+  .prob-pct { width: 42px; text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .prob-formula { font-size: 11px; color: var(--text-alt); margin-top: 8px; font-family: "Monaco",monospace; }
+
+  #measure-btn {
+    padding: 12px; border: none; border-radius: 8px; cursor: pointer;
+    background: var(--text); color: var(--bg);
+    font-size: 14px; font-weight: 600; transition: transform 0.05s, opacity 0.15s;
+  }
+  #measure-btn:hover { opacity: 0.88; }
+  #measure-btn:active { transform: scale(0.98); }
+  #measure-btn.collapsed { background: #7c3aed; color: #fff; }
+  .tally { font-size: 12px; color: var(--text-alt); text-align: center; font-variant-numeric: tabular-nums; }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+  .control-group { display: flex; flex-direction: column; gap: 6px; }
+  .control-group label { font-size: 12px; color: var(--text-alt); }
+  .control-group input { width: 100%; accent-color: #2563eb; }
+  .footnote { font-size: 12px; color: var(--text-alt); line-height: 1.6; margin-top: 20px; }
+  @media (max-width: 560px) { .controls { grid-template-columns: 1fr; } }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">2.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="2.1"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+<div class="container">
+  <h1>Bloch Sphere — Spin-½ Superposition</h1>
+  <div class="subtitle">A "smeared arrow" that points up and down at once, until you measure it.</div>
+
+  <div class="layout">
+    <div class="canvas-wrapper">
+      <canvas id="canvas"></canvas>
+      <div id="collapse-flash" class="flash"></div>
+    </div>
+
+    <div class="side">
+      <div class="eq-block">
+        <div class="eq-line">
+          |ψ⟩ =
+          <span class="amp amp-up" id="amp-up">0.92</span>|↑⟩
+          <span class="plus">+</span>
+          <span class="phase" id="phase-term">e<sup>i·0.00</sup></span>
+          <span class="amp amp-down" id="amp-down">0.38</span>|↓⟩
+        </div>
+        <div class="eq-sub">amplitudes = cos(θ/2) and e<sup>iφ</sup>·sin(θ/2)</div>
+      </div>
+
+      <div class="prob-block">
+        <div class="prob-title">Born rule — probability of each outcome</div>
+        <div class="prob-row">
+          <span class="prob-label">↑ up</span>
+          <div class="prob-bar"><div class="prob-fill up" id="bar-up"></div></div>
+          <span class="prob-pct" id="pct-up">85%</span>
+        </div>
+        <div class="prob-row">
+          <span class="prob-label">↓ down</span>
+          <div class="prob-bar"><div class="prob-fill down" id="bar-down"></div></div>
+          <span class="prob-pct" id="pct-down">15%</span>
+        </div>
+        <div class="prob-formula">P(↑) = cos²(θ/2) &nbsp;·&nbsp; P(↓) = sin²(θ/2)</div>
+      </div>
+
+      <button id="measure-btn">⚡ Measure the spin</button>
+      <div class="tally" id="tally">Measured: ↑ 0 &nbsp; ↓ 0</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label for="theta">θ — polar angle (tilt between ↑ and ↓): <span id="theta-val">45°</span></label>
+      <input type="range" id="theta" min="0" max="3.14159" step="0.01" value="0.7854">
+    </div>
+    <div class="control-group">
+      <label for="phi">φ — phase angle (rotation around the axis): <span id="phi-val">0°</span></label>
+      <input type="range" id="phi" min="0" max="6.28318" step="0.02" value="0">
+    </div>
+  </div>
+
+  <div class="footnote">
+    The purple cloud is the superposition: the spin has no definite direction yet — only a distribution of
+    possibilities. Drag <b>θ</b> to change the odds (the bars), and <b>φ</b> to change the quantum phase
+    (watch the arrow sweep while the bars stay fixed). Hit <b>Measure</b> and the cloud collapses: the arrow
+    snaps to ↑ or ↓ at random, weighted by the Born rule. Measure repeatedly and the tally converges to the percentages.
+  </div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const thetaInput = document.getElementById('theta');
+  const phiInput = document.getElementById('phi');
+  const flash = document.getElementById('collapse-flash');
+  const measureBtn = document.getElementById('measure-btn');
+
+  let theta = parseFloat(thetaInput.value);
+  let phi = parseFloat(phiInput.value);
+  let collapsed = null;        // null | 'up' | 'down'
+  let collapseT = 0;           // 1 -> 0 fade of the cloud after measurement
+  let tallyUp = 0, tallyDown = 0;
+
+  // Fixed Gaussian cloud so it is stable, not flickering.
+  const CLOUD_N = 140;
+  const cloud = [];
+  let seed = 1234567;
+  function rng() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+  function gauss() { return (rng() + rng() + rng() + rng() - 2) / 1.2; }
+  for (let i = 0; i < CLOUD_N; i++) {
+    cloud.push({ dT: gauss() * 0.5, dP: gauss() * 0.55, r: 0.86 + rng() * 0.16 });
+  }
+
+  let cssW = 300, cssH = 300;
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cssW = rect.width; cssH = rect.height;
+  }
+
+  const VIEW = 0.42; // tilt about x-axis so the pole tips toward the viewer
+  function rot(x, y, z) {
+    const c = Math.cos(VIEW), s = Math.sin(VIEW);
+    return [x, y * c - z * s, y * s + z * c];
+  }
+  function project(x, y, z, R, cx, cy) {
+    return { sx: cx + x * R, sy: cy - y * R, depth: z };
+  }
+  function sph(th, ph, r) {
+    // Bloch: up axis -> screen vertical. x = sinθcosφ, up = cosθ, z = sinθsinφ.
+    const px = Math.sin(th) * Math.cos(ph) * r;
+    const py = Math.cos(th) * r;
+    const pz = Math.sin(th) * Math.sin(ph) * r;
+    return rot(px, py, pz);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, cssW, cssH);
+    const cx = cssW / 2, cy = cssH / 2;
+    const R = Math.min(cssW, cssH) * 0.34;
+
+    // longitudes
+    for (let m = 0; m < 6; m++) {
+      const lon = (m / 6) * Math.PI * 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 60; i++) {
+        const lat = (i / 60) * Math.PI - Math.PI / 2;
+        const [x, y, z] = sph(Math.PI/2 - lat, lon, 1);
+        const p = project(x, y, z, R, cx, cy);
+        ctx.strokeStyle = `rgba(120,130,150,${p.depth > 0 ? 0.32 : 0.1})`;
+        if (i === 0) ctx.moveTo(p.sx, p.sy); else ctx.lineTo(p.sx, p.sy);
+      }
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+    // latitudes
+    for (let l = 1; l < 6; l++) {
+      const lat = (l / 6) * Math.PI - Math.PI / 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 60; i++) {
+        const lon = (i / 60) * Math.PI * 2;
+        const [x, y, z] = sph(Math.PI/2 - lat, lon, 1);
+        const p = project(x, y, z, R, cx, cy);
+        ctx.strokeStyle = `rgba(120,130,150,${p.depth > 0 ? 0.28 : 0.08})`;
+        if (i === 0) ctx.moveTo(p.sx, p.sy); else ctx.lineTo(p.sx, p.sy);
+      }
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    // up/down axis
+    const top = sph(0, 0, 1.12), bot = sph(Math.PI, 0, 1.12);
+    const tp = project(top[0], top[1], top[2], R, cx, cy);
+    const bp = project(bot[0], bot[1], bot[2], R, cx, cy);
+    ctx.strokeStyle = 'rgba(120,130,150,0.5)';
+    ctx.setLineDash([4,4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(tp.sx, tp.sy); ctx.lineTo(bp.sx, bp.sy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#2563eb'; ctx.fillText('↑', tp.sx, tp.sy - 6);
+    ctx.fillStyle = '#db2777'; ctx.fillText('↓', bp.sx, bp.sy + 16);
+
+    // superposition cloud
+    const cloudAlpha = collapsed ? collapseT : 1;
+    if (cloudAlpha > 0.01) {
+      const pts = cloud.map(c => {
+        const v = sph(theta + c.dT, phi + c.dP, c.r);
+        const p = project(v[0], v[1], v[2], R, cx, cy);
+        const dist = Math.hypot(c.dT, c.dP);
+        return { p, w: Math.exp(-dist*dist*2.2) };
+      }).sort((a,b) => a.p.depth - b.p.depth);
+      for (const pt of pts) {
+        const front = pt.p.depth > 0 ? 1 : 0.4;
+        ctx.fillStyle = `rgba(124,58,237,${pt.w * 0.5 * front * cloudAlpha})`;
+        ctx.beginPath();
+        ctx.arc(pt.p.sx, pt.p.sy, 2.6, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    // state arrow
+    let drawTh = theta, drawPh = phi;
+    if (collapsed === 'up') drawTh = 0;
+    if (collapsed === 'down') drawTh = Math.PI;
+    const tip = sph(drawTh, drawPh, 1);
+    const tipP = project(tip[0], tip[1], tip[2], R, cx, cy);
+    const arrowColor = collapsed === 'up' ? '#2563eb' : collapsed === 'down' ? '#db2777' : '#a78bfa';
+
+    if (!collapsed) {
+      ctx.strokeStyle = 'rgba(167,139,250,0.5)';
+      ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(tipP.sx, tipP.sy); ctx.lineTo(cx, tipP.sy); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    ctx.strokeStyle = arrowColor; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tipP.sx, tipP.sy); ctx.stroke();
+    const ang = Math.atan2(tipP.sy - cy, tipP.sx - cx);
+    const hl = 14;
+    ctx.fillStyle = arrowColor;
+    ctx.beginPath();
+    ctx.moveTo(tipP.sx, tipP.sy);
+    ctx.lineTo(tipP.sx - hl*Math.cos(ang - 0.4), tipP.sy - hl*Math.sin(ang - 0.4));
+    ctx.lineTo(tipP.sx - hl*Math.cos(ang + 0.4), tipP.sy - hl*Math.sin(ang + 0.4));
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
+
+    if (collapsed) {
+      ctx.fillStyle = arrowColor; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('collapsed → ' + (collapsed === 'up' ? '↑' : '↓'), cx, cssH - 14);
+    }
+  }
+
+  function updateReadouts() {
+    const cUp = Math.cos(theta/2), cDn = Math.sin(theta/2);
+    const pUp = cUp*cUp, pDn = cDn*cDn;
+    document.getElementById('amp-up').textContent = cUp.toFixed(2);
+    document.getElementById('amp-down').textContent = cDn.toFixed(2);
+    document.getElementById('phase-term').innerHTML = 'e<sup>i·' + phi.toFixed(2) + '</sup>';
+    document.getElementById('bar-up').style.width = (pUp*100) + '%';
+    document.getElementById('bar-down').style.width = (pDn*100) + '%';
+    document.getElementById('pct-up').textContent = Math.round(pUp*100) + '%';
+    document.getElementById('pct-down').textContent = Math.round(pDn*100) + '%';
+    document.getElementById('theta-val').textContent = Math.round(theta*180/Math.PI) + '°';
+    document.getElementById('phi-val').textContent = Math.round(phi*180/Math.PI) + '°';
+  }
+
+  function frame() {
+    if (collapsed && collapseT > 0) collapseT = Math.max(0, collapseT - 0.04);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  function resetCollapse() {
+    if (collapsed) {
+      collapsed = null; collapseT = 0;
+      measureBtn.classList.remove('collapsed');
+      measureBtn.textContent = '⚡ Measure the spin';
+    }
+  }
+
+  thetaInput.addEventListener('input', () => { theta = parseFloat(thetaInput.value); resetCollapse(); updateReadouts(); });
+  phiInput.addEventListener('input', () => { phi = parseFloat(phiInput.value); resetCollapse(); updateReadouts(); });
+
+  measureBtn.addEventListener('click', () => {
+    if (collapsed) { resetCollapse(); return; }
+    const pUp = Math.cos(theta/2)**2;
+    const outcome = Math.random() < pUp ? 'up' : 'down';
+    collapsed = outcome; collapseT = 1;
+    if (outcome === 'up') tallyUp++; else tallyDown++;
+    document.getElementById('tally').textContent = `Measured: ↑ ${tallyUp}   ↓ ${tallyDown}`;
+    measureBtn.classList.add('collapsed');
+    measureBtn.textContent = '↺ Reset to superposition';
+    flash.style.opacity = '0.7';
+    setTimeout(() => { flash.style.opacity = '0'; }, 90);
+  });
+
+  window.addEventListener('resize', resize);
+  resize();
+  updateReadouts();
+  frame();
+})();
+</script>
+
+</body>
+</html>

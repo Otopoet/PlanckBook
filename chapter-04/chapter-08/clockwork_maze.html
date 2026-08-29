@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8.1 · The Clockwork Maze — Modular Exponentiation — PLANCK · Chapter 8 · Figure 8.1</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121833; --panel2:#0e142a; --line:#26305a;
+    --text:#e8ecf5; --muted:#8a93b0; --cyan:#28e0d0; --magenta:#ff5db1;
+    --gold:#ffd166; --good:#5ad19a; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:radial-gradient(1200px 700px at 70% -10%, #16204a 0%, var(--bg) 60%);
+    color:var(--text); font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    min-height:100vh; padding:28px 18px 60px;
+  }
+  .wrap{max-width:1080px; margin:0 auto}
+  h1{font-size:24px; margin:0 0 4px; letter-spacing:.3px}
+  h1 .tag{color:var(--cyan)}
+  .sub{color:var(--muted); margin:0 0 22px; max-width:760px}
+  .eq{display:inline-block; background:var(--panel2); border:1px solid var(--line);
+      border-radius:8px; padding:6px 12px; font-family:ui-monospace,Menlo,Consolas,monospace;
+      color:var(--gold); margin-top:6px}
+  .controls{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-end;
+      background:var(--panel); border:1px solid var(--line); border-radius:14px;
+      padding:16px 18px; margin:0 0 20px}
+  .ctl{display:flex; flex-direction:column; gap:6px}
+  .ctl label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
+  .ctl input[type=number]{width:96px; background:var(--panel2); color:var(--text);
+      border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:15px}
+  .ctl input[type=range]{width:170px; accent-color:var(--cyan)}
+  .pill{padding:8px 14px; border-radius:999px; font-weight:600; font-size:13px}
+  .pill.ok{background:rgba(90,209,154,.15); color:var(--good); border:1px solid rgba(90,209,154,.4)}
+  .pill.warn{background:rgba(255,107,107,.13); color:var(--bad); border:1px solid rgba(255,107,107,.4)}
+  .grid{display:grid; grid-template-columns:1.05fr .95fr; gap:20px}
+  @media(max-width:840px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 16px 10px}
+  .card h2{font-size:14px; margin:0 0 10px; color:var(--cyan); letter-spacing:.4px; text-transform:uppercase}
+  canvas{width:100%; display:block; border-radius:10px}
+  .ring-wrap{aspect-ratio:1/1}
+  .strip-wrap{height:118px}
+  .readout{display:flex; gap:24px; flex-wrap:wrap; margin-top:10px; color:var(--muted); font-size:13px}
+  .readout b{color:var(--text)}
+  .seq{font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--gold); margin-top:6px; word-break:break-word}
+  .foot{color:var(--muted); font-size:12.5px; margin-top:18px; line-height:1.6}
+  a{color:var(--cyan)}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">8.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="8.1"></script><!--/planck-chrome-->
+
+
+
+
+
+
+
+
+
+<div class="wrap">
+  <h1><span class="tag">8.1</span> · The Clockwork Maze</h1>
+  <p class="sub">Integers laid out around a clock. Each position <i>x</i> is coloured by the value of
+    <b>f(x)=a<sup>x</sup> mod N</b>. Because modular exponentiation is periodic, the colour pattern
+    repeats every <b>r</b> steps — the period that Shor's algorithm is built to find.</p>
+  <div class="eq">f(x) = a<sup>x</sup> mod N</div>
+
+  <div class="controls">
+    <div class="ctl">
+      <label for="a">base a</label>
+      <input type="number" id="a" value="7" min="2" step="1">
+    </div>
+    <div class="ctl">
+      <label for="N">modulus N</label>
+      <input type="number" id="N" value="15" min="3" step="1">
+    </div>
+    <div class="ctl">
+      <label for="periods">periods shown · <span id="pLbl">3</span></label>
+      <input type="range" id="periods" min="1" max="8" value="3">
+    </div>
+    <div id="status" class="pill ok">gcd(a,N)=1 · period r = 4</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>The Clockwork Ring</h2>
+      <div class="ring-wrap"><canvas id="ring"></canvas></div>
+      <div class="readout">
+        <span>colour = residue value <b id="rngVal">0…N−1</b></span>
+        <span>one full turn = <b id="rngTurn">3 periods</b></span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Unrolled Sequence — period brackets</h2>
+      <div class="strip-wrap"><canvas id="strip"></canvas></div>
+      <div class="readout">
+        <span>period <b id="rOut">r = 4</b></span>
+        <span>a<sup>r</sup> mod N = <b id="oneOut">1</b></span>
+      </div>
+      <div class="seq" id="seqOut"></div>
+    </div>
+  </div>
+
+  <p class="foot">
+    <b>How to read it.</b> Walk clockwise from <i>x = 0</i>. The colours march through a fixed cycle and
+    then snap back — every <b>r</b> positions you return to the same colour, so the ring shows perfect
+    rotational symmetry and the strip shows identical coloured blocks. That hidden period <b>r</b> is what a
+    quantum computer extracts in one shot via the QFT (see 8.2 &amp; 8.3).<br>
+    Try <b>a=7, N=15</b> (r=4), <b>a=2, N=15</b> (r=4), <b>a=2, N=21</b> (r=6), <b>a=5, N=21</b> (r=6).
+    If gcd(a,N)≠1 the walk never returns to 1 — but that shared factor already cracks N.
+  </p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const TAU = Math.PI*2;
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+// period r = smallest r>0 with a^r ≡ 1 (mod N)
+function order(a,N){
+  if(gcd(a,N)!==1) return null;
+  let r=1, v=((a%N)+N)%N;
+  while(v!==1){ v=(v*a)%N; r++; if(r>N+2) return null; }
+  return r;
+}
+function residues(a,N,count){
+  const out=[]; let v=1%N;            // a^0
+  for(let x=0;x<count;x++){ out.push(v); v=(v*a)%N; }
+  return out;
+}
+function hueFor(value,N){ return (value/N)*295; }          // 0..295° — value -> colour
+function colorFor(value,N){ return `hsl(${hueFor(value,N)} 85% 58%)`; }
+
+function fit(canvas){
+  const dpr=window.devicePixelRatio||1;
+  const r=canvas.getBoundingClientRect();
+  canvas.width=Math.max(1,r.width*dpr); canvas.height=Math.max(1,r.height*dpr);
+  const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,w:r.width,h:r.height};
+}
+
+function drawRing(a,N,r,steps){
+  const {ctx,w,h}=fit($('ring'));
+  ctx.clearRect(0,0,w,h);
+  const cx=w/2, cy=h/2, R=Math.min(w,h)*0.40;
+  const seq=residues(a,N,steps);
+  // faint guide circle
+  ctx.strokeStyle='rgba(120,140,200,.18)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,TAU); ctx.stroke();
+
+  // walk path (connect consecutive x with a thin glowing line)
+  ctx.lineWidth=1.4; ctx.strokeStyle='rgba(40,224,208,.28)';
+  ctx.beginPath();
+  for(let x=0;x<steps;x++){
+    const ang=-Math.PI/2 + TAU*x/steps;
+    const px=cx+Math.cos(ang)*R, py=cy+Math.sin(ang)*R;
+    if(x===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+
+  // nodes
+  for(let x=0;x<steps;x++){
+    const ang=-Math.PI/2 + TAU*x/steps;
+    const px=cx+Math.cos(ang)*R, py=cy+Math.sin(ang)*R;
+    const val=seq[x];
+    const dotR = (x % r === 0) ? 9 : 6.5;      // emphasise the start of each period
+    ctx.beginPath(); ctx.arc(px,py,dotR+2.5,0,TAU);
+    ctx.fillStyle = colorFor(val,N); ctx.globalAlpha=.18; ctx.fill(); ctx.globalAlpha=1;
+    ctx.beginPath(); ctx.arc(px,py,dotR,0,TAU);
+    ctx.fillStyle = colorFor(val,N); ctx.fill();
+    if(x % r === 0){ ctx.lineWidth=2; ctx.strokeStyle='#fff'; ctx.stroke(); }
+  }
+  // start marker label
+  ctx.fillStyle='#fff'; ctx.font='600 12px ui-monospace,Menlo,monospace';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('x=0', cx, cy-R-16);
+
+  // centre text
+  ctx.fillStyle='var(--text)';
+  ctx.fillStyle='#e8ecf5';
+  ctx.font='600 15px ui-sans-serif,system-ui';
+  ctx.fillText(`a=${a}, N=${N}`, cx, cy-12);
+  ctx.fillStyle='#ffd166'; ctx.font='700 22px ui-sans-serif,system-ui';
+  ctx.fillText(`r = ${r}`, cx, cy+14);
+}
+
+function drawStrip(a,N,r,steps){
+  const {ctx,w,h}=fit($('strip'));
+  ctx.clearRect(0,0,w,h);
+  const seq=residues(a,N,steps);
+  const pad=4, top=30, cellGap=2;
+  const cw=(w-pad*2-(steps-1)*cellGap)/steps;
+  const ch=Math.min(46, h-top-26);
+  for(let x=0;x<steps;x++){
+    const px=pad+x*(cw+cellGap);
+    ctx.fillStyle=colorFor(seq[x],N);
+    ctx.fillRect(px,top,cw,ch);
+    if(x % r === 0){ // period boundary
+      ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(px-1,top-6); ctx.lineTo(px-1,top+ch+6); ctx.stroke();
+    }
+    if(cw>14){
+      ctx.fillStyle='rgba(0,0,0,.72)'; ctx.font=`600 ${Math.min(13,cw*0.7)}px ui-monospace,Menlo,monospace`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(seq[x], px+cw/2, top+ch/2);
+    }
+  }
+  // bracket over first period
+  const bx0=pad, bx1=pad+r*(cw+cellGap)-cellGap;
+  ctx.strokeStyle='#28e0d0'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(bx0,top+ch+12); ctx.lineTo(bx0,top+ch+18);
+  ctx.lineTo(bx1,top+ch+18); ctx.lineTo(bx1,top+ch+12); ctx.stroke();
+  ctx.fillStyle='#28e0d0'; ctx.font='600 12px ui-sans-serif,system-ui';
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillText(`period r = ${r}`, (bx0+bx1)/2, top+ch+22);
+  // x axis label
+  ctx.fillStyle='#8a93b0'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.font='12px ui-sans-serif,system-ui';
+  ctx.fillText('x = 0  →', pad, 8);
+}
+
+function render(){
+  let a=parseInt($('a').value,10), N=parseInt($('N').value,10);
+  const periods=parseInt($('periods').value,10);
+  $('pLbl').textContent=periods;
+  if(!(a>=2)||!(N>=3)){ return; }
+  a=a%N===0? a : a;                 // keep as entered
+  const g=gcd(a,N);
+  const r=order(a,N);
+  const status=$('status');
+  if(g!==1 || r===null){
+    status.className='pill warn';
+    status.textContent=`gcd(${a},${N})=${g} ≠ 1 — no period (but ${g} is already a factor of N!)`;
+    // still draw with a pseudo period of N to show non-repeating walk
+    const steps=Math.min(96, N);
+    drawRing(a,N,N,steps);
+    drawStrip(a,N,N,steps);
+    $('rOut').textContent='r = —';
+    $('oneOut').textContent='—';
+    $('seqOut').textContent=residues(a,N,Math.min(steps,40)).join(', ')+' …';
+    return;
+  }
+  status.className='pill ok';
+  status.textContent=`gcd(${a},${N})=1 · period r = ${r}`;
+  let steps=Math.min(120, Math.max(r+1, r*periods));
+  drawRing(a,N,r,steps);
+  drawStrip(a,N,r,steps);
+  $('rOut').textContent='r = '+r;
+  $('oneOut').textContent=residues(a,N,r+1)[r]; // a^r mod N == 1
+  $('rngVal').textContent=`0…${N-1}`;
+  $('rngTurn').textContent=`${periods} period${periods>1?'s':''}`;
+  $('seqOut').textContent='a^x mod N = '+residues(a,N,Math.min(steps,2*r+1)).join(', ')+' …';
+}
+
+['a','N','periods'].forEach(id=>$(id).addEventListener('input',render));
+window.addEventListener('resize',render);
+window.addEventListener('DOMContentLoaded',render);
+render();
+</script>
+
+</body>
+</html>

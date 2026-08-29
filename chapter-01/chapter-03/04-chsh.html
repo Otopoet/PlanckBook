@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4 · CHSH &amp; Tsirelson's bound — quantum entanglement</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+<style>
+  :root{
+    --color-text-primary:#e8eaf2;--color-text-secondary:#a3a8bd;--color-text-tertiary:#7c8197;
+    --color-text-success:#5dcaa5;--color-text-info:#85b7eb;
+    --color-background-primary:#0e1018;--color-background-secondary:#161922;--color-background-tertiary:#0a0c12;
+    --color-border-tertiary:rgba(180,190,220,0.14);--color-border-secondary:rgba(180,190,220,0.26);
+    --border-radius-md:8px;--border-radius-lg:12px;
+    --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-serif:Georgia,'Times New Roman',serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:#0b0d14;color:var(--color-text-primary);font-family:var(--font-sans);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:820px;margin:0 auto;padding:2rem 1.25rem 4rem;}
+  h1{font-size:24px;font-weight:500;margin:0 0 .5rem;} h2{font-size:18px;font-weight:500;margin:0 0 .4rem;}
+  .lead{color:var(--color-text-secondary);font-size:16px;margin:0 0 1.4rem;} p{font-size:15px;color:#d2d6e4;}
+  .tag{display:inline-block;font-family:var(--font-mono);font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.4rem;}
+  .back{display:inline-block;color:var(--color-text-secondary);text-decoration:none;font-size:13px;margin-bottom:1.2rem;} .back:hover{color:var(--color-text-primary);}
+  button{background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer;transition:background .15s,transform .05s;}
+  button:hover{background:var(--color-background-secondary);} button:active{transform:scale(0.98);}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:rgba(180,190,220,0.22);border-radius:2px;outline:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#e8eaf2;border:none;cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#e8eaf2;border:none;cursor:pointer;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  .eq{font-family:var(--font-serif);} code{font-family:var(--font-mono);font-size:13px;background:var(--color-background-secondary);padding:1px 5px;border-radius:4px;}
+  .foot{color:var(--color-text-tertiary);font-size:13px;margin-top:1.5rem;}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">3.4</span></a><script defer src="../assets/planck-companion.js" data-pk-code="3.4"></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="wrap">
+<a class="back" href="index.html">← all six visualizations</a>
+<span class="tag">4 · Exact (Monte Carlo)</span>
+<h1>CHSH inequality and Tsirelson's bound</h1>
+<p class="lead">The full Bell protocol: each trial randomly selects one of Alice's two settings (a, a′) and one of Bob's two (b, b′), and the four correlation terms combine into <span class="eq">S = E(a,b) − E(a,b′) + E(a′,b) + E(a′,b′)</span>. With the default optimal angles (0°, 90° for Alice; 45°, 135° for Bob), |S| climbs through the classical limit of 2 and settles at Tsirelson's bound <span class="eq">2√2 ≈ 2.83</span>. Drag the angles together and it drops back below 2.</p>
+
+<script>
+  window.sendPrompt=function(){};
+  window.openLink=function(u){window.open(u,'_blank');};
+  window.vizActive=function(){return true;};
+</script>
+
+<h2 class="sr-only">CHSH experiment with four adjustable detector angles and a convergence plot of |S|.</h2>
+<div style="display:flex; flex-direction:column; gap:14px;">
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px;">
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <label style="font-size:12px; color:#3fd6a8;">Alice a · <span id="la">0</span>°</label>
+      <input type="range" id="aa" min="0" max="180" value="0" step="1" />
+      <label style="font-size:12px; color:#3fd6a8;">Alice a′ · <span id="lap">90</span>°</label>
+      <input type="range" id="aap" min="0" max="180" value="90" step="1" />
+    </div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <label style="font-size:12px; color:#f08bb4;">Bob b · <span id="lb">45</span>°</label>
+      <input type="range" id="bb" min="0" max="180" value="45" step="1" />
+      <label style="font-size:12px; color:#f08bb4;">Bob b′ · <span id="lbp">135</span>°</label>
+      <input type="range" id="bbp" min="0" max="180" value="135" step="1" />
+    </div>
+  </div>
+  <div style="border-radius:var(--border-radius-lg); overflow:hidden; background:#06060f; border:0.5px solid var(--color-border-tertiary);">
+    <canvas id="chsh-canvas" style="display:block; width:100%; height:240px;"></canvas>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <button id="c-fire"><i class="ti ti-bolt" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Fire 400</button>
+    <button id="c-auto"><i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Auto</button>
+    <button id="c-clear"><i class="ti ti-trash" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Clear</button>
+    <button id="c-opt"><i class="ti ti-target" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Optimal angles</button>
+    <span id="c-status" style="font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary); margin-left:4px;">awaiting trials</span>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px;">
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">|S| measured</div>
+      <div id="s-val" style="font-size:24px; font-weight:500;">—</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">classical limit</div>
+      <div style="font-size:24px; font-weight:500;">2.00</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">Tsirelson 2√2</div>
+      <div style="font-size:24px; font-weight:500;">2.83</div>
+    </div>
+    <div style="background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:10px 12px;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">total trials</div>
+      <div id="c-trials" style="font-size:24px; font-weight:500;">0</div>
+    </div>
+  </div>
+  <div id="e-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; font-family:var(--font-mono); font-size:12px; color:var(--color-text-secondary);"></div>
+</div>
+<script>
+(function(){
+  var canvas = document.getElementById('chsh-canvas');
+  var ctx = canvas.getContext('2d');
+  var W = 680, H = 240, dpr = Math.max(1, window.devicePixelRatio || 1);
+  var ids = ['aa','aap','bb','bbp'];
+  var labs = {aa:'la',aap:'lap',bb:'lb',bbp:'lbp'};
+  var el = {};
+  ids.forEach(function(k){ el[k] = document.getElementById(k); });
+  var pairs = [
+    {key:'ab',   sign:1,  A:'aa',  B:'bb',  name:'E(a, b)'},
+    {key:'abp',  sign:-1, A:'aa',  B:'bbp', name:'E(a, b′)'},
+    {key:'apb',  sign:1,  A:'aap', B:'bb',  name:'E(a′, b)'},
+    {key:'apbp', sign:1,  A:'aap', B:'bbp', name:'E(a′, b′)'}
+  ];
+  var counts = {};
+  function resetCounts(){ pairs.forEach(function(p){ counts[p.key]={same:0,diff:0,total:0}; }); }
+  resetCounts();
+  var totalAll = 0, history = [], maxN = 1000, auto = false;
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    W = rect.width || 680; H = 240;
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); draw();
+  }
+  function ang(k){ return parseInt(el[k].value,10); }
+  function pAntiDeg(d){ var h = d*Math.PI/180/2; var c = Math.cos(h); return c*c; }
+  function fire(n){
+    for(var k=0;k<n;k++){
+      var aSet = Math.random()<0.5 ? 'aa' : 'aap';
+      var bSet = Math.random()<0.5 ? 'bb' : 'bbp';
+      var p = pairs.find(function(pp){ return pp.A===aSet && pp.B===bSet; });
+      var d = Math.abs(ang(aSet) - ang(bSet));
+      var pAnti = pAntiDeg(d);
+      var A = Math.random()<0.5 ? 1 : -1;
+      var opp = Math.random() < pAnti;
+      var B = opp ? -A : A;
+      var c = counts[p.key];
+      if(A===B) c.same++; else c.diff++;
+      c.total++;
+    }
+    totalAll += n;
+    var S = computeS();
+    if(S !== null){
+      history.push({n: totalAll, S: Math.abs(S)});
+      if(totalAll > maxN) maxN = totalAll;
+      if(history.length > 800) history = history.filter(function(_,i){ return i%2===0; });
+    }
+    updateUI(S);
+  }
+  function eOf(p){ var c = counts[p.key]; return c.total ? (c.same - c.diff)/c.total : null; }
+  function computeS(){
+    var S = 0;
+    for(var i=0;i<pairs.length;i++){ var e = eOf(pairs[i]); if(e === null) return null; S += pairs[i].sign * e; }
+    return S;
+  }
+  function updateUI(S){
+    document.getElementById('c-trials').textContent = totalAll.toLocaleString();
+    var sEl = document.getElementById('s-val'), status = document.getElementById('c-status');
+    if(S === null){ sEl.textContent = '—'; sEl.style.color = ''; status.textContent = 'need trials in all four settings'; }
+    else {
+      var aS = Math.abs(S);
+      sEl.textContent = aS.toFixed(3);
+      if(aS > 2){ sEl.style.color = 'var(--color-text-success)'; status.textContent = 'violation — |S| > 2, beyond any local hidden-variable model'; }
+      else { sEl.style.color = ''; status.textContent = '|S| ≤ 2 — consistent with local realism at these angles'; }
+    }
+    var grid = document.getElementById('e-grid'); grid.innerHTML = '';
+    pairs.forEach(function(p){
+      var e = eOf(p), d = Math.abs(ang(p.A) - ang(p.B));
+      var div = document.createElement('div');
+      div.style.cssText = 'background:var(--color-background-secondary); border-radius:6px; padding:6px 9px;';
+      div.innerHTML = '<span style="color:var(--color-text-primary);">'+p.name+'</span> = '+(e===null?'—':e.toFixed(3))+'  <span style="opacity:.7;">(Δ'+d+'°)</span>';
+      grid.appendChild(div);
+    });
+    draw();
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var mL = 40, mR = 14, mT = 14, mB = 28;
+    var pw = W-mL-mR, ph = H-mT-mB, px0 = mL, py0 = mT;
+    function X(n){ return px0 + (maxN? n/maxN:0)*pw; }
+    function Y(s){ return py0 + (1 - s/3)*ph; }
+    ctx.strokeStyle = 'rgba(150,160,200,0.16)'; ctx.lineWidth = 0.5;
+    ctx.fillStyle = 'rgba(200,208,235,0.6)'; ctx.font = '11px ui-monospace, monospace'; ctx.textAlign = 'right';
+    [0,1,2,3].forEach(function(v){ var y = Y(v); ctx.beginPath(); ctx.moveTo(px0,y); ctx.lineTo(px0+pw,y); ctx.stroke(); ctx.fillText(v.toFixed(0), px0-8, y+4); });
+    ctx.setLineDash([5,4]); ctx.strokeStyle = 'rgba(239,159,39,0.85)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(px0,Y(2)); ctx.lineTo(px0+pw,Y(2)); ctx.stroke();
+    ctx.strokeStyle = 'rgba(63,214,168,0.85)';
+    ctx.beginPath(); ctx.moveTo(px0,Y(2*Math.SQRT2)); ctx.lineTo(px0+pw,Y(2*Math.SQRT2)); ctx.stroke();
+    ctx.setLineDash([]); ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(239,159,39,0.95)'; ctx.fillText('classical limit 2', px0+6, Y(2)-6);
+    ctx.fillStyle = 'rgba(63,214,168,0.95)'; ctx.fillText('Tsirelson 2√2', px0+6, Y(2*Math.SQRT2)-6);
+    if(history.length > 1){
+      ctx.strokeStyle = '#c9b6ff'; ctx.lineWidth = 2; ctx.beginPath();
+      for(var i=0;i<history.length;i++){ var x = X(history[i].n), y = Y(history[i].S); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+      ctx.stroke();
+      var last = history[history.length-1];
+      ctx.beginPath(); ctx.arc(X(last.n), Y(last.S), 3.5, 0, Math.PI*2); ctx.fillStyle = '#c9b6ff'; ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(210,218,245,0.8)'; ctx.font = '500 12px ui-sans-serif, system-ui, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('trials →', px0+pw/2, H-6);
+    ctx.save(); ctx.translate(12, py0+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText('|S|', 0, 0); ctx.restore();
+  }
+  ids.forEach(function(k){
+    el[k].addEventListener('input', function(){
+      document.getElementById(labs[k]).textContent = el[k].value;
+      resetCounts(); totalAll = 0; history = []; maxN = 1000; updateUI(null);
+    });
+  });
+  document.getElementById('c-fire').addEventListener('click', function(){ fire(400); });
+  document.getElementById('c-clear').addEventListener('click', function(){ resetCounts(); totalAll=0; history=[]; maxN=1000; updateUI(null); });
+  document.getElementById('c-opt').addEventListener('click', function(){
+    el.aa.value=0; el.aap.value=90; el.bb.value=45; el.bbp.value=135;
+    document.getElementById('la').textContent='0'; document.getElementById('lap').textContent='90';
+    document.getElementById('lb').textContent='45'; document.getElementById('lbp').textContent='135';
+    resetCounts(); totalAll=0; history=[]; maxN=1000; updateUI(null);
+  });
+  document.getElementById('c-auto').addEventListener('click', function(){
+    auto = !auto;
+    document.getElementById('c-auto').innerHTML = auto
+      ? '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Stop'
+      : '<i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-2px; margin-right:5px;"></i>Auto';
+  });
+  function loop(){ if(auto && window.vizActive(canvas)) fire(120); requestAnimationFrame(loop); }
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(canvas); } else { window.addEventListener('resize', resize); }
+  resize(); updateUI(null); requestAnimationFrame(loop);
+})();
+</script>
+<p class="foot">Standalone file · Monte Carlo over the exact singlet statistics; classical bound 2 and Tsirelson 2√2 are the true theoretical limits.</p>
+</div>
+
+</body>
+</html>

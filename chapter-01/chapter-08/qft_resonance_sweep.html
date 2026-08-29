@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8.2 · The QFT Resonance Sweep</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121833; --panel2:#0e142a; --line:#26305a;
+    --text:#e8ecf5; --muted:#8a93b0; --cyan:#28e0d0; --magenta:#ff5db1;
+    --gold:#ffd166; --good:#5ad19a; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:radial-gradient(1200px 700px at 70% -10%, #16204a 0%, var(--bg) 60%);
+    color:var(--text); font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    min-height:100vh; padding:28px 18px 60px}
+  .wrap{max-width:1080px; margin:0 auto}
+  h1{font-size:24px; margin:0 0 4px} h1 .tag{color:var(--cyan)}
+  .sub{color:var(--muted); margin:0 0 18px; max-width:780px}
+  .eq{display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:8px;
+    padding:8px 14px; font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--gold); margin-top:6px}
+  .controls{display:flex; flex-wrap:wrap; gap:18px; align-items:flex-end;
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:18px 0 20px}
+  .ctl{display:flex; flex-direction:column; gap:6px}
+  .ctl label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
+  .ctl input[type=number]{width:90px; background:var(--panel2); color:var(--text); border:1px solid var(--line);
+    border-radius:8px; padding:8px 10px; font-size:15px}
+  select{background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:15px}
+  input[type=range]{width:160px; accent-color:var(--magenta)}
+  .pill{padding:8px 14px; border-radius:999px; font-weight:600; font-size:13px}
+  .pill.ok{background:rgba(90,209,154,.15); color:var(--good); border:1px solid rgba(90,209,154,.4)}
+  .pill.warn{background:rgba(255,209,102,.13); color:var(--gold); border:1px solid rgba(255,209,102,.4)}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px 8px; margin-bottom:20px}
+  .card h2{font-size:14px; margin:0 0 4px; letter-spacing:.4px; text-transform:uppercase}
+  .card.before h2{color:var(--cyan)} .card.after h2{color:var(--magenta)}
+  .card p.note{color:var(--muted); font-size:13px; margin:0 0 6px}
+  canvas{width:100%; height:100%; display:block}
+  .chart{height:240px; overflow:hidden}
+  .foot{color:var(--muted); font-size:12.5px; margin-top:6px; line-height:1.6}
+  .arrow{text-align:center; color:var(--magenta); font-size:13px; letter-spacing:1px; margin:2px 0 16px; font-weight:600}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">8.2</span></a><script defer src="../assets/planck-companion.js" data-pk-code="8.2"></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="wrap">
+  <h1><span class="tag">8.2</span> · The QFT Resonance Sweep</h1>
+  <p class="sub">After modular exponentiation and a measurement of the second register, the input register
+    holds a <b>periodic comb</b> — equal-amplitude spikes spaced <i>r</i> apart. The Quantum Fourier Transform
+    turns that comb in the <b>time domain</b> into sharp resonances in the <b>frequency domain</b>, located at
+    integer multiples of <b>M/r</b>.</p>
+  <div class="eq">F<sub>M</sub>|x⟩ = (1/√M) · Σ<sub>k=0…M−1</sub> e<sup>2πi·xk/M</sup> |k⟩</div>
+
+  <div class="controls">
+    <div class="ctl"><label for="a">base a</label><input type="number" id="a" value="7" min="2"></div>
+    <div class="ctl"><label for="N">modulus N</label><input type="number" id="N" value="15" min="3"></div>
+    <div class="ctl"><label for="M">register size M</label>
+      <select id="M">
+        <option>16</option><option>32</option><option selected>64</option>
+        <option>128</option><option>256</option><option>512</option>
+      </select></div>
+    <div class="ctl"><label for="x0">measured offset x₀ · <span id="x0Lbl">0</span></label>
+      <input type="range" id="x0" min="0" max="3" value="0"></div>
+    <div id="status" class="pill ok">r = 4 · peaks every M/r = 16</div>
+  </div>
+
+  <div class="card before">
+    <h2>Before QFT — time domain (the periodic comb)</h2>
+    <p class="note">Amplitudes |⟨x|ψ⟩|. Equal-height teeth at x = x₀, x₀+r, x₀+2r, …</p>
+    <div class="chart"><canvas id="time"></canvas></div>
+  </div>
+  <div class="arrow">▼ apply F<sub>M</sub> (Quantum Fourier Transform) ▼</div>
+  <div class="card after">
+    <h2>After QFT — frequency domain (the resonance spectrum)</h2>
+    <p class="note">Amplitudes |⟨k|F<sub>M</sub>ψ⟩|. Energy collapses onto frequencies k ≈ j·M/r (dashed lines).</p>
+    <div class="chart"><canvas id="freq"></canvas></div>
+  </div>
+
+  <p class="foot">
+    <b>Why it works.</b> Each spike of the comb radiates the same phase pattern; the QFT makes those patterns
+    interfere — constructively only where the frequency matches the comb's spacing, k = jM/r. When <b>r divides M</b>
+    the peaks are razor-sharp (try M=64, r=4). When it doesn't, the peaks <i>broaden</i> into clusters around jM/r
+    (try a=2, N=21 with M=64, r=6) — still readable, just leakier. The offset x₀ only rotates phases, so the
+    <i>magnitudes</i> — and the peak positions — never move. Measure this spectrum and you get 8.3.
+  </p>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const TAU=Math.PI*2;
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+function order(a,N){ if(gcd(a,N)!==1) return null; let r=1,v=((a%N)+N)%N; while(v!==1){v=(v*a)%N;r++;if(r>N+2)return null;} return r;}
+
+// Build the periodic comb state over [0,M): amplitude 1/sqrt(A) where x % r == x0.
+function combState(M,r,x0){
+  const re=new Float64Array(M);
+  let count=0; for(let x=x0;x<M;x+=r) count++;
+  const amp=1/Math.sqrt(count);
+  for(let x=x0;x<M;x+=r) re[x]=amp;
+  return {re, amp, count};
+}
+// QFT magnitudes: |(1/sqrt M) Σ_x ψ(x) e^{2πi xk/M}|
+function qftMag(re,M){
+  const mag=new Float64Array(M);
+  const norm=1/Math.sqrt(M);
+  for(let k=0;k<M;k++){
+    let sr=0,si=0;
+    for(let x=0;x<M;x++){
+      const v=re[x]; if(v===0) continue;
+      const ph=TAU*x*k/M;
+      sr+=v*Math.cos(ph); si+=v*Math.sin(ph);
+    }
+    mag[k]=Math.hypot(sr,si)*norm;
+  }
+  return mag;
+}
+
+function fit(canvas){
+  const dpr=window.devicePixelRatio||1; const r=canvas.getBoundingClientRect();
+  canvas.width=Math.max(1,r.width*dpr); canvas.height=Math.max(1,r.height*dpr);
+  const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w:r.width,h:r.height};
+}
+
+function bars(canvasId, values, M, opts){
+  const {ctx,w,h}=fit($(canvasId));
+  ctx.clearRect(0,0,w,h);
+  const padL=40, padR=12, padT=12, padB=26;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const maxV=Math.max(1e-9,...values);
+  // axes
+  ctx.strokeStyle='rgba(120,140,200,.25)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle='#8a93b0'; ctx.font='11px ui-monospace,Menlo,monospace';
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  ctx.fillText(maxV.toFixed(2), padL-6, padT+2);
+  ctx.fillText('0', padL-6, padT+plotH);
+  // dashed peak guides
+  if(opts.guides){
+    ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle=opts.guideColor||'rgba(255,93,177,.55)'; ctx.lineWidth=1.2;
+    opts.guides.forEach(g=>{
+      const gx=padL + (g/(M-1||1))*plotW;
+      ctx.beginPath(); ctx.moveTo(gx,padT); ctx.lineTo(gx,padT+plotH); ctx.stroke();
+    });
+    ctx.restore();
+  }
+  // bars
+  const bw=Math.max(1, plotW/M - (M<=64?1.5:0.4));
+  for(let i=0;i<M;i++){
+    const v=values[i]; if(v<=0) continue;
+    const bx=padL + (i/(M-1||1))*plotW - bw/2;
+    const bh=(v/maxV)*plotH;
+    ctx.fillStyle=opts.color;
+    ctx.fillRect(Math.max(padL,bx), padT+plotH-bh, bw, bh);
+  }
+  // x ticks
+  ctx.fillStyle='#8a93b0'; ctx.textAlign='center'; ctx.textBaseline='top';
+  const ticks=opts.ticks|| [0, Math.floor(M/4), Math.floor(M/2), Math.floor(3*M/4), M-1];
+  ticks.forEach(t=>{ const tx=padL+(t/(M-1||1))*plotW; ctx.fillText(t, tx, padT+plotH+6); });
+  ctx.textAlign='right'; ctx.fillText(opts.xlabel, padL+plotW, padT+plotH+6);
+}
+
+function render(){
+  const a=parseInt($('a').value,10), N=parseInt($('N').value,10), M=parseInt($('M').value,10);
+  const r=order(a,N);
+  const st=$('status');
+  if(!r){ st.className='pill warn'; st.textContent=`gcd(${a},${N})≠1 — no period to transform`; return; }
+  // x0 slider bounded by r
+  const x0in=$('x0'); x0in.max=r-1; let x0=Math.min(parseInt(x0in.value,10), r-1); x0in.value=x0;
+  $('x0Lbl').textContent=x0;
+
+  const MoverR=M/r;
+  const divides=(M%r===0);
+  st.className = divides? 'pill ok':'pill warn';
+  st.textContent = divides
+    ? `r = ${r} · sharp peaks every M/r = ${MoverR}`
+    : `r = ${r} · M/r = ${MoverR.toFixed(2)} (r∤M → broadened peaks)`;
+
+  const {re}=combState(M,r,x0);
+  const mag=qftMag(re,M);
+  const guides=[]; for(let j=0;j*MoverR<M;j++) guides.push(Math.round(j*MoverR));
+
+  bars('time', re, M, {color:'#28e0d0', xlabel:'x', guides:null});
+  bars('freq', mag, M, {color:'#ff5db1', xlabel:'k (frequency)', guides, guideColor:'rgba(255,255,255,.35)'});
+}
+
+['a','N','M','x0'].forEach(id=>$(id).addEventListener('input',render));
+window.addEventListener('resize',render);
+window.addEventListener('DOMContentLoaded',render);
+render();
+</script>
+
+</body>
+</html>

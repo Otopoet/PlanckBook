@@ -1,0 +1,142 @@
+{
+  "book": "PLANCK",
+  "subtitle": "A field guide to quantum computing",
+  "baseUrl": "https://ivanroche.com/planck/",
+  "note": "Canonical component manifest, aligned to the V5 manuscript chapter map. Paths are relative to the site root; each chapter is a subdirectory (chapter-NN/). The hub, the injected page chrome, and the QR codes all derive from this file. quantum_measurement appears in both Ch 4 (measurement/decoherence intro) and Ch 11 (capstone) — same file, two QR entries.",
+  "chapters": [
+    {
+      "n": 1,
+      "title": "The Smallest Meadow",
+      "blurb": "Where it begins: the smallest unit of the world. A classical bit sits in one box; the quantum version is a cloud of where-it-might-be.",
+      "components": [
+        {"code":"1.1","title":"Bit vs qubit","desc":"A classical pebble sits in the 0 box or the 1 box. A qubit is a smeared cloud over both at once — toggle between them. No Bloch angles, no maths, just the leap.","path":"chapter-01/bit-vs-qubit.html","type":"lab","teaches":"classical bit vs qubit · superposition (intuitive)"},
+        {"code":"1.2","title":"The cloud of where","desc":"A Gaussian wavefunction's |ψ|² as a brightness map — where you're likely to find the particle. A gentle picture of probability before any formalism.","path":"chapter-01/cloud_of_where.html","type":"lab","teaches":"|ψ|² · probability cloud"}
+      ],
+      "assets":["chapter-01/figures/cloud_of_where.png","chapter-01/figures/quantum_breathing_cloud.png"]
+    },
+    {
+      "n": 2,
+      "title": "The Dance of Both-and",
+      "blurb": "Both-and, not either-or. The Bloch sphere gives the cloud a home, where amplitudes become odds and a measurement finally picks one.",
+      "components": [
+        {"code":"2.1","title":"Superposition on the Bloch sphere","desc":"The smeared cloud of possibility: amplitudes become Born-rule probabilities, phase sweeps without changing the odds, and a measurement collapses it.","path":"chapter-02/bloch_sphere_superposition.html","type":"lab","teaches":"superposition · Born rule (preview)"}
+      ],
+      "assets":[]
+    },
+    {
+      "n": 3,
+      "title": "The Silent Duet",
+      "blurb": "Two clouds, one inseparable state — a duet sung in silence. From the artistic scene, through Bell and CHSH, to an exact Schrödinger evolution.",
+      "subindex":"chapter-03/index.html",
+      "components": [
+        {"code":"3.1","title":"The artistic scene","desc":"Two clouds touch, interact, drift apart, joined by a metaphorical thread; measure one spin and the pair collapses into anti-correlation.","path":"chapter-03/01-scene.html","type":"lab","teaches":"non-separability (intuitive)"},
+        {"code":"3.2","title":"The two-particle joint density","desc":"The rigorous thread: |Ψ(x₁,x₂)|² collapsing onto the anti-diagonal as correlation r → −1, while the single-particle marginals never move.","path":"chapter-03/02-density.html","type":"lab","teaches":"joint vs marginal density"},
+        {"code":"3.3","title":"Bell correlation on the singlet","desc":"Empirical anti-correlation converging onto cos²(Δθ/2), bowing above the best local-realist line — the gap no hidden-variable theory can close.","path":"chapter-03/03-bell.html","type":"lab","teaches":"Bell correlation · local realism"},
+        {"code":"3.4","title":"CHSH & Tsirelson's bound","desc":"The CHSH combination |S| climbing past the classical limit of 2 toward 2√2 ≈ 2.83 at the optimal detector angles.","path":"chapter-03/04-chsh.html","type":"lab","teaches":"CHSH inequality · Tsirelson"},
+        {"code":"3.5","title":"Coupled real & configuration space","desc":"One clock drives both pictures: clouds separate in real space while the joint density splits into two anti-diagonal lobes.","path":"chapter-03/05-coupled.html","type":"lab","teaches":"configuration space"},
+        {"code":"3.6","title":"Exact free-particle evolution","desc":"A genuine time-dependent Schrödinger solution: ballistic separation, σ(t) spreading, and real momentum-interference fringes.","path":"chapter-03/06-exact.html","type":"lab","teaches":"exact Schrödinger evolution"}
+      ],
+      "assets":[]
+    },
+    {
+      "n": 4,
+      "title": "The Footfall",
+      "blurb": "The footfall lands: a spread-out state becomes one definite outcome, drawn by the Born rule — and the world keeps listening, the first whisper of decoherence.",
+      "components": [
+        {"code":"4.1","title":"Wavefunction collapse","desc":"Measurement collapses |ψ⟩ to a single eigenstate |r₀⟩, sampled by P = |⟨r₀|ψ⟩|²; repeat the trial and the |ψ|² distribution rebuilds itself.","path":"chapter-04/wavefunction_collapse.html","type":"lab","teaches":"collapse · Born rule"},
+        {"code":"4.2","title":"Measurement & noise — first look","desc":"The measurement sandbox, here as a first encounter with how a real device samples outcomes and how noise creeps in. The density matrix is introduced qualitatively; its full treatment is in Ch 11.","path":"chapter-11/quantum_measurement.html","type":"lab","teaches":"measurement · readout noise (intro)"}
+      ],
+      "assets":[]
+    },
+    {
+      "n": 5,
+      "title": "From Pebbles to Qubits",
+      "blurb": "From a vague cloud to a precise instrument: the qubit as a vector on the Bloch sphere, the 2ᴺ explosion of Hilbert space, and interference — the engine underneath everything that follows.",
+      "components": [
+        {"code":"5.1","title":"One qubit, three bodies","desc":"The same state |ψ⟩ realised as a spin, a superconducting transmon, and a photon's polarisation — the qubit is the state, not the hardware.","path":"chapter-05/physical_qubit.html","type":"lab","teaches":"the abstract qubit · physical realisations"},
+        {"code":"5.2","title":"The Bloch sphere","desc":"A single-qubit state as a point on the sphere, set by the two angles θ and φ — the full parameterisation the rest of the book draws on.","path":"chapter-05/bloch_sphere.html","type":"lab","teaches":"state geometry · θ, φ"},
+        {"code":"5.3","title":"The growth of Hilbert space","desc":"Line → square → cube → tesseract → cosmos: why N qubits need 2ᴺ numbers to describe. Pure combinatorics, no quantum mechanics required.","path":"chapter-05/hilbert_space.html","type":"lab","teaches":"2ᴺ scaling · state vectors"},
+        {"code":"5.4","title":"Quantum wave interference","desc":"Amplitudes add, not probabilities. The cross-term 2·Re(ψ₁*ψ₂) paints constructive and destructive fringes that depend on relative phase.","path":"chapter-05/quantum_interference.html","type":"lab","teaches":"amplitude interference · phase"}
+      ],
+      "assets":["chapter-05/figures/hilbert_space_growth.png","chapter-05/figures/hilbert_space_growth_dark.png","chapter-05/figures/q4_tesseract.png","chapter-05/figures/q4_tesseract_dark.png"]
+    },
+    {
+      "n": 6,
+      "title": "The Gentle Art of Nudging",
+      "blurb": "Steering the cloud. Every single-qubit gate is a rigid turn of the Bloch vector; compose a few and you can point the state anywhere.",
+      "components": [
+        {"code":"6.1","title":"Gates as Bloch-sphere rotations","desc":"H, X, Y, Z, S, T as rotations about fixed axes — then compose a sequence (H then Z) and watch the net turn the qubit makes.","path":"chapter-06/gate_rotations.html","type":"lab","teaches":"single-qubit gates · H→Z composition"},
+        {"code":"6.2","title":"Nudge a cloud — the quantum coin","desc":"Drop an H gate to tilt |0⟩ to the equator, add a measurement, and let the footfalls land 50/50 — true quantum randomness from one gate.","path":"chapter-06/nudge-a-cloud.html","type":"lab","teaches":"H gate · circuits · sampling"}
+      ],
+      "assets":[]
+    },
+    {
+      "n": 7,
+      "title": "The Choreographed Chorus",
+      "blurb": "Make the right answer shout. Superposition, an oracle, and a diffuser turn √N steps of interference into a found needle — no entanglement required.",
+      "components": [
+        {"code":"7.1","title":"Interference — the engine of the search","desc":"Do it yourself: superpose, flip the phase of the marked item (oracle), mirror across the mean (diffuser), repeat — and watch over-rotation undo it.","path":"chapter-07/grover.html","type":"lab","teaches":"oracle · diffuser · amplification"},
+        {"code":"7.2","title":"Oracle, diffuser & amplification","desc":"The operator-level view: Uω as a sign flip, D = 2|ψ⟩⟨ψ| − I as reflection about the mean, and P(ω) = sin²((2k+1)θ) with the optimal iteration count.","path":"chapter-07/grover-visualization.html","type":"lab","teaches":"Grover operators · closed form"}
+      ],
+      "assets":[]
+    },
+    {
+      "n": 8,
+      "title": "The Secret of Rhythm",
+      "blurb": "Factoring as listening for a rhythm. A classical clock hides a period; the Quantum Fourier Transform makes it ring out; a measurement gives up the secret.",
+      "subindex":"chapter-08/index.html",
+      "components": [
+        {"code":"8.1","title":"The clockwork maze","desc":"Modular exponentiation aˣ mod N around a ring — the colour pattern repeats every r steps, and that hidden period r is what Shor must find.","path":"chapter-08/clockwork_maze.html","type":"lab","teaches":"period of aˣ mod N"},
+        {"code":"8.2","title":"The QFT resonance sweep","desc":"A periodic comb in the index domain becomes sharp peaks at k = jM/r in frequency — how the Quantum Fourier Transform makes the period readable.","path":"chapter-08/qft_resonance_sweep.html","type":"lab","teaches":"QFT · resonance peaks"},
+        {"code":"8.3","title":"The pillars of light","desc":"Measure a pillar, then continued fractions recover r and gcd(a^{r/2}±1, N) gives the factors of N.","path":"chapter-08/pillars_of_light.html","type":"lab","teaches":"measurement · continued fractions"}
+      ],
+      "assets":[]
+    },
+    {
+      "n": 9,
+      "title": "The Mirror of the Meadow",
+      "blurb": "A hybrid loop holds a quantum mirror up to a molecule and tunes it until its energy sinks to the ground state. Open them in order 9.1 → 9.3 → 9.2 → 9.4 → 9.5 → 9.6.",
+      "components": [
+        {"code":"9.1","title":"H₂ molecular energy landscape","desc":"The energy-vs-bond-length curve with its minimum — the target VQE will hunt for. No quantum-computing prerequisites.","path":"chapter-09/ch9_1_vqe_loop.html","type":"lab","teaches":"ground-state energy · the goal"},
+        {"code":"9.3","title":"Hardware-efficient ansatz circuit","desc":"The parameterised trial-state factory: two Ry(θ) rotations + a CNOT entangler + measurement, with θ₁,θ₂ the tunable knobs. (Read before 9.2.)","path":"chapter-09/ch9_3_ansatz_circuit.html","type":"figure","teaches":"ansatz · parameters θ"},
+        {"code":"9.2","title":"VQE convergence curve","desc":"The loop in action: a classical optimiser nudges θ, the quantum processor reports the energy, and E(θ) ≥ E₀ drives it down to the ground state.","path":"chapter-09/ch9_2_vqe_convergence.html","type":"lab","teaches":"variational loop · E(θ) ≥ E₀"},
+        {"code":"9.4","title":"Measurement outcome probabilities","desc":"Sampling the converged state gives a bitstring histogram dominated by the ground configuration (θ* = 0 → |00⟩ with probability 1).","path":"chapter-09/ch9_4_measurement_histogram.html","type":"lab","teaches":"shot sampling"},
+        {"code":"9.5","title":"Variational parameter landscape","desc":"Energy as a 2-D surface E(θ₁,θ₂) with minima, maxima and saddles; gradient descent walks downhill — and barren plateaus threaten at scale.","path":"chapter-09/ch9_5_parameter_landscape.html","type":"lab","teaches":"optimisation landscape · gradients"},
+        {"code":"9.6","title":"Tuning the mirror","desc":"The capstone lab: drag θ to move the energy point, watch the histogram shift, then auto-tune and watch the optimiser converge to θ = 0.","path":"chapter-09/ch9_6_tuning_mirror.html","type":"lab","teaches":"synthesis of 9.1–9.5"}
+      ],
+      "assets":[]
+    },
+    {
+      "n": 10,
+      "title": "The Fog That Finds the Valley",
+      "blurb": "A fog of probability poured over every possible answer, settling into the deepest valley. The gentle continuous melt first, then its gate-model sequel.",
+      "components": [
+        {"code":"10.1","title":"The slow melt — quantum annealing","desc":"Adiabatic interpolation H(s) = (1−s)H_M + sH_C: a melting double-well where the mist settles into the deeper valley, if you sweep slowly through the minimum-gap bottleneck.","path":"chapter-10/annealing_simulator.html","type":"lab","teaches":"adiabatic theorem · the gap"},
+        {"code":"10.2","title":"Shaping the mist — QAOA Max-Cut","desc":"The gate-model sequel: cost phase γ and mixer angle β across p layers concentrate probability on the bitstrings that maximise a Max-Cut objective.","path":"chapter-10/qaoa_maxcut_lab.html","type":"lab","teaches":"QAOA · cost/mixer layers"}
+      ],
+      "assets":["chapter-10/figures/fig1_cost_landscape.png","chapter-10/figures/fig2_layer_probabilities.png","chapter-10/figures/fig3_parameter_landscape.png","chapter-10/figures/fig4_adiabatic_gap.png","chapter-10/figures/fig5_fog_heatmap.png","chapter-10/figures/fig5_fog_settling.gif"]
+    },
+    {
+      "n": 11,
+      "title": "Noise, Decoherence & Error Correction",
+      "blurb": "The reality check, and the counter-attack. Real qubits leak, forget, and lie — and the fortress inside the fortress is how we fight back.",
+      "subindex":"chapter-11/index.html",
+      "components": [
+        {"code":"11.1","title":"The mixed state","desc":"Drag a qubit from the surface of the Bloch sphere into the ball: the density matrix ρ, populations vs coherences, and purity Tr(ρ²) falling from 1 toward ½.","path":"chapter-11/11_1_density_matrix.html","type":"lab","teaches":"density matrix · purity"},
+        {"code":"11.2","title":"T₁ and T₂","desc":"The two decay channels: T₁ relaxation (energy loss, the vector climbs to the pole) and T₂ dephasing (phase loss, the vector collapses onto the axis).","path":"chapter-11/11_2_t1_t2.html","type":"lab","teaches":"relaxation · dephasing"},
+        {"code":"11.3","title":"Decoherence of entanglement","desc":"The same channels on a Bell pair: coherences fade, population drains into |00⟩, and the concurrence — entanglement itself — dies. Entanglement is fragile.","path":"chapter-11/singlet_decoherence.html","type":"lab","teaches":"concurrence decay"},
+        {"code":"11.6","title":"Fighting back: the repetition code","desc":"Spread one logical bit across three physical qubits; a single flip is caught and majority-voted away. Below threshold redundancy wins; above it, it hurts.","path":"chapter-11/11_6_repetition_code.html","type":"lab","teaches":"error correction · the threshold idea"},
+        {"code":"11.7","title":"Surface code & the threshold","desc":"Logical vs physical error over code distance d: below the ~1% threshold, bigger codes suppress logical error exponentially; above it, encoding makes things worse.","path":"chapter-11/11_7_threshold.html","type":"lab","teaches":"surface code · threshold theorem"},
+        {"code":"11.8","title":"The full noise-to-correction sandbox","desc":"Everything at once — depth, gate error, T₁, readout, mitigation, surface code — with a verdict on every run: recoverable, lost, or needs error correction.","path":"chapter-11/quantum_measurement.html","type":"lab","teaches":"synthesis of 11.1–11.7"}
+      ],
+      "assets":["chapter-11/figures/fig5_threshold_curves.png"]
+    }
+  ],
+  "extras": [
+    {"title":"The CNOT wingman","desc":"Build a Bell state by feeding a superposed control into a CNOT — the gate that makes entanglement. (Not on the main V5 path; kept for reference.)","path":"extras/cnot_wingman.html","type":"extra"},
+    {"title":"Spooky action at the kitchen table","desc":"A gate-model Bell state with H + CNOT; measure one qubit and the other answers instantly. (Off the main path; overlaps the Ch 3 entanglement set.)","path":"extras/bell.html","type":"extra"},
+    {"title":"Quantum search explained for everyone","desc":"The plain-English on-ramp to Grover — needle, haystack, √N speed-up. (Off the main path; the Ch 7 labs carry this now.)","path":"extras/explained.html","type":"extra"},
+    {"title":"Quantum entanglement — the all-in-one composite","desc":"All six entanglement scenes on one scrolling page, from metaphor to exact Schrödinger evolution. A long-form companion to the Chapter 3 set.","path":"extras/quantum-entanglement.html","type":"extra"},
+    {"title":"Voronoi tessellation in 3-D","desc":"A simplified visualisation of spatial partitioning — a geometry aside kept off the core learning path.","path":"extras/voronoi_tessellation.html","type":"extra"}
+  ]
+}

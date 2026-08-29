@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bloch Sphere</title>
+<style>
+  :root{
+    --bg:#faf9f5; --surface:#ffffff; --surface2:#f1efe8;
+    --text:#2c2c2a; --muted:#5f5e5a; --faint:#888780; --border:#d3d1c7;
+    --eq:#d4537e; --vec:#d85a30; --accent:#185fa5;
+    --radius:12px; --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1f1e1b; --surface:#2a2926; --surface2:#33322e;
+      --text:#ece9e0; --muted:#b4b2a9; --faint:#888780; --border:#44443f;
+      --eq:#ed93b1; --vec:#f0997b; --accent:#85b7eb;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--font); line-height:1.6;
+    display:flex; justify-content:center; padding:2rem 1rem;
+  }
+  .wrap{width:100%; max-width:720px;}
+  h1{font-size:22px; font-weight:500; margin:0 0 .25rem;}
+  p.lede{color:var(--muted); font-size:15px; margin:0 0 1.5rem;}
+  .eqbox{
+    background:var(--surface2); border-radius:var(--radius);
+    padding:.85rem 1.1rem; margin:0 0 1.5rem; font-size:16px; text-align:center;
+  }
+  .row{display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin:0 0 1rem;}
+  .ctrl{display:flex; align-items:center; gap:10px; flex:1; min-width:240px;}
+  label{font-size:13px; color:var(--muted); min-width:54px;}
+  .out{font-size:13px; font-weight:500; min-width:40px; text-align:right;}
+  input[type=range]{flex:1; -webkit-appearance:none; appearance:none; height:4px;
+    background:var(--border); border-radius:2px; outline:none; cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px;
+    border-radius:50%; background:var(--accent); cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px; height:18px; border:none; border-radius:50%;
+    background:var(--accent); cursor:pointer;}
+  .presets{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 .75rem;}
+  button{font-family:var(--font); font-size:13px; color:var(--text);
+    background:transparent; border:1px solid var(--border); border-radius:8px;
+    padding:6px 12px; cursor:pointer; transition:background .12s,transform .05s;}
+  button:hover{background:var(--surface2);}
+  button:active{transform:scale(.97);}
+  svg#bloch{touch-action:none; cursor:grab; display:block; width:100%;}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:.5rem;}
+  .card{background:var(--surface2); border-radius:8px; padding:.75rem 1rem;}
+  .card .k{font-size:13px; color:var(--muted);}
+  .card .v{font-size:15px; font-weight:500; margin-top:4px;}
+  .card .v.mono{font-family:var(--mono);}
+  .hint{font-size:12px; color:var(--faint); text-align:center; margin:.5rem 0 0;}
+  sup{font-size:.7em;}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">5.2</span></a><script defer src="../assets/planck-companion.js" data-pk-code="5.2"></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="wrap">
+  <h1>Bloch sphere</h1>
+  <p class="lede">A single-qubit pure state as a point on the unit sphere. North pole = |0⟩, south pole = |1⟩, equator = equal superpositions. Drag to rotate; use the sliders or presets to move the state.</p>
+
+  <div class="eqbox">|ψ⟩ = cos(θ/2) |0⟩ + e<sup>iφ</sup> sin(θ/2) |1⟩</div>
+
+  <div class="row">
+    <div class="ctrl">
+      <label>θ (polar)</label>
+      <input type="range" id="theta" min="0" max="180" step="1" value="60">
+      <span class="out" id="thetaOut">60°</span>
+    </div>
+    <div class="ctrl">
+      <label>φ (azim.)</label>
+      <input type="range" id="phi" min="0" max="360" step="1" value="45">
+      <span class="out" id="phiOut">45°</span>
+    </div>
+  </div>
+
+  <div class="presets">
+    <button data-t="0"   data-p="0">|0⟩</button>
+    <button data-t="180" data-p="0">|1⟩</button>
+    <button data-t="90"  data-p="0">|+⟩</button>
+    <button data-t="90"  data-p="180">|−⟩</button>
+    <button data-t="90"  data-p="90">|+i⟩</button>
+    <button data-t="90"  data-p="270">|−i⟩</button>
+  </div>
+
+  <svg id="bloch" viewBox="0 0 680 470" role="img" aria-label="Interactive Bloch sphere with a drone riding the state vector tip"></svg>
+  <p class="hint">drag the sphere to rotate · a drone rides the tip of |ψ⟩</p>
+
+  <div class="cards">
+    <div class="card"><div class="k">State |ψ⟩</div><div class="v" id="ket"></div></div>
+    <div class="card"><div class="k">Bloch vector (x, y, z)</div><div class="v mono" id="vec"></div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const svg = document.getElementById('bloch');
+  const css = getComputedStyle(document.documentElement);
+  const cv = n => css.getPropertyValue(n).trim();
+  const C = { grid:cv('--muted'), axis:cv('--faint'), text:cv('--text'),
+              muted:cv('--muted'), eq:cv('--eq'), vec:cv('--vec') };
+  const cx=340, cy=235, R=180;
+  let yaw=0.6, pitch=0.34;
+  let theta=Math.PI/3, phi=Math.PI/4;
+
+  function project(p){
+    const ca=Math.cos(yaw), sa=Math.sin(yaw);
+    const x1 =  p[0]*ca + p[1]*sa;
+    const y1 = -p[0]*sa + p[1]*ca;
+    const z1 =  p[2];
+    const cp=Math.cos(pitch), sp=Math.sin(pitch);
+    const depth = y1*cp + z1*sp;
+    const vert  = -y1*sp + z1*cp;
+    return {sx: cx + x1*R, sy: cy - vert*R, depth};
+  }
+  const sph = (th,ph)=>[Math.sin(th)*Math.cos(ph), Math.sin(th)*Math.sin(ph), Math.cos(th)];
+
+  function segs(fn,n){
+    const f=[], b=[]; let cur=null, sgn=null;
+    for(let i=0;i<=n;i++){
+      const pr=project(fn(i/n*2*Math.PI));
+      const s=pr.depth>=0;
+      if(sgn===null||s!==sgn){ cur=[]; (s?f:b).push(cur); sgn=s; }
+      cur.push(pr);
+    }
+    return {f,b};
+  }
+  function poly(seg,stroke,w,op){
+    if(seg.length<2) return '';
+    return `<polyline points="${seg.map(p=>p.sx.toFixed(1)+','+p.sy.toFixed(1)).join(' ')}" fill="none" stroke="${stroke}" stroke-width="${w}" opacity="${op}" stroke-linecap="round"/>`;
+  }
+  function gridLines(fnList, stroke){
+    let front='', back='';
+    fnList.forEach(fn=>{
+      const {f,b}=segs(fn,140);
+      b.forEach(s=>back += poly(s,stroke,0.7,0.16));
+      f.forEach(s=>front+= poly(s,stroke,0.7,0.42));
+    });
+    return {front,back};
+  }
+
+  function drone(x,y,s,op){
+    const ax=15, ay=11, rr=7;
+    let g='';
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy])=>{
+      const ex=dx*ax, ey=dy*ay;
+      g += `<line x1="0" y1="0" x2="${ex}" y2="${ey}" stroke="${C.text}" stroke-width="1.6" stroke-linecap="round"/>`;
+      g += `<ellipse cx="${ex}" cy="${ey}" rx="${rr}" ry="2.4" fill="${C.vec}" opacity="0.85"/>`;
+      g += `<ellipse cx="${ex}" cy="${ey}" rx="${rr}" ry="2.4" fill="none" stroke="${C.text}" stroke-width="0.7" opacity="0.5"/>`;
+    });
+    g += `<rect x="-7.5" y="-5.5" width="15" height="11" rx="3.5" fill="${C.vec}" stroke="${C.text}" stroke-width="0.9"/>`;
+    g += `<circle cx="0" cy="0" r="2" fill="${C.text}" opacity="0.55"/>`;
+    return `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${s})" opacity="${op}">${g}</g>`;
+  }
+
+  function draw(){
+    const meridians=[]; for(let k=0;k<6;k++){const p0=k*Math.PI/6; meridians.push(t=>sph(t,p0));}
+    const parallels=[]; [30,60,120,150].forEach(d=>{const t0=d*Math.PI/180; parallels.push(t=>[Math.sin(t0)*Math.cos(t),Math.sin(t0)*Math.sin(t),Math.cos(t0)]);});
+    const eq = t=>[Math.cos(t),Math.sin(t),0];
+
+    const gm=gridLines(meridians,C.grid);
+    const gp=gridLines(parallels,C.grid);
+    const ge=segs(eq,160);
+    let eqBack='', eqFront='';
+    ge.b.forEach(s=>eqBack += poly(s,C.eq,1.6,0.30));
+    ge.f.forEach(s=>eqFront+= poly(s,C.eq,1.8,0.95));
+
+    function axis(a){
+      const A=project(a.map(v=>-1*v)), B=project(a);
+      return `<line x1="${A.sx.toFixed(1)}" y1="${A.sy.toFixed(1)}" x2="${B.sx.toFixed(1)}" y2="${B.sy.toFixed(1)}" stroke="${C.axis}" stroke-width="0.8" opacity="0.5"/>`;
+    }
+    const axes = axis([1,0,0])+axis([0,1,0])+axis([0,0,1]);
+    const outline=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${C.grid}" fill-opacity="0.04" stroke="${C.grid}" stroke-width="0.8" stroke-opacity="0.5"/>`;
+
+    const sp = sph(theta,phi);
+    const P = project(sp);
+    const foot = project([sp[0],sp[1],0]);
+    const dx=P.sx-cx, dy=P.sy-cy, L=Math.hypot(dx,dy)||1;
+    const ux=dx/L, uy=dy/L, ah=12, aw=5.5;
+    const head=`<polygon points="${P.sx.toFixed(1)},${P.sy.toFixed(1)} ${(P.sx-ah*ux+aw*-uy).toFixed(1)},${(P.sy-ah*uy+aw*ux).toFixed(1)} ${(P.sx-ah*ux-aw*-uy).toFixed(1)},${(P.sy-ah*uy-aw*ux).toFixed(1)}" fill="${C.vec}"/>`;
+    const front = P.depth>=0;
+    const vec=`
+      <line x1="${P.sx.toFixed(1)}" y1="${P.sy.toFixed(1)}" x2="${foot.sx.toFixed(1)}" y2="${foot.sy.toFixed(1)}" stroke="${C.vec}" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <line x1="${cx}" y1="${cy}" x2="${foot.sx.toFixed(1)}" y2="${foot.sy.toFixed(1)}" stroke="${C.vec}" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <line x1="${cx}" y1="${cy}" x2="${P.sx.toFixed(1)}" y2="${P.sy.toFixed(1)}" stroke="${C.vec}" stroke-width="2.6" opacity="${front?1:0.45}"/>
+      ${head}`;
+    const sprite = drone(P.sx, P.sy, front?0.95:0.6, front?1:0.5);
+
+    const top=project([0,0,1]), bot=project([0,0,-1]);
+    const px=project([1,0,0]), nx=project([-1,0,0]), py=project([0,1,0]), ny=project([0,-1,0]);
+    function lbl(pr,t,dx2,dy2,size,col,w){return `<text x="${(pr.sx+dx2).toFixed(1)}" y="${(pr.sy+dy2).toFixed(1)}" text-anchor="middle" font-family="${cv('--font')||'sans-serif'}" font-size="${size}" font-weight="${w||400}" fill="${col}">${t}</text>`;}
+    const labels =
+      lbl(top,'|0⟩',0,-12,16,C.text,500)+
+      lbl(bot,'|1⟩',0,22,16,C.text,500)+
+      lbl(px,'|+⟩',16,4,12,C.muted)+
+      lbl(nx,'|−⟩',-16,4,12,C.muted)+
+      lbl(py,'|+i⟩',18,4,12,C.muted)+
+      lbl(ny,'|−i⟩',-18,4,12,C.muted)+
+      `<text x="${(P.sx+(ux>=0?26:-26)).toFixed(1)}" y="${(P.sy+(uy>=0?22:-16)).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="500" fill="${C.vec}">|ψ⟩</text>`;
+    const eqHint = lbl(project([Math.cos(-0.5),Math.sin(-0.5),0]),'equator · superpositions',0,18,12,C.eq);
+
+    svg.innerHTML = outline + gm.back + gp.back + eqBack + axes + gm.front + gp.front + eqFront + eqHint + vec + labels + sprite;
+    update();
+  }
+
+  function update(){
+    const ct=Math.cos(theta/2), st=Math.sin(theta/2);
+    const degP=Math.round(phi*180/Math.PI);
+    document.getElementById('ket').innerHTML = `${ct.toFixed(2)} |0⟩ + e<sup>i·${degP}°</sup> ${st.toFixed(2)} |1⟩`;
+    const x=Math.sin(theta)*Math.cos(phi), y=Math.sin(theta)*Math.sin(phi), z=Math.cos(theta);
+    const f=v=>(v>=0?' ':'')+v.toFixed(2);
+    document.getElementById('vec').textContent = `(${f(x)}, ${f(y)}, ${f(z)})`;
+  }
+
+  const thS=document.getElementById('theta'), phS=document.getElementById('phi');
+  const thO=document.getElementById('thetaOut'), phO=document.getElementById('phiOut');
+  function sync(){
+    theta=(+thS.value)*Math.PI/180; phi=(+phS.value)*Math.PI/180;
+    thO.textContent=thS.value+'°'; phO.textContent=phS.value+'°'; draw();
+  }
+  thS.addEventListener('input',sync);
+  phS.addEventListener('input',sync);
+  document.querySelectorAll('button[data-t]').forEach(b=>{
+    b.addEventListener('click',()=>{ thS.value=b.dataset.t; phS.value=b.dataset.p; sync(); });
+  });
+
+  let drag=false, lx=0, ly=0;
+  svg.addEventListener('pointerdown',e=>{drag=true; lx=e.clientX; ly=e.clientY; svg.style.cursor='grabbing'; svg.setPointerCapture(e.pointerId);});
+  svg.addEventListener('pointermove',e=>{
+    if(!drag) return;
+    yaw += (e.clientX-lx)*0.01;
+    pitch = Math.max(-0.05, Math.min(1.4, pitch + (e.clientY-ly)*0.006));
+    lx=e.clientX; ly=e.clientY; draw();
+  });
+  const end=()=>{drag=false; svg.style.cursor='grab';};
+  svg.addEventListener('pointerup',end);
+  svg.addEventListener('pointercancel',end);
+
+  draw();
+})();
+</script>
+
+</body>
+</html>

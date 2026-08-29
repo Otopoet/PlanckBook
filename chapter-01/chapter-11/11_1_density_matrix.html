@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The mixed state · PLANCK · Figure 11.1</title>
+<style>
+:root{ --bg:#0a0e1a; --panel:#121833; --panel-2:#0e142a; --inset:#0a1024;
+  --line:rgba(180,190,220,0.14); --line-2:rgba(180,190,220,0.30);
+  --text:#e8ecf5; --muted:#8a93b0; --faint:#5b6685;
+  --cyan:#28e0d0; --violet:#9a92ee; --gold:#ffd166; --magenta:#ff5db1; --green:#5ad19a; --red:#ff6b6b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif; }
+*{box-sizing:border-box}
+body{ margin:0; background:radial-gradient(1200px 800px at 60% -10%, #16204a 0%, var(--bg) 60%); color:var(--text); font-family:var(--sans); min-height:100vh; padding:40px 20px; line-height:1.6; }
+.wrap{max-width:920px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+h1{font-size:29px;font-weight:600;margin:0 0 12px}
+.lead{color:var(--muted);max-width:680px;margin:0 0 28px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.section-title{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin:0 0 14px}
+svg{display:block;width:100%;height:auto}
+/* sliders */
+.ctrl{margin-bottom:18px}
+.ctrl:last-child{margin-bottom:0}
+.ctrl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.ctrl-label{font-size:13px;color:var(--text)}
+.ctrl-label small{color:var(--muted)}
+.ctrl-val{font-family:var(--mono);font-size:13px;color:var(--gold)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line);outline:none;margin:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--cyan);cursor:pointer;border:2px solid var(--inset);box-shadow:0 0 0 1px var(--line-2)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--cyan);cursor:pointer;border:2px solid var(--inset);box-shadow:0 0 0 1px var(--line-2)}
+/* buttons */
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+button{background:transparent;border:1px solid var(--line-2);color:var(--text);border-radius:8px;padding:7px 12px;font-family:var(--mono);font-size:13px;cursor:pointer;transition:background .15s}
+button:hover{background:var(--panel-2)}
+button.active{border-color:var(--cyan);color:var(--cyan)}
+/* density matrix */
+.rho-wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.rho-num{font-family:var(--mono);font-size:14px;line-height:1.9;display:flex;align-items:center;gap:8px}
+.rho-bracket{font-size:62px;color:var(--line-2);font-weight:200}
+.rho-grid{display:inline-grid;grid-template-columns:auto auto;gap:6px 16px}
+.rho-cell{min-width:74px;text-align:center}
+.rho-cell .lbl{font-size:10px;color:var(--faint);display:block;letter-spacing:.5px}
+.heat{display:grid;grid-template-columns:48px 48px;grid-template-rows:48px 48px;gap:4px}
+.heat div{border-radius:6px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.85)}
+.legend{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5}
+.legend b{color:var(--text);font-weight:600}
+.chip{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:middle;margin-right:4px}
+/* purity */
+.meter-track{position:relative;height:16px;border-radius:8px;background:var(--inset);border:1px solid var(--line);overflow:hidden;margin:8px 0}
+.meter-fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width .12s}
+.meter-scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--faint)}
+.purity-line{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px}
+.purity-val{font-family:var(--mono);font-size:20px;color:var(--gold)}
+.purity-state{font-size:13px;font-weight:600}
+.stat-row{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.stat-row b{color:var(--cyan);font-weight:600}
+.eq{font-family:var(--mono);color:var(--gold)}
+.caption{font-size:13px;color:var(--muted);margin-top:14px}
+.caption b{color:var(--text)}
+.mt{margin-top:18px}
+.full{grid-column:1/-1}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span><span class="pk-code">11.1</span></a><script defer src="../assets/planck-companion.js" data-pk-code="11.1"></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="wrap">
+  <div class="eyebrow">PLANCK · CHAPTER 11 · FIGURE 11.1</div>
+  <h1>The mixed state</h1>
+  <p class="lead">A perfectly known qubit is a <em>pure</em> state living on the <em>surface</em> of the Bloch sphere. Add noise, ignorance, or entanglement with the environment and the state slips <em>inside</em> the ball — it becomes <em>mixed</em>. The density matrix <span class="eq">ρ</span> captures both regimes at once: its diagonal holds the populations (probabilities), its off-diagonal the coherences (the fragile "quantumness"). Decoherence is simply those off-diagonals fading to zero. Drag the sliders and watch the tip leave the surface.</p>
+
+  <div class="grid">
+    <!-- LEFT: Bloch sphere -->
+    <div class="panel">
+      <p class="section-title">Bloch sphere</p>
+      <svg id="bloch" viewBox="0 0 360 360" aria-label="Bloch sphere"></svg>
+    </div>
+
+    <!-- RIGHT: controls -->
+    <div class="panel">
+      <p class="section-title">Controls</p>
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="ctrl-label">θ <small>polar</small></span><span class="ctrl-val" id="thVal">0°</span></div>
+        <input type="range" id="th" min="0" max="180" step="1" value="0">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="ctrl-label">φ <small>azimuth</small></span><span class="ctrl-val" id="phVal">0°</span></div>
+        <input type="range" id="ph" min="0" max="360" step="1" value="0">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-row"><span class="ctrl-label">mixedness <small>|r|</small></span><span class="ctrl-val" id="rVal">1.00</span></div>
+        <input type="range" id="r" min="0" max="1" step="0.01" value="1">
+        <div class="meter-scale" style="margin-top:4px"><span>maximally mixed (centre)</span><span>pure (surface)</span></div>
+      </div>
+      <div class="mt">
+        <p class="section-title" style="margin-bottom:8px">Presets</p>
+        <div class="btns">
+          <button data-preset="0">|0⟩</button>
+          <button data-preset="1">|1⟩</button>
+          <button data-preset="plus">|+⟩</button>
+          <button data-preset="minus">|−⟩</button>
+          <button data-preset="mix">maximally mixed</button>
+        </div>
+      </div>
+      <div class="stat-row mt">
+        <span>r = (<b id="rx">0</b>, <b id="ry">0</b>, <b id="rz">0</b>)</span>
+      </div>
+      <div class="stat-row">
+        <span>P(0) = <b id="p0">0.50</b></span>
+        <span>P(1) = <b id="p1">0.50</b></span>
+        <span>|coherence| = <b id="coh">0.00</b></span>
+      </div>
+    </div>
+
+    <!-- Density matrix -->
+    <div class="panel full">
+      <p class="section-title">Density matrix &nbsp;<span class="eq">ρ = ½ [[1+z, x−iy],[x+iy, 1−z]]</span></p>
+      <div class="rho-wrap">
+        <div class="rho-num">
+          <span class="rho-bracket">[</span>
+          <div class="rho-grid">
+            <div class="rho-cell"><span class="lbl">ρ00 · pop |0⟩</span><span id="r00">0.50</span></div>
+            <div class="rho-cell"><span class="lbl">ρ01 · coherence</span><span id="r01">0.00</span></div>
+            <div class="rho-cell"><span class="lbl">ρ10 · coherence</span><span id="r10">0.00</span></div>
+            <div class="rho-cell"><span class="lbl">ρ11 · pop |1⟩</span><span id="r11">0.50</span></div>
+          </div>
+          <span class="rho-bracket">]</span>
+        </div>
+        <div>
+          <div class="heat" id="heat">
+            <div id="h00"></div><div id="h01"></div>
+            <div id="h10"></div><div id="h11"></div>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="chip" style="background:var(--cyan)"></span><b>Diagonal = populations</b> — how likely you are to measure |0⟩ or |1⟩.&nbsp;&nbsp;
+        <span class="chip" style="background:var(--violet)"></span><b>Off-diagonal = coherences</b> — the quantumness. Decoherence shrinks these to zero.
+      </div>
+      <p class="caption"><b>Inside the ball = mixed.</b> A pure state sits exactly on the surface (|r|=1). As coherences fade, the tip retreats toward the centre, where the state is maximally mixed — a classical coin flip with no quantum information left.</p>
+    </div>
+
+    <!-- Purity -->
+    <div class="panel full">
+      <p class="section-title">Purity &nbsp;<span class="eq">Tr(ρ²) = ½(1 + |r|²)</span></p>
+      <div class="meter-track"><div class="meter-fill" id="purFill"></div></div>
+      <div class="meter-scale"><span>0.5 — maximally mixed</span><span>1.0 — pure</span></div>
+      <div class="purity-line">
+        <span class="purity-state" id="purState">Pure — all information present</span>
+        <span class="purity-val" id="purVal">1.00</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var SVG="http://www.w3.org/2000/svg";
+  var bloch=document.getElementById("bloch");
+  var CX=180, CY=180, R=120;         // sphere centre & radius (px)
+  // isometric-ish projection: x->screen, y->depth (skewed), z->up
+  // screen_x = CX + Rx*kx + Ry*dx ; screen_y = CY - Rz*kz + Ry*dy
+  var kx=1.0;            // x axis horizontal
+  var dx=-0.42, dy=0.30; // y axis goes into the page (down-left)
+  var kz=1.0;            // z axis vertical
+
+  function proj(x,y,z){
+    return [ CX + R*(x*kx + y*dx),
+             CY - R*(z*kz) + R*(y*dy) ];
+  }
+
+  // ---- static scene ----
+  function el(tag,attrs){ var e=document.createElementNS(SVG,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
+
+  // translucent filled ball (gradient + blur defs)
+  var defs=el("defs",{});
+  defs.innerHTML=
+    '<radialGradient id="ballGrad" cx="38%" cy="32%" r="75%">'+
+      '<stop offset="0%" stop-color="rgba(40,224,208,0.10)"/>'+
+      '<stop offset="60%" stop-color="rgba(154,146,238,0.06)"/>'+
+      '<stop offset="100%" stop-color="rgba(10,16,36,0.10)"/>'+
+    '</radialGradient>'+
+    '<radialGradient id="cloudGrad" cx="50%" cy="50%" r="50%">'+
+      '<stop offset="0%" stop-color="rgba(255,93,177,0.55)"/>'+
+      '<stop offset="45%" stop-color="rgba(154,146,238,0.30)"/>'+
+      '<stop offset="100%" stop-color="rgba(154,146,238,0)"/>'+
+    '</radialGradient>';
+  bloch.appendChild(defs);
+
+  // filled sphere
+  bloch.appendChild(el("circle",{cx:CX,cy:CY,r:R,fill:"url(#ballGrad)"}));
+
+  // equator ellipse (dashed) — project the z=0 circle
+  (function(){
+    var pts=[];
+    for(var i=0;i<=64;i++){ var a=i/64*2*Math.PI; var p=proj(Math.cos(a),Math.sin(a),0); pts.push(p[0].toFixed(1)+","+p[1].toFixed(1)); }
+    bloch.appendChild(el("polyline",{points:pts.join(" "),fill:"none",stroke:"var(--line-2)","stroke-width":1,"stroke-dasharray":"3 4"}));
+  })();
+
+  // outline circle (sphere silhouette) on top of equator
+  bloch.appendChild(el("circle",{cx:CX,cy:CY,r:R,fill:"none",stroke:"var(--line-2)","stroke-width":1.4}));
+
+  // axes
+  function axis(x,y,z,col){
+    var a=proj(-x,-y,-z), b=proj(x,y,z);
+    bloch.appendChild(el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:col,"stroke-width":1,opacity:.5}));
+  }
+  axis(1,0,0,"var(--line-2)");   // x
+  axis(0,1,0,"var(--line-2)");   // y
+  axis(0,0,1,"var(--line-2)");   // z
+
+  // axis + pole labels
+  function txt(x,y,z,s,col,dxp,dyp){
+    var p=proj(x,y,z);
+    var t=el("text",{x:p[0]+(dxp||0),y:p[1]+(dyp||0),fill:col,"font-family":"var(--mono)","font-size":12,"text-anchor":"middle"});
+    t.textContent=s; bloch.appendChild(t);
+  }
+  txt(0,0,1.16,"|0⟩","var(--cyan)",0,-2);
+  txt(0,0,-1.16,"|1⟩","var(--cyan)",0,14);
+  txt(1.18,0,0,"|+⟩","var(--violet)",6,4);
+  txt(-1.18,0,0,"|−⟩","var(--violet)",-6,4);
+  txt(0,1.22,0,"y","var(--faint)",-4,4);   // y-axis end (depth)
+
+  // dynamic elements (added last so they're on top)
+  var cloud=el("circle",{cx:CX,cy:CY,r:0,fill:"url(#cloudGrad)"}); bloch.appendChild(cloud);
+  var vec=el("line",{x1:CX,y1:CY,x2:CX,y2:CY,stroke:"var(--gold)","stroke-width":2.4,"stroke-linecap":"round"}); bloch.appendChild(vec);
+  var tip=el("circle",{cx:CX,cy:CY,r:5.5,fill:"var(--gold)",stroke:"var(--inset)","stroke-width":1.5}); bloch.appendChild(tip);
+
+  // ---- controls ----
+  var th=document.getElementById("th"), ph=document.getElementById("ph"), rr=document.getElementById("r");
+  var thVal=document.getElementById("thVal"), phVal=document.getElementById("phVal"), rVal=document.getElementById("rVal");
+
+  function fmt(n){ var s=(Math.abs(n)<0.005?0:n).toFixed(2); if(s==="-0.00")s="0.00"; return s; }
+  function cfmt(re,im){
+    var r=(Math.abs(re)<0.005?0:re), i=(Math.abs(im)<0.005?0:im);
+    if(Math.abs(i)<0.005) return r.toFixed(2);
+    var sign = i<0 ? "−" : "+";
+    return r.toFixed(2)+" "+sign+" "+Math.abs(i).toFixed(2)+"i";
+  }
+
+  function update(){
+    var theta=+th.value*Math.PI/180;
+    var phi=+ph.value*Math.PI/180;
+    var mag=+rr.value;
+    thVal.textContent=th.value+"°";
+    phVal.textContent=ph.value+"°";
+    rVal.textContent=mag.toFixed(2);
+
+    // Bloch vector
+    var x=mag*Math.sin(theta)*Math.cos(phi);
+    var y=mag*Math.sin(theta)*Math.sin(phi);
+    var z=mag*Math.cos(theta);
+
+    // density matrix
+    var r00=0.5*(1+z), r11=0.5*(1-z);
+    var r01re=0.5*x, r01im=-0.5*y;   // ρ01 = ½(x − i y)
+    var r10re=0.5*x, r10im= 0.5*y;   // ρ10 = ½(x + i y)
+    var cohMag=0.5*Math.sqrt(x*x+y*y);
+    var purity=0.5*(1+mag*mag);
+
+    // stats
+    document.getElementById("rx").textContent=fmt(x);
+    document.getElementById("ry").textContent=fmt(y);
+    document.getElementById("rz").textContent=fmt(z);
+    document.getElementById("p0").textContent=r00.toFixed(2);
+    document.getElementById("p1").textContent=r11.toFixed(2);
+    document.getElementById("coh").textContent=cohMag.toFixed(2);
+
+    // matrix numbers
+    document.getElementById("r00").textContent=cfmt(r00,0);
+    document.getElementById("r11").textContent=cfmt(r11,0);
+    document.getElementById("r01").textContent=cfmt(r01re,r01im);
+    document.getElementById("r10").textContent=cfmt(r10re,r10im);
+
+    // heatmap: diagonals cyan by population (0..1), off-diag violet by |coh| (0..0.5 -> scale to 0..1)
+    function cell(id,col,a,label){
+      var e=document.getElementById(id);
+      e.style.background="rgba("+col+","+(0.10+0.85*a).toFixed(3)+")";
+      e.textContent=label;
+    }
+    cell("h00","40,224,208",r00,fmt(r00));
+    cell("h11","40,224,208",r11,fmt(r11));
+    cell("h01","154,146,238",Math.min(1,cohMag/0.5),cohMag.toFixed(2));
+    cell("h10","154,146,238",Math.min(1,cohMag/0.5),cohMag.toFixed(2));
+
+    // purity meter (map 0.5..1 -> 0..100%)
+    var pct=Math.max(0,Math.min(1,(purity-0.5)/0.5))*100;
+    document.getElementById("purFill").style.width=pct+"%";
+    document.getElementById("purVal").textContent=purity.toFixed(2);
+    var ps=document.getElementById("purState");
+    if(mag>=0.985){ ps.textContent="Pure — all information present"; ps.style.color="var(--cyan)"; }
+    else if(mag<=0.04){ ps.textContent="Maximally mixed — no information left"; ps.style.color="var(--red)"; }
+    else { ps.textContent="Mixed — coherences shrinking"; ps.style.color="var(--gold)"; }
+
+    // draw vector + tip + cloud
+    var p=proj(x,y,z);
+    vec.setAttribute("x2",p[0]); vec.setAttribute("y2",p[1]);
+    tip.setAttribute("cx",p[0]); tip.setAttribute("cy",p[1]);
+    // cloud grows as state becomes more mixed (1-|r|)
+    var mixAmt=1-mag;
+    cloud.setAttribute("cx",p[0]);
+    cloud.setAttribute("cy",p[1]);
+    cloud.setAttribute("r",(4+mixAmt*30).toFixed(1));
+    cloud.setAttribute("opacity",(0.15+0.85*mixAmt).toFixed(2));
+    // tip fades / vector dims slightly as it mixes
+    tip.setAttribute("opacity",(0.35+0.65*mag).toFixed(2));
+    vec.setAttribute("opacity",(0.4+0.6*mag).toFixed(2));
+  }
+
+  // wire up
+  [th,ph,rr].forEach(function(s){ s.addEventListener("input",function(){ clearActive(); update(); }); });
+
+  function clearActive(){ document.querySelectorAll("button[data-preset]").forEach(function(b){ b.classList.remove("active"); }); }
+  function setActive(p){ document.querySelectorAll("button[data-preset]").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-preset")===p); }); }
+
+  var presets={
+    "0":    {th:0,   ph:0,   r:1},
+    "1":    {th:180, ph:0,   r:1},
+    "plus": {th:90,  ph:0,   r:1},
+    "minus":{th:90,  ph:180, r:1},
+    "mix":  {th:90,  ph:0,   r:0}
+  };
+  document.querySelectorAll("button[data-preset]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var k=b.getAttribute("data-preset"), p=presets[k];
+      th.value=p.th; ph.value=p.ph; rr.value=p.r;
+      setActive(k); update();
+    });
+  });
+
+  // init at |0>
+  setActive("0");
+  update();
+})();
+</script>
+
+</body>
+</html>

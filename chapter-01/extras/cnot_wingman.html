@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The CNOT Wingman — Two-Qubit Entanglement</title>
+<style>
+  :root{
+    --bg:#0c0f1a; --panel:#141a2b; --panel2:#1b2236; --line:#2a3450;
+    --ink:#e8ecf6; --muted:#9aa6c4; --faint:#6b779a;
+    --ctrl:#7c7bf0; --tgt:#2bb6a6; --accent:#f0a23b; --wire:#4a5680;
+    --bar:#5b8def; --barEnt:#c45ad6; --good:#46c993; --warn:#f0a23b;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:radial-gradient(1200px 600px at 70% -10%,#161d33 0%,var(--bg) 60%);
+    color:var(--ink); font-family:var(--font); line-height:1.6;
+    -webkit-font-smoothing:antialiased; padding:32px 20px 60px;
+  }
+  .wrap{max-width:960px; margin:0 auto}
+  header{margin-bottom:24px}
+  h1{font-size:26px; font-weight:600; margin:0 0 6px; letter-spacing:-.4px}
+  .sub{color:var(--muted); font-size:15px; max-width:680px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:22px}
+  @media (max-width:760px){ .grid{grid-template-columns:1fr} }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px; box-shadow:0 1px 0 rgba(255,255,255,.02) inset;
+  }
+  .card h2{font-size:13px; font-weight:600; letter-spacing:.6px; text-transform:uppercase;
+    color:var(--faint); margin:0 0 14px}
+  .span2{grid-column:1 / -1}
+
+  .controls{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+  .controls .lab{color:var(--muted); font-size:14px; margin-right:4px}
+  button.state{
+    font-family:var(--mono); font-size:15px; color:var(--ink);
+    background:var(--panel2); border:1px solid var(--line); border-radius:9px;
+    padding:8px 14px; cursor:pointer; transition:.15s;
+  }
+  button.state:hover{border-color:var(--ctrl); color:#fff}
+  button.state.active{background:var(--ctrl); border-color:var(--ctrl); color:#fff; font-weight:600}
+
+  .ket{font-family:var(--mono)}
+  .flow{display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-family:var(--mono); font-size:20px}
+  .flow .arrow{color:var(--accent); font-size:22px}
+  .flow .out{color:#fff}
+  .tag{display:inline-flex; align-items:center; gap:7px; font-family:var(--font);
+    font-size:13px; font-weight:600; padding:5px 12px; border-radius:999px; margin-top:14px}
+  .tag.ent{background:rgba(196,90,214,.16); color:#e6a9f2; border:1px solid rgba(196,90,214,.4)}
+  .tag.prod{background:rgba(70,201,147,.14); color:#7fe3bb; border:1px solid rgba(70,201,147,.35)}
+  .dot{width:8px; height:8px; border-radius:50%; background:currentColor}
+
+  table.mat{border-collapse:collapse; font-family:var(--mono); font-size:15px; margin:0 auto}
+  table.mat td{width:34px; height:34px; text-align:center; color:var(--muted)}
+  table.mat td.one{color:#fff; font-weight:600}
+  .matwrap{display:flex; align-items:center; justify-content:center; gap:14px}
+  .matwrap .name{font-family:var(--mono); font-size:17px; color:var(--ink)}
+  .bracket{font-size:78px; color:var(--line); font-weight:200; line-height:1}
+  .legend{display:flex; gap:18px; margin-top:12px; font-size:12px; color:var(--muted); flex-wrap:wrap}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .swatch{width:11px; height:11px; border-radius:3px; display:inline-block}
+  .note{color:var(--faint); font-size:12.5px; margin-top:14px; font-style:italic}
+  .chartrow{display:grid; grid-template-columns:1fr 1fr; gap:24px}
+  @media (max-width:620px){ .chartrow{grid-template-columns:1fr} }
+  .chartlab{font-size:12px; color:var(--muted); text-align:center; margin-bottom:8px; font-family:var(--mono)}
+  text{font-family:var(--mono)}
+</style>
+  <link rel="stylesheet" href="../assets/planck.css">
+</head>
+<body>
+<!--planck-chrome--><a class="pk-badge" href="../index.html" title="Back to the PLANCK field guide"><span class="pk-logo">◂ PLANCK</span></a><script defer src="../assets/planck-companion.js" data-pk-code=""></script><!--/planck-chrome-->
+
+
+
+
+
+<div class="wrap">
+  <header>
+    <h1>The CNOT wingman — two-qubit entanglement</h1>
+    <div class="sub">A controlled-NOT gate flips the <b style="color:var(--tgt)">target</b> qubit only when the
+      <b style="color:var(--ctrl)">control</b> is <span class="ket">|1⟩</span>. Feed it a superposition and the two qubits
+      become inseparably <b>entangled</b> — a Bell state.</div>
+  </header>
+
+  <div class="card span2">
+    <h2>Circuit</h2>
+    <div class="controls" style="margin-bottom:6px">
+      <span class="lab">Control input:</span>
+      <button class="state" data-s="0">|0⟩</button>
+      <button class="state active" data-s="+">|+⟩</button>
+      <button class="state" data-s="1">|1⟩</button>
+      <button class="state" data-s="-">|−⟩</button>
+      <span class="lab" style="margin-left:14px">Target input:</span>
+      <button class="state tgt active" data-t="0">|0⟩</button>
+      <button class="state tgt" data-t="1">|1⟩</button>
+    </div>
+    <svg id="circuit" viewBox="0 0 920 230" width="100%" role="img" aria-label="CNOT circuit diagram"></svg>
+  </div>
+
+  <div class="card">
+    <h2>Joint state</h2>
+    <div class="flow">
+      <span id="inState"></span>
+      <span class="arrow">→</span>
+      <span class="out ket" id="outState"></span>
+    </div>
+    <div id="entTag"></div>
+    <div class="note" id="entNote"></div>
+  </div>
+
+  <div class="card">
+    <h2>CNOT operator</h2>
+    <div class="matwrap">
+      <span class="name">CNOT =</span>
+      <span class="bracket">[</span>
+      <table class="mat">
+        <tr><td class="one">1</td><td>0</td><td>0</td><td>0</td></tr>
+        <tr><td>0</td><td class="one">1</td><td>0</td><td>0</td></tr>
+        <tr><td>0</td><td>0</td><td>0</td><td class="one">1</td></tr>
+        <tr><td>0</td><td>0</td><td class="one">1</td><td>0</td></tr>
+      </table>
+      <span class="bracket">]</span>
+    </div>
+    <div class="note">Basis order |00⟩, |01⟩, |10⟩, |11⟩. The lower-right 2×2 swap is the NOT applied to the target when the control is |1⟩.</div>
+  </div>
+
+  <div class="card span2">
+    <h2>Measurement probabilities</h2>
+    <div class="chartrow">
+      <div>
+        <div class="chartlab">before CNOT</div>
+        <svg id="barIn" viewBox="0 0 440 220" width="100%" role="img" aria-label="input probabilities"></svg>
+      </div>
+      <div>
+        <div class="chartlab">after CNOT</div>
+        <svg id="barOut" viewBox="0 0 440 220" width="100%" role="img" aria-label="output probabilities"></svg>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--bar)"></i> probability</span>
+      <span><i class="swatch" style="background:var(--barEnt)"></i> correlated (entangled outcome)</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const R2 = 1/Math.SQRT2;
+const ctrlVec = { '0':[1,0], '1':[0,1], '+':[R2,R2], '-':[R2,-R2] };
+const tgtVec  = { '0':[1,0], '1':[0,1] };
+const basis = ['00','01','10','11'];
+let sel = '+', selT = '0';
+
+function joint(cv, tv){               // amplitudes for |q0 q1>, order 00,01,10,11
+  return [cv[0]*tv[0], cv[0]*tv[1], cv[1]*tv[0], cv[1]*tv[1]];
+}
+function cnot(a){                     // flips target (q1) when control (q0)=1
+  return [a[0], a[1], a[3], a[2]];
+}
+function fmt(v){
+  const e=1e-9;
+  if(Math.abs(v)<e) return null;
+  if(Math.abs(v-1)<e) return '+';
+  if(Math.abs(v+1)<e) return '−';
+  if(Math.abs(v-R2)<1e-6) return '+ 1/√2';
+  if(Math.abs(v+R2)<1e-6) return '− 1/√2';
+  return (v<0?'− ':'+ ')+Math.abs(v).toFixed(2);
+}
+function ketString(amp){
+  let parts=[];
+  amp.forEach((v,i)=>{
+    const c=fmt(v);
+    if(c===null) return;
+    let coeff=c;
+    if(c==='+') coeff='';
+    else if(c==='−') coeff='−';
+    else coeff=c.replace('+ ','').replace('− ','-')+' ';
+    parts.push((parts.length? (v<0?'− ':'+ ') : (v<0?'−':'')) + (Math.abs(v-1)<1e-9||Math.abs(v+1)<1e-9?'':(Math.abs(Math.abs(v)-R2)<1e-6?'1/√2 ':Math.abs(v).toFixed(2)+' ')) + '|'+basis[i]+'⟩');
+  });
+  return parts.join(' ').replace(/^\+\s*/,'');
+}
+function concurrence(a){ return 2*Math.abs(a[0]*a[3]-a[1]*a[2]); }
+
+// ---------- circuit ----------
+function drawCircuit(){
+  const cLabel = '|'+sel+'⟩', tLabel='|'+selT+'⟩';
+  const x0=120, x1=820, yc=70, yt=160, gx=470;
+  const svg = `
+    <line x1="${x0}" y1="${yc}" x2="${x1}" y2="${yc}" stroke="var(--wire)" stroke-width="2"/>
+    <line x1="${x0}" y1="${yt}" x2="${x1}" y2="${yt}" stroke="var(--wire)" stroke-width="2"/>
+    <text x="60" y="${yc+6}" fill="var(--ctrl)" font-size="22" text-anchor="middle">${cLabel}</text>
+    <text x="60" y="${yt+6}" fill="var(--tgt)" font-size="22" text-anchor="middle">${tLabel}</text>
+    <text x="78" y="${yc-22}" fill="var(--faint)" font-size="12" text-anchor="middle">control</text>
+    <text x="78" y="${yt+34}" fill="var(--faint)" font-size="12" text-anchor="middle">target</text>
+    <line x1="${gx}" y1="${yc}" x2="${gx}" y2="${yt}" stroke="var(--accent)" stroke-width="2.5"/>
+    <circle cx="${gx}" cy="${yc}" r="9" fill="var(--accent)"/>
+    <circle cx="${gx}" cy="${yt}" r="20" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+    <line x1="${gx-20}" y1="${yt}" x2="${gx+20}" y2="${yt}" stroke="var(--accent)" stroke-width="2.5"/>
+    <line x1="${gx}" y1="${yt-20}" x2="${gx}" y2="${yt+20}" stroke="var(--accent)" stroke-width="2.5"/>
+    <text x="${gx}" y="${(yc+yt)/2+5}" fill="var(--faint)" font-size="12" text-anchor="end" dx="-30">CNOT</text>
+    <text x="${x1+18}" y="${yc+6}" fill="var(--muted)" font-size="13" text-anchor="start">q₀</text>
+    <text x="${x1+18}" y="${yt+6}" fill="var(--muted)" font-size="13" text-anchor="start">q₁</text>`;
+  document.getElementById('circuit').innerHTML = svg;
+}
+
+// ---------- bar chart ----------
+function drawBars(id, amp, entangled){
+  const probs = amp.map(a=>a*a);
+  const W=440,H=220, padL=20,padR=20,padB=46,padT=20;
+  const n=4, gap=22;
+  const bw=(W-padL-padR-gap*(n-1))/n;
+  const maxH=H-padB-padT;
+  let s=`<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="var(--line)" stroke-width="1.5"/>`;
+  // gridlines at 0.5 and 1.0
+  [0.5,1].forEach(g=>{
+    const y=H-padB-g*maxH;
+    s+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>`;
+    s+=`<text x="${padL-4}" y="${y+4}" fill="var(--faint)" font-size="10" text-anchor="end">${g.toFixed(1)}</text>`;
+  });
+  probs.forEach((p,i)=>{
+    const x=padL+i*(bw+gap);
+    const h=p*maxH;
+    const y=H-padB-h;
+    const correlated = entangled && p>0.001;
+    const col = correlated? 'var(--barEnt)':'var(--bar)';
+    s+=`<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="${col}">
+          <animate attributeName="height" from="0" to="${h}" dur="0.5s" fill="freeze"/>
+          <animate attributeName="y" from="${H-padB}" to="${y}" dur="0.5s" fill="freeze"/>
+        </rect>`;
+    if(p>0.001) s+=`<text x="${x+bw/2}" y="${y-7}" fill="var(--ink)" font-size="12" text-anchor="middle">${p.toFixed(2)}</text>`;
+    s+=`<text x="${x+bw/2}" y="${H-padB+18}" fill="var(--muted)" font-size="13" text-anchor="middle">|${basis[i]}⟩</text>`;
+  });
+  document.getElementById(id).innerHTML=s;
+}
+
+function render(){
+  const inAmp = joint(ctrlVec[sel], tgtVec[selT]);
+  const outAmp = cnot(inAmp);
+  const C = concurrence(outAmp);
+  const entangled = C>1e-6;
+
+  document.getElementById('inState').innerHTML =
+    '<span style="color:var(--ctrl)">|'+sel+'⟩</span><span style="color:var(--tgt)">|'+selT+'⟩</span>';
+  let outStr = ketString(outAmp);
+  // collapse the common 1/√2 prefix for Bell states for readability
+  const isBell = Math.abs(Math.abs(outAmp[0])-R2)<1e-6 && Math.abs(Math.abs(outAmp[3])-R2)<1e-6 && Math.abs(outAmp[1])<1e-9 && Math.abs(outAmp[2])<1e-9;
+  if(isBell){
+    const sign = outAmp[3]<0? '−':'+';
+    outStr = '(|00⟩ '+sign+' |11⟩)/√2';
+  }
+  document.getElementById('outState').textContent = outStr;
+
+  const tagEl=document.getElementById('entTag'), noteEl=document.getElementById('entNote');
+  if(entangled){
+    tagEl.innerHTML='<span class="tag ent"><span class="dot"></span>Entangled · concurrence '+C.toFixed(2)+'</span>';
+    noteEl.textContent='The qubits can no longer be described independently. Measuring one instantly fixes the other.';
+  }else{
+    tagEl.innerHTML='<span class="tag prod"><span class="dot"></span>Separable (product state)</span>';
+    noteEl.textContent='Each qubit still has its own definite description — no entanglement created.';
+  }
+
+  drawCircuit();
+  drawBars('barIn', inAmp, false);
+  drawBars('barOut', outAmp, entangled);
+}
+
+document.querySelectorAll('button.state').forEach(b=>{
+  b.addEventListener('click',()=>{
+    if(b.dataset.s!==undefined){
+      sel=b.dataset.s;
+      document.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('active',x===b));
+    }else{
+      selT=b.dataset.t;
+      document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('active',x===b));
+    }
+    render();
+  });
+});
+render();
+</script>
+
+</body>
+</html>
